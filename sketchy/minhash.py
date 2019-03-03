@@ -23,7 +23,7 @@ class MashSketch(PoreLogger):
 
     """ MinHash (MASH) database sketches for sequence collections """
 
-    def __init__(self,):
+    def __init__(self):
 
         PoreLogger.__init__(self)
 

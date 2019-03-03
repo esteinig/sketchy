@@ -1,4 +1,5 @@
 import delegator
+import pandas
 
 from io import StringIO
 from pathlib import Path
@@ -65,28 +66,3 @@ class LineageMatching:
 
         data.link_fasta(fdir=outdir, index=index.to_dict(), symlink=True)
 
-    def dist(self, file, mashdb, ncpu=4, top=2):
-
-        result = delegator.run(
-            f'mash dist -p {ncpu} {mashdb} {file}'
-        )
-
-        df = pandas.read_csv(
-            StringIO(result.out), sep='\t', header=None,
-            names=[
-                "id", 'file', 'dist', "p-value", "shared"
-            ], index_col=False
-        )
-
-        shared = pandas.DataFrame(
-            df.shared.str.split('/').tolist(), columns=['shared', 'total']
-        )
-
-        df.shared = shared.shared.astype(int)
-
-        df = df.sort_values(by='shared', ascending=False)
-
-        if top:
-            df = df[:top]
-
-        return df

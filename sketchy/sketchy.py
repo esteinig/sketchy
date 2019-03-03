@@ -10,9 +10,11 @@ Access point module for Nanomatch
 import re
 import pandas
 import random
+import delegator
 
 from pathlib import Path
 from collections import Counter
+from io import StringIO
 
 from colorama import Fore
 
@@ -32,52 +34,103 @@ LM = Fore.LIGHTMAGENTA_EX
 
 RE = Fore.RESET
 
-from sketchy.minhash import
+from sketchy.minhash import MashSketch
 
 
 class Sketchy:
     """ Main access interface to Sketchy """
 
-    def __init__(self):
+    def __init__(self, survey_result: Path or str = None):
 
-        self.
+
+
+
+    def create_mash_sketch(
+            self,
+            prefix: str = 'sketchy',
+            data_path: Path or str = Path().home() / 'data.tab',
+            kmer_length: int or [int] = 15,
+
+        ):
+
+
 
     def predict_assemblies(
             self,
             assemblies: Path or str,
             sketch: str or Path,
-            extension: str = '.fasta'):
+            extension: str = '.fasta'
+    ):
 
         genomes = Path(assemblies).glob(f'*{extension}')
 
         self._print_header2()
-
         for i, genome in enumerate(genomes):
             tops = self.dist(genome, sketch, ncpu=16, top=1)
-            self._get_common(i, tops, genome=genome.name)
+            self._compute_scores(i, tops, genome=genome.name)
 
     def predict_nanopore(
             self,
-            read_path: Path or str,
             db_path: str or Path,
+            read_path: Path or str = None,
             extension='.fq'
     ):
+        """ Online predictions on nanopore reads
 
-        reads = sorted([
-            str(read.absolute()) for read in Path(read_path).glob(f'{extension}')
-        ], key=natural_key)
+        :param db_path:
+        :param read_path:
+        :param extension:
+        :return:
+        """
+        reads = sorted(
+            [
+                str(
+                    read.absolute()
+                ) for read in Path(read_path).glob(f'{extension}')
+            ], key=natural_key
+        )
 
         self._print_header1()
 
         lineage = Counter()
         resistance = Counter()
         for i, read in enumerate(reads):
-            tops = self.dist(read, db_path, ncpu=16, top=1)
-            self._get_common(i, tops, lineage, resistance)
+            tops = self.dist(
+                read, mashdb=db_path, ncpu=16, top=1
+            )
+            self._compute_scores(
+                i, tops, lineage=lineage, resistance=resistance
+            )
 
-    def dist(self):
 
-    def _print_header1(self):
+    def dist(self, file, mashdb, ncpu=4, top=2):
+
+        result = delegator.run(
+            f'mash dist -p {ncpu} {mashdb} {file}'
+        )
+
+        df = pandas.read_csv(
+            StringIO(result.out), sep='\t', header=None,
+            names=[
+                "id", 'file', 'dist', "p-value", "shared"
+            ], index_col=False
+        )
+
+        shared = pandas.DataFrame(
+            df.shared.str.split('/').tolist(), columns=['shared', 'total']
+        )
+
+        df.shared = shared.shared.astype(int)
+
+        df = df.sort_values(by='shared', ascending=False)
+
+        if top:
+            df = df[:top]
+
+        return df
+
+    @staticmethod
+    def _print_header1():
 
         print(
             f"{C}{'-' * 60}{RE}\n"
@@ -91,7 +144,8 @@ class Sketchy:
             f"{C}{'-' * 60}{RE}"
         )
 
-    def _print_header2(self):
+    @staticmethod
+    def _print_header2():
 
         print(
             f"{C}{'-'*75}{RE}\n"
@@ -104,6 +158,7 @@ class Sketchy:
             f"{LY}{'Diff':<5}{RE}",
             f"\n{C}{'-'*75}{RE}"
         )
+
 
     def read_fastq(self, file, fastq: str = None, shuffle: bool = False):
 
@@ -150,10 +205,17 @@ class Sketchy:
             with open(fastq, "w") as output_handle:
                 SeqIO.write(recs, output_handle, 'fastq')
 
-    def _get_common(self, i, tops, lineage: Counter = None,
-                    resistance: Counter = None, genome: str = None):
+    def _compute_scores(
+            self,
+            i: int,
+            tops: pandas.DataFrame,
+            lineage: Counter = None,
+            resistance: Counter = None,
+            genome: str = None
+    ):
 
             iids, sts, resist, mashshare = [], [], [], []
+
             for tid in tops.id:
                 iid, st, res = tid.strip('.fasta').split('_')
 
@@ -179,6 +241,7 @@ class Sketchy:
                     second_st, second_count = "", ""
 
                 try:
+                    # PSG like count score, see Brinda et al. 2019
                     ratio = 2*top_count/(second_count + top_count) - 1
                 except TypeError:
                     ratio = ''
@@ -217,11 +280,13 @@ class Sketchy:
                     f"{R if diff > 0 else G}{diff:<7}{RE}",
                 )
 
-    def _diff(self, res1, res2):
+    @staticmethod
+    def _diff(res1, res2):
         """ Equal length strings """
         return sum(1 for x, y in zip(res1, res2) if x != y)
 
-    def _format_res_string(self, rstring):
+    @staticmethod
+    def _format_res_string(rstring: str):
 
         pretty_rstring = ''
         for r in rstring:
@@ -232,7 +297,8 @@ class Sketchy:
 
         return pretty_rstring + f'{Fore.RESET}'
 
-    def _format_score(self, pstring):
+    @staticmethod
+    def _format_score(pstring: str):
 
 
         try:
