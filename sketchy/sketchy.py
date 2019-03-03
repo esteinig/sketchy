@@ -10,15 +10,12 @@ Access point module for Nanomatch
 import re
 import pandas
 import random
-import delegator
 
-from io import StringIO
 from pathlib import Path
 from collections import Counter
 
 from colorama import Fore
 
-from pathfinder.results import SurveyResult
 
 Y = Fore.YELLOW
 R = Fore.RED
@@ -35,105 +32,36 @@ LM = Fore.LIGHTMAGENTA_EX
 
 RE = Fore.RESET
 
+from sketchy.minhash import
 
-class LineageMatching:
 
-    def __init__(
+class Sketchy:
+    """ Main access interface to Sketchy """
+
+    def __init__(self):
+
+        self.
+
+    def predict_assemblies(
             self,
-            survey: SurveyResult = None
-    ):
-        self.survey = survey
+            assemblies: Path or str,
+            sketch: str or Path,
+            extension: str = '.fasta'):
 
-    def read_survey(
-            self,
-            survey_result: Path
-    ) -> None:
-
-        self.survey = SurveyResult(
-            path=Path()
-        )
-        self.survey.data.read(
-            survey_result
-        )
-
-    def select_sequence_types(
-            self,
-            outdir: Path = Path.home() / 'porematch' / 'seqs',
-            process: str = 'mlst',
-            field: str = 'sequence_type',
-            sample: int = None,
-            values: list = None,
-            atleast: int = None,
-    ):
-
-        """ Sequence type selection for database sketch with MinHash
-
-        :param process:
-        :param field:
-        :param outdir:
-        :param atleast:
-        :param sample:
-        :param values:
-        :return:
-        """
-
-        data = self.survey.data.select(process, field, values=values,
-                                       min_count=atleast, sample=sample)
-
-        mlst = data.mlst.sequence_type.sort_index()
-        pheno = data.mykrobe_phenotype.sort_index()
-
-        sep = pandas.Series(
-            ['_' for _ in data.iid.iid], index=mlst.index
-        )
-
-        index = mlst.index.to_series()
-
-        index += sep + mlst.astype(str) + sep
-        for column in pheno.columns:
-            index += pheno[column]
-
-        data.link_fasta(fdir=outdir, index=index.to_dict(), symlink=True)
-
-    def dist(self, file, mashdb, ncpu=4, top=2):
-
-        result = delegator.run(
-            f'mash dist -p {ncpu} {mashdb} {file}'
-        )
-
-        df = pandas.read_csv(
-            StringIO(result.out), sep='\t', header=None,
-            names=[
-                "id", 'file', 'dist', "p-value", "shared"
-            ], index_col=False
-        )
-
-        shared = pandas.DataFrame(
-            df.shared.str.split('/').tolist(), columns=['shared', 'total']
-        )
-
-        df.shared = shared.shared.astype(int)
-
-        df = df.sort_values(by='shared', ascending=False)
-
-        if top:
-            df = df[:top]
-
-        return df
-
-    def predict_genomes(self, gdir: str or Path, db_path: str or Path,
-                        extension: str = '.fasta'):
-
-        genomes = Path(gdir).glob(f'*{extension}')
+        genomes = Path(assemblies).glob(f'*{extension}')
 
         self._print_header2()
 
         for i, genome in enumerate(genomes):
-            tops = self.dist(genome, db_path, ncpu=16, top=1)
+            tops = self.dist(genome, sketch, ncpu=16, top=1)
             self._get_common(i, tops, genome=genome.name)
 
-    def proto(self, read_path: str or Path, db_path: str or Path,
-              extension='.fq'):
+    def predict_nanopore(
+            self,
+            read_path: Path or str,
+            db_path: str or Path,
+            extension='.fq'
+    ):
 
         reads = sorted([
             str(read.absolute()) for read in Path(read_path).glob(f'{extension}')
@@ -146,6 +74,8 @@ class LineageMatching:
         for i, read in enumerate(reads):
             tops = self.dist(read, db_path, ncpu=16, top=1)
             self._get_common(i, tops, lineage, resistance)
+
+    def dist(self):
 
     def _print_header1(self):
 

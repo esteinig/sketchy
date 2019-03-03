@@ -16,7 +16,7 @@ import delegator
 from tqdm import tqdm
 from pathlib import Path
 
-from porematch.utils import PoreLogger
+from sketchy.utils import PoreLogger
 
 
 class MashSketch(PoreLogger):
@@ -101,7 +101,7 @@ class MashSketch(PoreLogger):
 
     @staticmethod
     def sketch(
-            name: str or Path = 'porematch',
+            name: str or Path = 'sketchy',
             fdir: str or Path = Path.cwd(),
             k: int = 15,
             glob="*.fasta"

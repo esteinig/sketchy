@@ -20,8 +20,8 @@ setup(
     ],
     entry_points="""
         [console_scripts]
-        nm=porematch.terminal.client:terminal_client
-        porematch=porematch.terminal.client:terminal_client
+        nm=sketchy.terminal.client:terminal_client
+        sketchy=sketchy.terminal.client:terminal_client
     """,
     version="0.1",
     license="MIT",
