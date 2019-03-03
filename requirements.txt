@@ -1,0 +1,10 @@
+tqdm
+colorama
+pandas
+biopython
+google-cloud-storage
+click
+delegator.py
+pytest
+pre-commit
+pathfinder
