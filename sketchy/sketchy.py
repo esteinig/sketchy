@@ -18,6 +18,8 @@ from collections import Counter
 
 from colorama import Fore
 
+from pathfinder.results import SurveyResult
+
 Y = Fore.YELLOW
 R = Fore.RED
 G = Fore.GREEN
@@ -57,21 +59,26 @@ class LineageMatching:
     def select_sequence_types(
             self,
             outdir: Path = Path.home() / 'porematch' / 'seqs',
-            min_count=None, sample=None, values=None,
+            process: str = 'mlst',
+            field: str = 'sequence_type',
+            sample: int = None,
+            values: list = None,
+            atleast: int = None,
     ):
 
         """ Sequence type selection for database sketch with MinHash
 
-
+        :param process:
+        :param field:
         :param outdir:
-        :param min_count:
+        :param atleast:
         :param sample:
         :param values:
         :return:
         """
 
-        data = self.survey.data.select('mlst', 'sequence_type', values=values,
-                                       min_count=min_count, sample=sample)
+        data = self.survey.data.select(process, field, values=values,
+                                       min_count=atleast, sample=sample)
 
         mlst = data.mlst.sequence_type.sort_index()
         pheno = data.mykrobe_phenotype.sort_index()
