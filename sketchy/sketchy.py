@@ -1,8 +1,7 @@
 """
-=================================
-Access point module for Nanomatch
-=================================
-
+================================
+Access point module for Sketchy
+================================
 
 
 """
@@ -10,7 +9,9 @@ Access point module for Nanomatch
 import re
 import pandas
 import random
+import shutil
 import delegator
+import tempfile
 
 from pathlib import Path
 from collections import Counter
@@ -31,8 +32,8 @@ LG = Fore.LIGHTGREEN_EX
 LY = Fore.LIGHTYELLOW_EX
 LM = Fore.LIGHTMAGENTA_EX
 
-
 RE = Fore.RESET
+
 
 from sketchy.minhash import MashSketch
 
@@ -40,70 +41,156 @@ from sketchy.minhash import MashSketch
 class Sketchy:
     """ Main access interface to Sketchy """
 
-    def __init__(self, survey_result: Path or str = None):
-
-
-
-
-    def create_mash_sketch(
+    def __init__(
             self,
-            prefix: str = 'sketchy',
-            data_path: Path or str = Path().home() / 'data.tab',
+            survey_result: Path or str = None
+    ):
+
+        pass
+
+    @staticmethod
+    def create_mash_sketch(
+            data: Path or str = Path().home() / 'data.tab',
             kmer_length: int or [int] = 15,
+            outdir: Path or str = Path().home(),
+            file_glob: str = "*.fasta",
+            file_copy: bool = False,
+            prefix: str = 'sketchy',
 
-        ):
+    ):
 
+        sketch = MashSketch()
 
+        # Read Data Frame with columns:
+        #   IndexID
+        sketch.read_data(
+            fpath=data, sep='\t', index=0
+        )
+
+        sketch.link(
+            fdir=outdir,
+            rename=None,
+            symlink=not file_copy,
+            progbar=True
+        )
+
+        sketch.sketch(
+            name=f'{prefix}_{kmer_length}',
+            fdir=Path.cwd(),
+            k=kmer_length,
+            glob=file_glob
+        )
 
     def predict_assemblies(
             self,
             assemblies: Path or str,
             sketch: str or Path,
-            extension: str = '.fasta'
+            glob: str = '*.fasta',
+            header: bool = True,
+            cores: int = 16,
+            top_results: int = 1,
     ):
 
-        genomes = Path(assemblies).glob(f'*{extension}')
+        genomes = Path(assemblies).glob(glob)
 
-        self._print_header2()
+        if header:
+            self._print_header2()
         for i, genome in enumerate(genomes):
-            tops = self.dist(genome, sketch, ncpu=16, top=1)
+            tops = self.mash_dist(genome, sketch, ncpu=cores, top=top_results)
             self._compute_scores(i, tops, genome=genome.name)
 
     def predict_nanopore(
             self,
-            db_path: str or Path,
-            read_path: Path or str = None,
-            extension='.fq'
-    ):
+            sketch: Path or str,
+            fastq: Path or str = None,
+            tmp: Path or str = Path.home() / '.sketchy' / 'tmp',
+            watch_dir: Path or str = None,
+            test_dir: Path or str = None,
+            extension: str = '.fq',
+            cores: int = 16,
+            top_results: int = 1,
+            header: bool = False,
+            nreads: int = 100,
+
+    ) -> None:
         """ Online predictions on nanopore reads
 
-        :param db_path:
-        :param read_path:
-        :param extension:
-        :return:
-        """
-        reads = sorted(
-            [
-                str(
-                    read.absolute()
-                ) for read in Path(read_path).glob(f'{extension}')
-            ], key=natural_key
-        )
+        :param sketch:
+            mash sketch of database to compute prediction on
 
-        self._print_header1()
+        :param fastq:
+            fastq file to slice into temporary cumulative slices to
+            compute scores on and simulate sequencing, extracts
+            timestamps from read header
+
+        :param watch_dir:
+            directory path to watch for new fastq files of reads
+            or when read is added to fastq
+
+        :param test_dir:
+            directory with cumulative fastq files for simulation
+
+        :param extension:
+            extension for iterating over cumulative fastq files
+
+        :param cores:
+            number of compute cores for mash dist
+
+        :param top_results:
+            number of top dist results to compute scores on
+
+        :returns
+            None
+        """
+
+        if test_dir:
+            print('Reading directory of cumulative read files for testing.')
+            reads = sorted(
+                [
+                    str(
+                        read.absolute()
+                    ) for read in Path(test_dir).glob(f'{extension}')
+                ], key=self._natural_key
+            )
+
+        elif fastq:
+            print('Slicing FASTQ files into temporary cumulative read files.')
+
+            if not nreads:
+                nreads = self.file_len(fastq)
+
+            if not nreads % 4 == 0:
+                raise ValueError(f'Fastq format not recognized in {fastq}.')
+
+            reads = [
+                self._slice_fastq(
+                    fastq=fastq, nreads=i, tmpdir=tmp
+                ) for i in range(nreads)
+            ]
+
+        else:
+            raise ValueError(
+                'Either param `test_dir` or `fastq` must be specified.'
+            )
+
+        if header:
+            self._print_header1()
 
         lineage = Counter()
         resistance = Counter()
         for i, read in enumerate(reads):
-            tops = self.dist(
-                read, mashdb=db_path, ncpu=16, top=1
+            tops = self.mash_dist(
+                read, mashdb=sketch, ncpu=cores, top=top_results
             )
             self._compute_scores(
                 i, tops, lineage=lineage, resistance=resistance
             )
+            if fastq:
+                # Delete tmp slices
+                shutil.rmtree(read)
 
-
-    def dist(self, file, mashdb, ncpu=4, top=2):
+    @staticmethod
+    def mash_dist(file, mashdb, ncpu=4, top=2):
 
         result = delegator.run(
             f'mash dist -p {ncpu} {mashdb} {file}'
@@ -148,7 +235,7 @@ class Sketchy:
     def _print_header2():
 
         print(
-            f"{C}{'-'*75}{RE}\n"
+            f"{C}{'-' * 75}{RE}\n"
             f"{LC}{'Genome':<7}{RE}",
             f"{LM}{'Predict':<10}{RE}",
             f"{LY}{'Predict':<12}{RE}",
@@ -156,54 +243,8 @@ class Sketchy:
             f"{LM}{'True':<10}{RE}",
             f"{LY}{'True':<12}{RE}",
             f"{LY}{'Diff':<5}{RE}",
-            f"\n{C}{'-'*75}{RE}"
+            f"\n{C}{'-' * 75}{RE}"
         )
-
-
-    def read_fastq(self, file, fastq: str = None, shuffle: bool = False):
-
-        from Bio import SeqIO
-        from datetime import datetime
-
-        dates = []
-        ids = []
-        lengths = []
-        records = {}
-        with open(file, "r") as input_handle:
-            for record in SeqIO.parse(input_handle, "fastq"):
-                time = record.description.split('start_time=')[1]
-                time = time.replace('T', '-').strip('Z')
-                dtime = datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
-                dates.append(dtime)
-                ids.append(record.id)
-                lengths.append(len(record.seq))
-                records[record.id] = record
-                print(record.id, time, len(record.seq))
-
-        df = pandas.DataFrame(
-            data={
-                'date': dates,
-                'read': ids,
-                'length': lengths
-            }
-        ).sort_values(by='date')
-
-        pandas.set_option('display.max_rows', 120)
-        df = df.reset_index()
-
-        # 3 percent of genome with large database
-
-        if fastq:
-
-            recs = [
-                records[read] for read in df['read']
-            ]
-
-            if shuffle:
-                recs = random.shuffle(recs)
-
-            with open(fastq, "w") as output_handle:
-                SeqIO.write(recs, output_handle, 'fastq')
 
     def _compute_scores(
             self,
@@ -281,6 +322,84 @@ class Sketchy:
                 )
 
     @staticmethod
+    def sort_fastq(file, fastq: str = None, shuffle: bool = False):
+
+        from Bio import SeqIO
+        from datetime import datetime
+
+        dates = []
+        ids = []
+        lengths = []
+        records = {}
+        with open(file, "r") as input_handle:
+            for record in SeqIO.parse(input_handle, "fastq"):
+                time = record.description.split('start_time=')[1]
+                time = time.replace('T', '-').strip('Z')
+                dtime = datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
+                dates.append(dtime)
+                ids.append(record.id)
+                lengths.append(len(record.seq))
+                records[record.id] = record
+                print(record.id, time, len(record.seq))
+
+        df = pandas.DataFrame(
+            data={
+                'date': dates,
+                'read': ids,
+                'length': lengths
+            }
+        ).sort_values(by='date')
+
+        pandas.set_option('display.max_rows', 120)
+        df = df.reset_index()
+
+        # 3 percent of genome with large database
+
+        if fastq:
+
+            recs = [
+                records[read] for read in df['read']
+            ]
+
+            if shuffle:
+                recs = random.shuffle(recs)
+
+            with open(fastq, "w") as output_handle:
+                SeqIO.write(recs, output_handle, 'fastq')
+
+    @staticmethod
+    def _slice_fastq(
+            fastq: Path,
+            nreads: int = 1,
+            tmpdir: Path = Path().home() / '.tmp'
+        ) -> Path:
+
+        tmpdir = Path(
+            tempfile.mkdtemp(tmpdir)
+        )
+
+        tmp_file = tempfile.mkstemp(
+            suffix='.fq',
+            prefix=f'reads_{nreads}',
+            dir=tmpdir
+        )
+
+        nreads = 4*nreads
+
+        delegator.run(
+            f'cat -n {nreads} {fastq.resolve()} > {tmp_file}'
+        )
+
+        yield tmp_file
+
+    @staticmethod
+    def file_len(fname):
+        with open(fname) as f:
+            for i, l in enumerate(f):
+                pass
+        return i + 1
+
+    @staticmethod
     def _diff(res1, res2):
         """ Equal length strings """
         return sum(1 for x, y in zip(res1, res2) if x != y)
@@ -317,8 +436,10 @@ class Sketchy:
 
         return col + str(pfloat) + f'{Fore.RESET}'
 
-
-
-def natural_key(string_):
-    """See http://www.codinghorror.com/blog/archives/001018.html"""
-    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
+    @staticmethod
+    def _natural_key(string_):
+        """See http://www.codinghorror.com/blog/archives/001018.html"""
+        return [
+            int(s) if s.isdigit() else s
+            for s in re.split(r'(\d+)', string_)
+        ]
