@@ -1,9 +1,12 @@
 import click
-import Path
+import shutil
+
+from pathlib import Path
 
 from sketchy.sketchy import Sketchy
 
-@click.group()
+
+@click.command()
 @click.option(
     '--fastq', '-f', help='Input FASTQ file to slice and predict'
 )
@@ -12,26 +15,35 @@ from sketchy.sketchy import Sketchy
 )
 @click.option(
     '--tmp', '-t', default=Path().home() / '.sketchy' / 'tmp',
-    help='Temporary dir for slicing FASTQ'
+    help='Temporary dir for slicing Fastq file'
 )
 @click.option(
     '--cores', '-c', default=8, help='Number of processors for `mash dist`'
 )
 @click.option(
-    '--extension', '-e', default='.fq', help='Extension of read files to glob.'
+    '--header', '-h', is_flag=True, help='Print header to online mode STDOUT.'
 )
 @click.option(
-    '--header', '-head', help='Print header to online mode STDOUT.'
+    '--reads', '-r', default=50, help='Number of reads to type.'
 )
-def predict(fastq, sketch, tmp, cores, extension, header):
+def predict(fastq, sketch, tmp, cores, header, reads):
+
+    """ Online lineage matching and antibiotic susceptibility predictions using
+    MinHash from uncorrected nmanopore reads"""
 
     sketchy = Sketchy()
 
-    sketchy.predict_nanopore(
-        sketch='saureus-v1.msh',
-        fastq='st243_r9.4_reads_sorted.fq',
-        tmp='./tmp',
-        cores=16,
-        extension='.fq',
-        header=True
-    )
+    try:
+        sketchy.predict_nanopore(
+            sketch=Path(sketch).resolve(),
+            fastq=Path(fastq).resolve(),
+            tmp=Path(tmp).resolve(),
+            cores=cores,
+            header=header,
+            nreads=reads,
+        )
+
+    except KeyboardInterrupt:
+        shutil.rmtree(tmp)
+    finally:
+        shutil.rmtree(tmp)

@@ -9,16 +9,16 @@ Access point module for Sketchy
 import re
 import pandas
 import random
-import shutil
+
 import delegator
-import tempfile
+
+import os
 
 from pathlib import Path
 from collections import Counter
 from io import StringIO
 
 from colorama import Fore
-
 
 Y = Fore.YELLOW
 R = Fore.RED
@@ -33,7 +33,6 @@ LY = Fore.LIGHTYELLOW_EX
 LM = Fore.LIGHTMAGENTA_EX
 
 RE = Fore.RESET
-
 
 from sketchy.minhash import MashSketch
 
@@ -103,10 +102,8 @@ class Sketchy:
             self,
             sketch: Path or str,
             fastq: Path or str = None,
-            tmp: Path or str = Path.home() / '.sketchy' / 'tmp',
+            tmp: Path or str = Path.cwd() / 'tmp',
             watch_dir: Path or str = None,
-            test_dir: Path or str = None,
-            extension: str = '.fq',
             cores: int = 16,
             top_results: int = 1,
             header: bool = False,
@@ -143,29 +140,17 @@ class Sketchy:
             None
         """
 
-        if test_dir:
-            print('Reading directory of cumulative read files for testing.')
-            reads = sorted(
-                [
-                    str(
-                        read.absolute()
-                    ) for read in Path(test_dir).glob(f'{extension}')
-                ], key=self._natural_key
-            )
-
-        elif fastq:
-            print('Slicing FASTQ files into temporary cumulative read files.')
-
-            if not nreads:
-                nreads = self.file_len(fastq)
+        if fastq:
 
             if not nreads % 4 == 0:
                 raise ValueError(f'Fastq format not recognized in {fastq}.')
 
+            tmp.mkdir(parents=True, exist_ok=True)
+
             reads = [
                 self._slice_fastq(
                     fastq=fastq, nreads=i, tmpdir=tmp
-                ) for i in range(nreads)
+                ) for i in range(1, nreads+1, 1)
             ]
 
         else:
@@ -178,16 +163,30 @@ class Sketchy:
 
         lineage = Counter()
         resistance = Counter()
+        continuous = list()
         for i, read in enumerate(reads):
             tops = self.mash_dist(
                 read, mashdb=sketch, ncpu=cores, top=top_results
             )
-            self._compute_scores(
-                i, tops, lineage=lineage, resistance=resistance
+
+            top = self._compute_scores(
+                i, tops, lineage=lineage, resistance=resistance,
+                continuous=continuous
             )
+
+            if not continuous:
+                continuous.append(top)
+            else:
+                if top == continuous.pop():
+                    continuous.append(top)
+                else:
+                    continuous = list()
+
             if fastq:
                 # Delete tmp slices
-                shutil.rmtree(read)
+                os.remove(
+                    str(read)
+                )
 
     @staticmethod
     def mash_dist(file, mashdb, ncpu=4, top=2):
@@ -195,7 +194,6 @@ class Sketchy:
         result = delegator.run(
             f'mash dist -p {ncpu} {mashdb} {file}'
         )
-
         df = pandas.read_csv(
             StringIO(result.out), sep='\t', header=None,
             names=[
@@ -242,8 +240,8 @@ class Sketchy:
             f"{LC}{'Hashes':<10}{RE}",
             f"{LM}{'True':<10}{RE}",
             f"{LY}{'True':<12}{RE}",
-            f"{LY}{'Diff':<5}{RE}",
-            f"\n{C}{'-' * 75}{RE}"
+            f"{LY}{'Diff':<5}{RE}\n",
+            f"{C}{'-' * 75}{RE}"
         )
 
     def _compute_scores(
@@ -252,15 +250,16 @@ class Sketchy:
             tops: pandas.DataFrame,
             lineage: Counter = None,
             resistance: Counter = None,
-            genome: str = None
+            genome: str = None,
+            continuous: list = None,
+            weight: float = 0.1
     ):
 
             iids, sts, resist, mashshare = [], [], [], []
-
             for tid in tops.id:
                 iid, st, res = tid.strip('.fasta').split('_')
 
-                if lineage and resistance:
+                if lineage is not None and resistance is not None:
                     lineage.update([st])
                     resistance.update([res])
                 else:
@@ -269,9 +268,10 @@ class Sketchy:
                     resist.append(res)
                     mashshare.append(tops[tops['id'] == tid].shared.values[0])
 
-            if lineage and resistance:
+            if lineage is not None and resistance is not None:
                 lin = lineage.most_common(3)
                 rest = resistance.most_common(3)
+
                 top_st = lin[0][0]
                 top_count = lin[0][1]
 
@@ -283,7 +283,15 @@ class Sketchy:
 
                 try:
                     # PSG like count score, see Brinda et al. 2019
-                    ratio = 2*top_count/(second_count + top_count) - 1
+                    # Includes optional weight to add from confident sequential
+                    # ST predictions - this can force a preference score > 1
+                    # so we bounded the score at 1:
+                    ratio = 2*top_count/(second_count + top_count) - 1 + \
+                            (weight * len(continuous))
+
+                    if ratio > 1.:
+                        ratio = 1.
+
                 except TypeError:
                     ratio = ''
 
@@ -301,8 +309,9 @@ class Sketchy:
                     f"{second_count:<7}",
                     f"{self._format_score(ratio):<5}"
                 )
-            else:
 
+                return top_st
+            else:
                 if genome:
                     giid, gst, gres = genome.strip('.fasta').split('_')
                 else:
@@ -371,26 +380,18 @@ class Sketchy:
     def _slice_fastq(
             fastq: Path,
             nreads: int = 1,
-            tmpdir: Path = Path().home() / '.tmp'
-        ) -> Path:
+            tmpdir: Path = Path().cwd() / 'tmp'
+    ) -> Path:
 
-        tmpdir = Path(
-            tempfile.mkdtemp(tmpdir)
-        )
-
-        tmp_file = tempfile.mkstemp(
-            suffix='.fq',
-            prefix=f'reads_{nreads}',
-            dir=tmpdir
-        )
+        fpath = tmpdir / f'reads_{nreads}.fq'
 
         nreads = 4*nreads
 
         delegator.run(
-            f'cat -n {nreads} {fastq.resolve()} > {tmp_file}'
+            f'head -n {nreads} {fastq.resolve()} > {fpath.resolve()}'
         )
 
-        yield tmp_file
+        return fpath
 
     @staticmethod
     def file_len(fname):

@@ -2,7 +2,7 @@ import click
 
 from sketchy.sketchy import Sketchy
 
-@click.group()
+@click.command()
 @click.option(
     '--fastq', '-f', help='Input FASTQ file to slice and predict'
 )
@@ -13,9 +13,9 @@ from sketchy.sketchy import Sketchy
     '--shuffle', '-s', is_flag=True, help='Shuffle start datetimes in FASTQ'
 )
 def sort(fastq, output, shuffle):
+    """ Sort a read file (.fq) by read start times from read header """
 
     sketchy = Sketchy()
-
     sketchy.sort_fastq(
         file=fastq, fastq=output, shuffle=shuffle
     )
