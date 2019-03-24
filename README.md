@@ -1,4 +1,4 @@
-# Sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="200" /></a>
+# Sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="250" /></a>
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
