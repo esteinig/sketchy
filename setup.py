@@ -20,13 +20,12 @@ setup(
     ],
     entry_points="""
         [console_scripts]
-        nm=sketchy.terminal.client:terminal_client
         sketchy=sketchy.terminal.client:terminal_client
     """,
     version="0.1",
     license="MIT",
     description="Rapid lineage matching and antimicrobial susceptibility "
-                "predictions using ncorrected nanopore reads. Uses MinHash "
+                "predictions using uncorrected nanopore reads. Uses MinHash "
                 "sketches of species assembly databases genotyped with "
                 "reproducible analysis pipelines from Pathfinder.",
 )

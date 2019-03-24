@@ -13,7 +13,7 @@ from sketchy.sketchy import Sketchy
     '--shuffle', '-s', is_flag=True, help='Shuffle start datetimes in FASTQ'
 )
 def sort(fastq, output, shuffle):
-    """ Sort a read file (.fq) by read start times from read header """
+    """ Sort basecalled reads by start time (Albacore) """
 
     sketchy = Sketchy()
     sketchy.sort_fastq(
