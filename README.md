@@ -27,14 +27,14 @@ Usage: sketchy sketch [OPTIONS]
   Create a MinHash sketch for matching with MASH
 
 Options:
-  -d, --data TEXT     Input data file to assign lineages and genotypes.
-  -k, --kmer INTEGER  K-mer length to create sketch with in MASH.
-  -s, --size INTEGER  Sketch size in MASH.
-  -o, --outdir TEXT   output directory for sketch files.
-  -p, --prefix TEXT   Prefix for data sketch with Sketchy.
-  -c, --copy          Copy assembly files.
-  --delimiter TEXT    Delimiter for data file.
-  --help              Show this message and exit.
+  -d, --data TEXT     Input data file to assign lineages and genotypes
+  -k, --kmer INTEGER  K-mer length to create sketch with in MASH
+  -s, --size INTEGER  Sketch size in MASH
+  -o, --outdir TEXT   Output directory for sketch files
+  -p, --prefix TEXT   Prefix for data sketch with Sketchy
+  -c, --copy          Copy assembly files
+  --delimiter TEXT    Delimiter for data file
+  --help              Show this message and exit
 ```
 
 ---
@@ -49,19 +49,16 @@ Usage: sketchy predict [OPTIONS]
   Online lineage matching from uncorrected nanopore reads
 
 Options:
-  -f, --fastq TEXT     Input Fastq file to predict from.
+  -f, --fastq TEXT     Input Fastq file to predict from
   -s, --sketch TEXT    MASH sketch to query
-  -d, --data TEXT      Index data file to pull genotypes and other data from.
+  -d, --data TEXT      Index data file to pull genotypes and other data from
   -t, --tmp TEXT       Temporary dir for slicing Fastq file
   -c, --cores INTEGER  Number of processors for `mash dist`
   -h, --header         Print header to online mode STDOUT.
   -r, --reads INTEGER  Number of reads to type.
-  --single             Single read analysis, instead of cumulative, does not
-                       compute score
-  --dist               Use best hits from min hash distance, instead shared
-                       hashes.
-  -o, --output TEXT    Top shared hash queries per read, not cumulative, does
-                       not compute scores.
+  --single             Single read analysis, does not compute score
+  --dist               Use best hits from min hash distance
+  -o, --output TEXT    Output CSV file for --single
   --help               Show this message and exit.
 ```
 
