@@ -15,9 +15,9 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 Preprint coming soon.
 
-# Command line interface
+## Command line interface
 
-#### :eyeglasses: `sketchy sketch`
+##### :eyeglasses: `sketchy sketch`
 
 To build a MinHASH sketch with MASH from a collection of `FASTA` assemblies with associated results from genotyping or pohenotype data:
 
@@ -39,7 +39,7 @@ Options:
 
 ---
 
-#### :briefcase: `sketchy predict`
+##### :briefcase: `sketchy predict`
 
 Apply the sketchy algorithm to a cumulatively sliced `FASTQ` files with basecalled nanopore reads. Warning: this may generate a collection of temporary files with cumulative reads at the moment, depending on the `--reads` number of reads to type. Do not type the whole run at the moment, at most predictions are definitely stable around 200 - 300 reads.
 
@@ -64,7 +64,7 @@ Options:
 
 ---
 
-#### :closed_umbrella: `sketchy sort`
+##### :closed_umbrella: `sketchy sort`
 
 Apply to sort a `FASTQ` file by the start time tag in the header in files called by Albacore.
 
