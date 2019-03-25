@@ -17,6 +17,13 @@ Preprint coming soon.
 
 ## Command line interface
 
+```
+git clone https://github.com/esteinig/sketchy
+pip install sketchy
+```
+
+## Command line interface
+
 ##### :eyeglasses: `sketchy sketch`
 
 To build a MinHASH sketch with MASH from a collection of `FASTA` assemblies with associated results from genotyping or pohenotype data:
