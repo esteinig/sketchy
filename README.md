@@ -15,7 +15,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 Preprint coming soon.
 
-## Command line interface
+## Install
 
 ```
 git clone https://github.com/esteinig/sketchy
