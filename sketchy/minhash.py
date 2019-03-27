@@ -3,8 +3,8 @@
 Module for database sketch using MinHash
 =========================================
 
-Prototype for Staphylococcus aureus, Mycobacterium
-tuberculosis, Klebsiella pneumoniae.
+Prototype for Staphylococcus aureus, Klebsiella pneumoniae,
+Mycobacterium tuberculosis
 
 """
 
@@ -64,27 +64,42 @@ class MashScore(PoreLogger):
         index: int = 0,
         cores: int = 8,
         top: int = 1,
+        out: Path = Path().cwd() / 'results.csv',
+        score: bool = True,
+        sort_by: str = 'shared'
     ):
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
 
+        results = []
         for i, read_file in enumerate(read_files):
 
-            shared_hashes = self.mash_dist(
-                read_file, mashdb=sketch, ncpu=cores,
+            mash = self.mash_dist(
+                read_file, mashdb=sketch, ncpu=cores, sort_by=sort_by
             )
 
             # Select best results from mash dist
             # ordered by shared hash matches:
 
-            top_results = shared_hashes[:top]
+            # TODO: Skip if no shared , maybe something we can do with p-values?
+            top_results = mash[:top]
 
-            _ = self._compute(
-                i=i, data=df, tops=top_results, read_file=read_file
-            )
+            if score:
+                _ = self._compute(
+                    i=i, data=df, tops=top_results, read_file=read_file
+                )
+            else:
+                results.append(top_results)
+
+        if results:
+            df = pandas.concat(results)
+            df['id'] = df['id'].apply(lambda x: Path(x).stem)
+            df['read'] = df['file'].apply(lambda x: Path(x).stem)
+            df = df.drop('file', axis=1)
+            df.to_csv(out, index=False)
 
     @staticmethod
-    def mash_dist(file, mashdb, ncpu=4):
+    def mash_dist(file, mashdb, ncpu=4, sort_by='shared'):
 
         result = delegator.run(
             f'mash dist -p {ncpu} {mashdb} {file}'
@@ -102,8 +117,14 @@ class MashScore(PoreLogger):
         )
 
         df.shared = shared.shared.astype(int)
+        df.dist = df.dist.astype(float)
 
-        return df.sort_values(by='shared', ascending=False)
+        if sort_by == 'shared':
+            return df.sort_values(by=sort_by, ascending=False)
+        elif sort_by == 'dist':
+            return df.sort_values(by=sort_by, ascending=True)
+        else:
+            raise ValueError('MASH distance must be sorted by one of: shared, dist')
 
     def _compute(
             self,
@@ -197,15 +218,15 @@ class MashScore(PoreLogger):
 
         print(
             f"{i:<5}",
-            f"{col}{'ST' + top_st:<7}{RE}",
+            f"{'ST' + top_st:<7}",
             f"{top_count:<7}",
             f"{'ST' + second_st:<7}",
             f"{second_count:<7}",
             f"{self._format_score(score):<10}",
-            f"{self._format_res_string(top_within_lineage_susceptibility):<15}",
+            f"{top_within_lineage_susceptibility:<15}",
             f"{top_within_lineage_genotype:<50}"
-            f"{seqlen:<10}{RE}",
-            f"{time:<15}{RE}"
+            f"{seqlen:<10}",
+            f"{time:<15}"
         )
 
         return top_st
@@ -255,14 +276,7 @@ class MashScore(PoreLogger):
         except ValueError:
             return pstring
 
-        if pfloat < 0.4:
-            col = f'{R}'
-        elif 0.4 <= pfloat < 0.6:
-            col = f'{Y}'
-        else:
-            col = f'{G}'
-
-        return col + f'{pfloat:.5f}' + f'{Fore.RESET}'
+        return f'{pfloat:.5f}'
 
 
 class MashSketch(PoreLogger):

@@ -7,4 +7,3 @@ click
 delegator.py
 pytest
 pre-commit
-pathfinder

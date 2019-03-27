@@ -7,21 +7,19 @@ TODO: do not jointly count genotypes, count each individually!
 
 """
 
-import os
 import re
 import pandas
 import random
-import datetime
 
 import delegator
 
 from pathlib import Path
-from collections import Counter
-from io import StringIO
 
 from sketchy.minhash import MashScore
 from sketchy.minhash import MashSketch
 
+from Bio import SeqIO
+from datetime import datetime
 from colorama import Fore
 
 Y = Fore.YELLOW
@@ -92,9 +90,13 @@ class Sketchy:
             sketch: Path or str,
             data: Path or str,
             cores: int = 16,
+            score: bool = True,
             header: bool = False,
             nreads: int = 100,
-            tmp: Path or str = Path.cwd() / 'tmp',
+            top: int = 1,
+            out: Path = Path().cwd() / 'results.csv',
+            tmp: Path = Path.cwd() / 'tmp',
+            sort_by: str = 'shared'
     ) -> None:
 
         """ Online predictions on nanopore reads
@@ -119,17 +121,33 @@ class Sketchy:
 
         tmp.mkdir(parents=True, exist_ok=True)
 
-        reads = [
-            self._slice_fastq(
-                fastq=fastq, nreads=i, tmpdir=tmp
-            ) for i in range(1, nreads+1, 1)
-        ]
+        if score:
+            # Cumulative read slicing for score predictions
+            reads = [
+                self._slice_fastq(
+                    fastq=fastq, nreads=i, tmpdir=tmp, cumulative=True
+                ) for i in range(1, nreads+1, 1)
+            ]
+        else:
+            # Single read slicing for shared hashes output:
+            reads = self._slice_fastq(
+                fastq=fastq, nreads=1, tmpdir=tmp, cumulative=False
+            )
 
         if header:
             self._print_header1()
 
         ms = MashScore()
-        ms.run(read_files=reads, sketch=sketch, cores=cores, top=1, data=data)
+        ms.run(
+            read_files=reads,
+            sketch=sketch,
+            cores=cores,
+            top=top,
+            score=score,
+            data=data,
+            out=out,
+            sort_by=sort_by
+        )
 
     @staticmethod
     def _print_header1():
@@ -166,9 +184,6 @@ class Sketchy:
 
     @staticmethod
     def sort_fastq(file, fastq: str = None, shuffle: bool = False):
-
-        from Bio import SeqIO
-        from datetime import datetime
 
         dates = []
         ids = []
@@ -219,23 +234,32 @@ class Sketchy:
 
     @staticmethod
     def _slice_fastq(
-            fastq: Path,
-            nreads: int = 1,
-            tmpdir: Path = Path().cwd() / 'tmp'
+        fastq: Path,
+        nreads: int = 1,
+        tmpdir: Path = Path().cwd() / 'tmp',
+        cumulative: bool = True,
     ) -> Path:
 
-        fpath = tmpdir / f'reads_{nreads}.fq'
-
-        nreads = 4*nreads
-
-        delegator.run(
-            f'head -n {nreads} {fastq.resolve()} > {fpath.resolve()}'
-        )
+        if cumulative:
+            fpath = tmpdir / f'reads_{nreads}.fq'
+            nreads = 4*nreads
+            delegator.run(
+                f'head -n {nreads} {fastq.resolve()} > {fpath.resolve()}'
+            )
+        else:
+            fpath = []
+            with fastq.resolve().open('r') as input_handle:
+                for record in SeqIO.parse(input_handle, "fastq"):
+                    fp = tmpdir / f'{record.id}.fq'
+                    with fp.open('w') as outfile:
+                        SeqIO.write([record], outfile, 'fastq')
+                    fpath.append(fp)
 
         return fpath
 
     @staticmethod
     def file_len(fname):
+        i = 0
         with open(fname) as f:
             for i, l in enumerate(f):
                 pass
