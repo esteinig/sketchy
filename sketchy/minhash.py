@@ -207,26 +207,21 @@ class MashScore(PoreLogger):
         except TypeError:
             # If second count not available on first prediction,
             # i.e. when second count raises IndexError above:
-            score = 0
-
-        if isinstance(score, float):
-            col = f"{RE}" if score < 0.6 else f"{G}"
-        else:
-            col = f"{RE}"
+            score = 0.
 
         seqlen, time = self._parse_read_stats(read_file)
 
         print(
             f"{i}\t",
-            f"{'ST' + top_st}\t",
+            f"{top_st}\t",
             f"{top_count}\t",
-            f"{'ST' + second_st}\t",
+            f"{second_st}\t",
             f"{second_count}\t",
             f"{self._format_score(score)}\t",
             f"{top_within_lineage_susceptibility}\t",
             f"{top_within_lineage_genotype}\t"
-            f"{seqlen:<10}\t",
-            f"{time:<15}"
+            f"{seqlen}\t",
+            f"{time}"
         )
 
         return top_st
@@ -269,14 +264,9 @@ class MashScore(PoreLogger):
         return pretty_rstring + f'{Fore.RESET}'
 
     @staticmethod
-    def _format_score(pstring: str):
+    def _format_score(pstring: float):
 
-        try:
-            pfloat = float(pstring)
-        except ValueError:
-            return pstring
-
-        return f'{pfloat:.5f}'
+        return f'{pstring:.5f}'
 
 
 class MashSketch(PoreLogger):
