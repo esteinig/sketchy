@@ -217,15 +217,15 @@ class MashScore(PoreLogger):
         seqlen, time = self._parse_read_stats(read_file)
 
         print(
-            f"{i:<5}",
-            f"{'ST' + top_st:<7}",
-            f"{top_count:<7}",
-            f"{'ST' + second_st:<7}",
-            f"{second_count:<7}",
-            f"{self._format_score(score):<10}",
-            f"{top_within_lineage_susceptibility:<15}",
-            f"{top_within_lineage_genotype:<50}"
-            f"{seqlen:<10}",
+            f"{i}\t",
+            f"{'ST' + top_st}\t",
+            f"{top_count}\t",
+            f"{'ST' + second_st}\t",
+            f"{second_count}\t",
+            f"{self._format_score(score)}\t",
+            f"{top_within_lineage_susceptibility}\t",
+            f"{top_within_lineage_genotype}\t"
+            f"{seqlen:<10}\t",
             f"{time:<15}"
         )
 
