@@ -64,10 +64,10 @@ class MashScore(PoreLogger):
         index: int = 0,
         cores: int = 8,
         top: int = 1,
-        out: Path = Path().cwd() / 'results.csv',
+        out: Path = None,
         score: bool = True,
         sort_by: str = 'shared'
-    ):
+    ) -> pandas.DataFrame:
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
 
@@ -81,22 +81,28 @@ class MashScore(PoreLogger):
             # Select best results from mash dist
             # ordered by shared hash matches:
 
-            # TODO: Skip if no shared , maybe something we can do with p-values?
+            # TODO: Skip if no shared, maybe something we can do with p-values?
             top_results = mash[:top]
 
             if score:
-                _ = self._compute(
+                row = self._compute(
                     i=i, data=df, tops=top_results, read_file=read_file
                 )
+                results.append(row)
             else:
                 results.append(top_results)
 
-        if results:
-            df = pandas.concat(results)
+        df = pandas.concat(results)
+
+        if score:
             df['id'] = df['id'].apply(lambda x: Path(x).stem)
             df['read'] = df['file'].apply(lambda x: Path(x).stem)
             df = df.drop('file', axis=1)
+
+        if out:
             df.to_csv(out, index=False)
+
+        return df
 
     @staticmethod
     def mash_dist(file, mashdb, ncpu=4, sort_by='shared'):
@@ -133,7 +139,7 @@ class MashScore(PoreLogger):
             tops: pandas.DataFrame,
             weight: float = 0.1,
             read_file: Path or str = None,
-    ):
+    ) -> pandas.Series:
         """ Update counts and compute preference score
 
         :param i: index of read, number of read in cumulative file
@@ -224,7 +230,19 @@ class MashScore(PoreLogger):
             f"{time}"
         )
 
-        return top_st
+        return pandas.Series(
+            data={
+                'primary_lineage': top_st,
+                'primary_count': top_count,
+                'secondary_lineage': second_st,
+                'secondary_count': second_count,
+                'score': self._format_score(score),
+                'suscptibility': top_within_lineage_susceptibility,
+                'genotype': top_within_lineage_genotype,
+                'last_read_length': seqlen,
+                'last_read_start_time': time
+            }
+        )
 
     @staticmethod
     def _parse_read_stats(read_file):

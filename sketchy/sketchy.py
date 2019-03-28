@@ -10,6 +10,7 @@ TODO: do not jointly count genotypes, count each individually!
 import re
 import pandas
 import random
+import numpy
 
 import delegator
 
@@ -97,7 +98,7 @@ class Sketchy:
             out: Path = Path().cwd() / 'results.csv',
             tmp: Path = Path.cwd() / 'tmp',
             sort_by: str = 'shared'
-    ) -> None:
+    ) -> pandas.DataFrame:
 
         """ Online predictions on nanopore reads
 
@@ -138,7 +139,7 @@ class Sketchy:
             self._print_header1()
 
         ms = MashScore()
-        ms.run(
+        results = ms.run(
             read_files=reads,
             sketch=sketch,
             cores=cores,
@@ -148,6 +149,8 @@ class Sketchy:
             out=out,
             sort_by=sort_by
         )
+
+        return results
 
     @staticmethod
     def _print_header1():
@@ -183,7 +186,9 @@ class Sketchy:
         )
 
     @staticmethod
-    def sort_fastq(file, fastq: str = None, shuffle: bool = False):
+    def sort_fastq(file: str = None, fastq: str = None, shuffle: bool = False, nbootstrap: int = None,
+                   sample_size: int = None, replacement: bool = False, prefix: str = 'boot_') -> list or str:
+        """ Not very efficient FASTQ sort and shuffle """
 
         dates = []
         ids = []
@@ -192,10 +197,14 @@ class Sketchy:
         with open(file, "r") as input_handle:
             for record in SeqIO.parse(input_handle, "fastq"):
                 # Extract start time
-                time = record.description.split('start_time=')[1]
-                time = time.replace('T', '-').strip('Z')
+                try:
+                    time = record.description.split('start_time=')[1]
+                    time = time.replace('T', '-').strip('Z')
+                    dtime = datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
+                except IndexError:
+                    time = '-'
+                    dtime = '-'
 
-                dtime = datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
                 dates.append(dtime)
 
                 ids.append(record.id)
@@ -229,8 +238,26 @@ class Sketchy:
             if shuffle:
                 recs = random.shuffle(recs)
 
-            with open(fastq, "w") as output_handle:
-                SeqIO.write(recs, output_handle, 'fastq')
+            if nbootstrap and sample_size:
+                rec_samples = [numpy.random.choice(
+                    numpy.array(recs),
+                    replace=replacement,
+                    size=sample_size
+                ).tolist() for _ in range(nbootstrap)]
+
+                fnames = []
+                for i, rec in enumerate(rec_samples):
+                    fname = prefix + str(i) + '.fq'
+                    with open(fname, "w") as output_handle:
+                        SeqIO.write(recs, output_handle, 'fastq')
+                    fnames.append(fname)
+
+                return fnames
+            else:
+                with open(fastq, "w") as output_handle:
+                    SeqIO.write(recs, output_handle, 'fastq')
+
+                return fastq
 
     @staticmethod
     def _slice_fastq(

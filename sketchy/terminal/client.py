@@ -3,6 +3,7 @@ import click
 from .sort import sort
 from .sketch import sketch
 from .predict import predict
+from .evaluate import evaluate
 
 VERSION = '0.1'
 
@@ -17,3 +18,4 @@ def terminal_client():
 terminal_client.add_command(sort)
 terminal_client.add_command(sketch)
 terminal_client.add_command(predict)
+terminal_client.add_command(evaluate)
