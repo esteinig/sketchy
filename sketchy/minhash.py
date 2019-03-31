@@ -66,7 +66,8 @@ class MashScore(PoreLogger):
         top: int = 1,
         out: Path = None,
         score: bool = True,
-        sort_by: str = 'shared'
+        sort_by: str = 'shared',
+        quiet: bool = False,
     ) -> pandas.DataFrame:
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
@@ -86,21 +87,21 @@ class MashScore(PoreLogger):
 
             if score:
                 row = self._compute(
-                    i=i, data=df, tops=top_results, read_file=read_file
+                    i=i, data=df, tops=top_results, read_file=read_file, quiet=quiet
                 )
                 results.append(row)
             else:
                 results.append(top_results)
 
-        df = pandas.concat(results)
+        df = pandas.concat(results, axis=1).T
 
-        if score:
+        if not score:
             df['id'] = df['id'].apply(lambda x: Path(x).stem)
             df['read'] = df['file'].apply(lambda x: Path(x).stem)
             df = df.drop('file', axis=1)
 
         if out:
-            df.to_csv(out, index=False)
+            df.to_csv(out, index=False, header=True)
 
         return df
 
@@ -139,6 +140,7 @@ class MashScore(PoreLogger):
             tops: pandas.DataFrame,
             weight: float = 0.1,
             read_file: Path or str = None,
+            quiet: bool = False
     ) -> pandas.Series:
         """ Update counts and compute preference score
 
@@ -217,18 +219,19 @@ class MashScore(PoreLogger):
 
         seqlen, time = self._parse_read_stats(read_file)
 
-        print(
-            f"{i}\t",
-            f"{top_st}\t",
-            f"{top_count}\t",
-            f"{second_st}\t",
-            f"{second_count}\t",
-            f"{self._format_score(score)}\t",
-            f"{top_within_lineage_susceptibility}\t",
-            f"{top_within_lineage_genotype}\t"
-            f"{seqlen}\t",
-            f"{time}"
-        )
+        if not quiet:
+            print(
+                f"{i}\t",
+                f"{top_st}\t",
+                f"{top_count}\t",
+                f"{second_st}\t",
+                f"{second_count}\t",
+                f"{self._format_score(score)}\t",
+                f"{top_within_lineage_susceptibility}\t",
+                f"{top_within_lineage_genotype}\t"
+                f"{seqlen}\t",
+                f"{time}"
+            )
 
         return pandas.Series(
             data={

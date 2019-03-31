@@ -95,9 +95,10 @@ class Sketchy:
             header: bool = False,
             nreads: int = 100,
             top: int = 1,
-            out: Path = Path().cwd() / 'results.csv',
+            out: Path = None,
             tmp: Path = Path.cwd() / 'tmp',
-            sort_by: str = 'shared'
+            sort_by: str = 'shared',
+            quiet: bool = False,
     ) -> pandas.DataFrame:
 
         """ Online predictions on nanopore reads
@@ -147,7 +148,8 @@ class Sketchy:
             score=score,
             data=data,
             out=out,
-            sort_by=sort_by
+            sort_by=sort_by,
+            quiet=quiet,
         )
 
         return results
@@ -186,8 +188,7 @@ class Sketchy:
         )
 
     @staticmethod
-    def sort_fastq(file: str = None, fastq: str = None, shuffle: bool = False, nbootstrap: int = None,
-                   sample_size: int = None, replacement: bool = False, prefix: str = 'boot_') -> list or str:
+    def sort_fastq(file: str = None, fastq: str = None, shuffle: bool = False) -> list or str:
         """ Not very efficient FASTQ sort and shuffle """
 
         dates = []
@@ -229,35 +230,17 @@ class Sketchy:
 
         df = df.reset_index()
 
-        if fastq:
+        recs = [
+            records[read] for read in df['read']
+        ]
 
-            recs = [
-                records[read] for read in df['read']
-            ]
+        if shuffle:
+            recs = random.shuffle(recs)
 
-            if shuffle:
-                recs = random.shuffle(recs)
+        with open(fastq, "w") as output_handle:
+            SeqIO.write(recs, output_handle, 'fastq')
 
-            if nbootstrap and sample_size:
-                rec_samples = [numpy.random.choice(
-                    numpy.array(recs),
-                    replace=replacement,
-                    size=sample_size
-                ).tolist() for _ in range(nbootstrap)]
-
-                fnames = []
-                for i, rec in enumerate(rec_samples):
-                    fname = prefix + str(i) + '.fq'
-                    with open(fname, "w") as output_handle:
-                        SeqIO.write(recs, output_handle, 'fastq')
-                    fnames.append(fname)
-
-                return fnames
-            else:
-                with open(fastq, "w") as output_handle:
-                    SeqIO.write(recs, output_handle, 'fastq')
-
-                return fastq
+        return fastq
 
     @staticmethod
     def _slice_fastq(

@@ -17,6 +17,7 @@ setup(
         "delegator.py",
         "pytest",
         "pre-commit",
+        "scipy"
     ],
     entry_points="""
         [console_scripts]
