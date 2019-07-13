@@ -11,34 +11,27 @@ Mycobacterium tuberculosis
 import os
 import shutil
 import pandas
-import datetime
-import delegator
-
+from uuid import uuid4
 from tqdm import tqdm
 from pathlib import Path
+import dateutil.parser
 
 from collections import Counter
 
-from sketchy.utils import PoreLogger
+from sketchy.utils import PoreLogger, run_cmd
 
 from io import StringIO
-
+import re
 
 from colorama import Fore
 
-Y = Fore.YELLOW
-R = Fore.RED
-G = Fore.GREEN
-C = Fore.CYAN
-
-LR = Fore.LIGHTRED_EX
-LC = Fore.LIGHTCYAN_EX
-LB = Fore.LIGHTBLUE_EX
 LG = Fore.LIGHTGREEN_EX
-LY = Fore.LIGHTYELLOW_EX
-LM = Fore.LIGHTMAGENTA_EX
-
+G = Fore.GREEN
+Y = Fore.YELLOW
+LR = Fore.LIGHTRED_EX
 RE = Fore.RESET
+LC = Fore.LIGHTCYAN_EX
+C = Fore.CYAN
 
 
 class MashScore(PoreLogger):
@@ -49,71 +42,197 @@ class MashScore(PoreLogger):
 
         PoreLogger.__init__(self)
 
+        # Lachlan suggested keeping a sum od total shared hashes;
+        # this which is the default from Sketchy
+        self.inter = pandas.DataFrame()  # Reduced MASH outputs, updated
+
         self.lineage = Counter()        # Prime lineage counter
         self.genotype = dict()          # Genotype counters by lineage
         self.susceptibility = dict()    # Susceptibility counters by lineage
 
         self.continuous = list()
+        self.start_time_regex = r'start_time=(.*)Z'
 
     def run(
         self,
-        read_files: [],
+        fastq: Path,
         sketch: Path,
         data: Path,
+        nreads: int = 100,
         sep: str = '\t',
         index: int = 0,
         cores: int = 8,
-        top: int = 1,
+        top: int = 10,
         out: Path = None,
-        score: bool = True,
+        mode: str = "single",
         sort_by: str = 'shared',
-        quiet: bool = False,
+        tmpdir: Path = Path().cwd() / 'tmp',
+        online: bool = False,
     ) -> pandas.DataFrame:
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
 
         results = []
-        for i, read_file in enumerate(read_files):
 
+        if mode == "direct":
             mash = self.mash_dist(
-                read_file, mashdb=sketch, ncpu=cores, sort_by=sort_by
+                fastq, mashdb=sketch, ncpu=cores, sort_by=sort_by
             )
 
-            # Select best results from mash dist
-            # ordered by shared hash matches:
+            # TODO: Warning: setting index to ID, requires IDs to be UUID
 
-            # TODO: Skip if no shared, maybe something we can do with p-values?
-            top_results = mash[:top]
+            result_df = mash.drop(
+                columns=['file']
+            ).set_index('id')[:top]
 
-            if score:
-                row = self._compute(
-                    i=i, data=df, tops=top_results, read_file=read_file, quiet=quiet
+            result_df.index = result_df.index.map(
+                lambda x: Path(x).stem
+            )
+
+            print(
+                result_df.join(df, how='inner').to_string(header=False)
+            )
+
+        else:
+            for nread in range(nreads):
+                # TODO: boundary number of read files < nreads
+                n = 4*(nread+1)
+
+                if mode == "cumulative":
+                    fpath = tmpdir / f'reads_{n}.fq'
+                    run_cmd(
+                        f'head -n {n} {fastq} > {fpath}', shell=True
+                    )
+                elif mode == "single":
+                    fpath = tmpdir / f'read_{n//4}.fq'
+                    run_cmd(
+                        f'head -n {n} {fastq} | tail -4 > {fpath}', shell=True
+                    )
+                else:
+                    raise
+
+                mash = self.mash_dist(
+                    fpath, mashdb=sketch, ncpu=cores, sort_by=sort_by
                 )
-                results.append(row)
-            else:
-                results.append(top_results)
 
-        df = pandas.concat(results, axis=1).T
+                # TODO: NEW METHOD START HERE
+                # TODO: Warning: setting index to ID, requires IDs to be UUID
 
-        if not score:
-            df['id'] = df['id'].apply(lambda x: Path(x).stem)
-            df['read'] = df['file'].apply(lambda x: Path(x).stem)
-            df = df.drop('file', axis=1)
+                inter = mash.drop(
+                    columns=['file', 'dist', 'p-value']
+                ).set_index('id')
+
+                if self.inter.empty:
+                    self.inter = inter
+                else:
+                    self.inter = self.inter.add(inter).sort_values(
+                        by='shared', ascending=False
+                    )
+
+                interim = self.inter.copy()
+                interim.index = interim.index.map(
+                    lambda x: Path(x).stem
+                )
+
+                interim = interim.join(df, how='inner')
+                self.pretty_print(interim, fpath, mode, nread)
+
+                if online:
+                    # Reduce size of output IO by selecting only top 10
+                    if out:
+                        interim[:top].to_csv(
+                            tmpdir / f'top.counts.{n}', sep='\t'
+                        )
+                else:
+                    if out:
+                        interim.to_csv(
+                            tmpdir / f'total.counts.{n}', sep='\t'
+                        )
+                    else:
+                        pass
+
+                # Original: Select best results from mash dist
+                # ordered by shared hash matches:
+
+                # TODO: Old method
+                sketchy = None
+                if sketchy == "legacy":
+                    # Originally used with top 2
+                    top_results = mash[:top]
+
+                    scores = True
+                    if scores:
+                        row = self._compute(
+                            i=nread,
+                            data=df,
+                            tops=top_results,
+                            read_file=fpath,
+                        )
+                        results.append(row)
+                    else:
+                        idx = Path(
+                            top_results.id.values[0]
+                        ).stem
+                        result = df.loc[idx, :]
+                        results.append(result)
+
+                fpath.unlink()
+
+            result_df = pandas.concat(results, axis=1).T
+
+            # Clean index of Inter:
+            self.inter.index = self.inter.index.map(
+                lambda x: Path(x).stem
+            )
+
+            self.inter.join(
+                df, how='inner'
+            ).to_csv('total.counts.out', sep='\t')
 
         if out:
-            df.to_csv(out, index=False, header=True)
+            result_df.to_csv(out, index=False, header=True, sep='\t')
 
-        return df
+        return result_df
 
+    def pretty_print(
+        self,
+        interim: pandas.DataFrame,
+        fpath: Path,
+        mode: str,
+        nread: int
+    ):
+
+        seqlen, timestamp = self._parse_read_stats(fpath)
+
+        lineage_string = f"Lineage match: {LG}" \
+                         f"{interim[:1].lineage.tolist()[0]}{G} : " + \
+                         f"{' : '.join([str(lineage) for lineage in interim[1:5].lineage.tolist()])}"
+
+        suscept_string = f"{Y}Suceptibility: " \
+            f"{LC}{interim[:1].susceptibility.tolist()[0]}{RE}"
+
+        info_string = f"{Y}Sum of shared hashes ({LR}{mode}{Y}) " \
+            f"@ read {LR}{str(nread)}{Y}"
+
+        length_string = f"{Y}Read length: {C}{seqlen}"
+        time_string = f"{Y}Time: {C}{timestamp}{RE}"
+
+        print(
+            f"{info_string:<80}"
+            f"{lineage_string:<60}" +
+            f"{suscept_string:<50}" +
+            f"{length_string:<30}" +
+            f"{time_string:<30}"
+        )
     @staticmethod
     def mash_dist(file, mashdb, ncpu=4, sort_by='shared'):
 
-        result = delegator.run(
-            f'mash dist -p {ncpu} {mashdb} {file}'
+        result = run_cmd(
+            f'mash dist -p {ncpu} {mashdb} {file}', shell=True
         )
 
         df = pandas.read_csv(
-            StringIO(result.out), sep='\t', header=None,
+            StringIO(result.decode("utf-8")), sep='\t', header=None,
             names=[
                 "id", 'file', 'dist', "p-value", "shared"
             ], index_col=False
@@ -131,16 +250,19 @@ class MashScore(PoreLogger):
         elif sort_by == 'dist':
             return df.sort_values(by=sort_by, ascending=True)
         else:
-            raise ValueError('MASH distance must be sorted by one of: shared, dist')
+            raise ValueError(
+                'MASH distance must be sorted by one of: shared, dist'
+            )
 
     def _compute(
-            self,
-            i: int,
-            data: pandas.DataFrame,
-            tops: pandas.DataFrame,
-            weight: float = 0.1,
-            read_file: Path or str = None,
-            quiet: bool = False
+        self,
+        i: int,
+        data: pandas.DataFrame,
+        tops: pandas.DataFrame,
+        weight: float = 0.1,
+        read_file: Path or str = None,
+        quiet: bool = False,
+        raw: bool = False,
     ) -> pandas.Series:
         """ Update counts and compute preference score
 
@@ -220,18 +342,24 @@ class MashScore(PoreLogger):
         seqlen, time = self._parse_read_stats(read_file)
 
         if not quiet:
-            print(
-                f"{i}\t",
-                f"{top_st}\t",
-                f"{top_count}\t",
-                f"{second_st}\t",
-                f"{second_count}\t",
-                f"{self._format_score(score)}\t",
-                f"{top_within_lineage_susceptibility}\t",
-                f"{top_within_lineage_genotype}\t"
-                f"{seqlen}\t",
-                f"{time}"
-            )
+
+            if raw:
+                print(
+                    tops.to_string(header=False)
+                )
+            else:
+                print(
+                    f"{i}\t",
+                    f"{top_st}\t",
+                    f"{top_count}\t",
+                    f"{second_st}\t",
+                    f"{second_count}\t",
+                    f"{self._format_score(score)}\t",
+                    f"{top_within_lineage_susceptibility}\t",
+                    f"{top_within_lineage_genotype}\t"
+                    f"{seqlen}\t",
+                    f"{time}"
+                )
 
         return pandas.Series(
             data={
@@ -247,23 +375,22 @@ class MashScore(PoreLogger):
             }
         )
 
-    @staticmethod
-    def _parse_read_stats(read_file):
+    def _parse_read_stats(self, read_file):
 
         # last read
-        read = delegator.run(
-            f'tail -n 4 {read_file}'
+        read = run_cmd(
+            f'tail -n 4 {read_file}', shell=True
         )
 
-        lines = read.out.split('\n')
+        lines = read.decode("utf-8").split('\n')
         header = lines[0]
         seq = lines[1]
 
         try:
-            time = header.split('start_time=')[1]
-            time = time.replace('T', '-').strip('Z')
+            timestr = re.search(self.start_time_regex, header)
+            time = timestr.group(1).strip().replace('start_time=', '')
 
-            dtime = datetime.datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
+            dtime = dateutil.parser.parse(time)
         except IndexError:
             dtime = '-'
 
@@ -280,7 +407,7 @@ class MashScore(PoreLogger):
             if r.lower() == 'r':
                 pretty_rstring += f'{LR}R'
             else:
-                pretty_rstring += f'{LB}S'
+                pretty_rstring += f'{LC}S'
 
         return pretty_rstring + f'{Fore.RESET}'
 
@@ -298,7 +425,7 @@ class MashSketch(PoreLogger):
 
         PoreLogger.__init__(self)
 
-        self.data: pandas.DataFrame = None
+        self.data: pandas.DataFrame = pandas.DataFrame(None)
 
     def read_data(self, fpath, sep='\t', index=0):
 
@@ -319,11 +446,6 @@ class MashSketch(PoreLogger):
                 for instance MLST in Staphylococcus aureus or SNP
                 types for Mycobacterium tuberculosis.
 
-            .. susceptibility, str:
-
-                Antibiotic resistance and susceptibility patterns, e.g. from
-                Mykrobe concatenated into a string.
-
             .. genotype, str:
 
                 Genotype, e.g. typing pattern from Kleborate,
@@ -331,7 +453,7 @@ class MashSketch(PoreLogger):
 
             .. fasta, str:
 
-                Path of FASTA file containing the genome assembly.
+               Path of FASTA file containing the genome assembly.
 
         """
 
@@ -341,62 +463,115 @@ class MashSketch(PoreLogger):
 
         return self.data
 
+    def create_refdb_sketch(self, refdb: Path, outdir: Path):
+        """ Create a minimal data table from a recursive directory tree
+        of the NanoPath RefDB module to quickly create a sketch from
+        all *.fasta files in the domain directories directory
+        or directory tree representing RefSeq and other reference data
+        for taxonomic identification
+
+        This will parse the filenames as:
+            <species_taxid>_<lineage_taxid>_<identifier>.fasta
+
+        This can then be used to create a sketch with MASH to run
+        MASH dist against for quick taxnomic identification of uncorrected
+        nanopore reads.
+
+        """
+
+        pass
+
     def link(
         self,
-        fdir: str or Path,
+        fdir: Path,
         rename: dict = None,
         symlink: bool = True,
         progbar: bool = True,
+        uuid: bool = True,
+        uuid_file: Path = Path('sketchy.uuid.tsv')
     ) -> [Path]:
 
         """ Symlink FASTA files into a directory for sketching """
 
-        fdir = self._check_dir(fdir)
+        if fdir.exists():
+            print('File path exists, globbing files:', fdir)
+            files = list(
+                fdir.glob('*')
+            )
+            uuids = [f.stem for f in files]
+        else:
+            fdir.mkdir(parents=True)
 
-        files = []
-        for fasta in tqdm(
-                self.data.fasta,
+            if uuid:
+                rename = {index: str(uuid4()) for index in self.data.index}
+
+            files = []
+            uuids = []
+            for i, index in tqdm(
+                enumerate(self.data.index),
                 disable=not progbar,
                 total=len(self.data)
-        ):
-            if rename:
-                try:
-                    name = rename[Path(fasta).stem]
-                except TypeError:
-                    self.logger.error(
-                        f'Could not find {Path(fasta).stem} in '
-                        f'dictionary keys for renaming sketch files.'
+            ):
+                fasta = self.data.fasta[i]
+
+                if rename:
+                    try:
+                        name = rename[index]
+                    except TypeError:
+                        self.logger.error(
+                            f'Could not find {index} in '
+                            f'dictionary keys for renaming sketch files.'
+                        )
+                        continue
+                else:
+                    name = Path(fasta).stem
+
+                if symlink:
+                    (fdir / name).symlink_to(fasta)
+                else:
+                    shutil.copy(
+                        fasta, str(fdir / name)
                     )
-                    continue
-            else:
-                name = Path(fasta).stem
 
-            if symlink:
-                (fdir / name).symlink_to(fasta)
-            else:
-                shutil.copy(
-                    fasta, str(fdir / name)
-                )
+                files.append(fdir / name)
+                uuids.append(name)
 
-            files.append(fdir / name)
+        if uuid:
+            data = self.data.copy()
+            data['id'] = data.index
+            data['uuid'] = uuids
+
+            data = data.set_index('uuid')
+            data.to_csv(uuid_file, sep='\t')
+
+            print(data)
+
+            key = data.loc[:, ['fasta', 'id']]
+
+            values = data.loc[:, [
+                c for c in data.columns if c not in ('fasta', 'id')
+            ]]
+            key.to_csv(uuid_file.with_suffix('.key'), sep='\t')
+            values.to_csv(uuid_file.with_suffix('.data'), sep='\t')
 
         return files
 
     @staticmethod
     def sketch(
-        name: str or Path = 'sketchy',
-        fdir: str or Path = Path.cwd(),
+        fdir: Path,
+        name: Path = 'sketchy',
         k: int = 15,
         size: int = 1000,
-        glob="*.fasta"
+        glob: str = "*.fasta",
+        ncpu: int = 4
     ) -> Path:
 
         """ Sketch a collection of FASTA files """
 
-        name, fdir = Path(name).resolve(), Path(fdir).resolve()
-
-        delegator.run(
-            f'mash sketch -s {size} -k {k} -o {name} {fdir}{os.sep}{glob}'
+        run_cmd(
+            f'mash sketch -p {ncpu} -s {size}'
+            f' -k {k} -o {name} {fdir}{os.sep}{glob}',
+            shell=True
         )
 
         return name.with_suffix('.msh')

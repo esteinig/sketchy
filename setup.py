@@ -11,19 +11,16 @@ setup(
         "tqdm",
         "colorama",
         "pandas",
-        "biopython",
-        "google-cloud-storage",
         "click",
-        "delegator.py",
         "pytest",
-        "pre-commit",
+        "seaborn",
         "scipy"
     ],
     entry_points="""
         [console_scripts]
         sketchy=sketchy.terminal.client:terminal_client
     """,
-    version="0.1",
+    version="0.2",
     license="MIT",
     description="Rapid lineage matching and antimicrobial susceptibility "
                 "predictions using uncorrected nanopore reads. Uses MinHash "

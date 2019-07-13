@@ -30,7 +30,7 @@ from pathlib import Path
     '--prefix', '-p', default="bootstraps", help='Prefix for output files.'
 )
 def pboot(file, outdir, sketch, reads, data, cores, prefix):
-    """ Predict on a bootstrap replicate (Nextflow) """
+    """ Evaluate on a bootstrap replicate (Nextflow) """
 
     outdir = Path(outdir)
 
@@ -40,13 +40,15 @@ def pboot(file, outdir, sketch, reads, data, cores, prefix):
 
     results = evaluator.predict_bootstraps(
         bsfiles=[Path(file)],
-        sketch=Path(sketch).resolve(),
-        data=Path(data).resolve(),
+        sketch=Path(sketch),
+        data=Path(data),
         cores=cores,
         reads=reads
     )
 
-    results['bootstrap'] = [Path(file).stem.strip('boot') for _ in results.bootstrap]
+    results['bootstrap'] = [
+        Path(file).stem.strip('boot') for _ in results.bootstrap
+    ]
     results.to_csv(outdir / f"{prefix}.tab", sep='\t', header=True, index=True)
 
 

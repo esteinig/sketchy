@@ -19,12 +19,17 @@ outdir                  =           $params.outdir
 =======================================================
 """
 
+sketch = file(params.sketch)
+sketch_data = file(params.sketch_data)
+
+// Bootstrap pipeline:
+
 fastq = Channel
-		.fromPath(params.fastq)
-		.map { file -> tuple(file.baseName, file) }
+    .fromPath(params.fastq)
+    .map { file -> tuple(file.baseName, file) }
 
 
-process createBootstraps {
+process Bootstrapping {
 
     label "sketchy"
     label "bootstrap"
@@ -43,25 +48,27 @@ process createBootstraps {
     """
 }
 
-process predictBootstrap {
 
-        label "sketchy"
-        label "predict"
+process Bootstrap {
 
-        tag { "Predicting sketchy scores on bootstrap replicate." }
-        publishDir "params.outdir/${id}/", mode: "copy"
+    label "sketchy"
+    label "predict"
 
-        input:
-        file(replicate) from predict_bootstrap
-        val id from predict_id
+    publishDir "${params.outdir}/${id}", mode: "copy"
 
-        output:
-        file("${replicate}.tab")
+    input:
+    set val(id), file(replica) from predict_id.combine(predict_bootstrap)
 
-        """
-        sketchy pboot -f $replicate -s $params.sketch -d $params.sketch_data -r $params.predict_reads \
-        -c $task.cpus -o . -p $replicate
-        """
-    }
+    output:
+    file("${replica.baseName}.tab")
+
+    """
+    sketchy pboot -f $replica -s $sketch -d $sketch_data -r $params.predict_reads \
+    -c $task.cpus -o . -p ${replica.baseName}
+    """
+
+}
+
+
 
 

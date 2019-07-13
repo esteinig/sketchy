@@ -19,10 +19,11 @@ from pathlib import Path
     '--combine', '-c', is_flag=True, help='Summarize bootstrap replicate results from all sub-directories into a file.'
 )
 def psum(dir, out, recursive, combine):
-    """ Predict on a bootstrap replicate (Nextflow) """
+    """ Summarize bootstrap replicate (Nextflow) """
+
+    Path(out).mkdir(parents=True, exist_ok=True)
 
     if recursive:
-
         result_files = []
         pdir = Path(dir).glob('*')
         for d in pdir:

@@ -1,50 +1,42 @@
 import click
 
 from pathlib import Path
-from sketchy.sketchy import Sketchy
+from sketchy.minhash import MashSketch
 
 
 @click.command()
 @click.option(
-    '--data', '-d', help='Input data file to assign lineages and genotypes.'
+    '--fasta', '-f', type=Path,
+    help='Fasta (.fasta) input directory to sketch genomes.'
+)
+@click.option(
+    '--prefix', '-', default='sketch',
+    help='Prefix for sketch output.'
 )
 @click.option(
     '--kmer', '-k', default=15,
-    help='K-mer length to create sketch with in MASH.'
+    help='K-mer length in MASH.'
 )
 @click.option(
     '--size', '-s', default=1000,
     help='Sketch size in MASH.'
 )
 @click.option(
-    '--outdir', '-o', default=Path().cwd() / 'sketchy_sketch',
-    help='output directory for sketch files.'
+    '--glob', '-g', default="*",
+    help='Glob for Fasta files in directory --fasta.'
 )
-@click.option(
-    '--prefix', '-p', default='sketchy',
-    help='Prefix for data sketch with Sketchy.'
-)
-@click.option(
-    '--copy', '-c', is_flag=True,
-    help='Copy assembly files.'
-)
-@click.option(
-    '--delimiter', default='\t',
-    help='Delimiter for data file.'
-)
-def sketch(data, kmer, outdir, copy, prefix, delimiter, size):
+def sketch(fasta, kmer, prefix, glob, size):
     """Create a MinHash sketch for matching with MASH"""
 
-    sketchy = Sketchy()
-    sketchy.create_mash_sketch(
-        data=Path(data).resolve(),
-        outdir=Path(outdir).resolve(),
-        kmer_length=kmer,
-        sketch_size=size,
-        file_glob='*',
-        file_copy=copy,
-        prefix=prefix,
-        sep=delimiter
+    sketch = MashSketch()
+
+    sketch.sketch(
+        name=Path(f'{prefix}_{kmer}_{size}'),
+        fdir=fasta,
+        k=kmer,
+        size=size,
+        glob=glob
     )
+
 
 

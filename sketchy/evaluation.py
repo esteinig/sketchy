@@ -13,7 +13,7 @@ import seaborn as sns
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
-import delegator
+from sketchy.utils import run_cmd
 
 
 def mean_confidence_interval(data, confidence=0.95):
@@ -56,7 +56,8 @@ class Evaluator:
         self,
         fastq: Path,
         nbootstrap: int = 10,
-        sample_reads: int = 100,
+        sample_reads: int or None = None,
+        sample_read_proportion: float or None = 1.0,
         shuffle=True
     ) -> [Path]:
 
@@ -66,19 +67,31 @@ class Evaluator:
         (self.outdir / bsdir).mkdir(parents=True, exist_ok=False)
 
         if shuffle:
+            # Required because fastq-sample otherwise respects
+            # order of reads in FASTQ file - this would therefore sample reads
+            # in relative time intervals cf. to the original run, which
+            # defeats the point of random samples with replacement in
+            # bootstraps, so reads have to be shuffled first:
             seed_sort = random.randint(0, sys.maxsize)
             randomized = Path(
                 str(self.outdir / bsdir / fastq.stem) + '_random.fq'
             )
-            delegator.run(
-                f'fastq-sort --random --seed={seed_sort} {fastq} > {randomized}'
+            run_cmd(
+                f'fastq-sort --random --seed={seed_sort} {fastq} > {randomized}',
+                shell=True
             )
             fastq = randomized
+
+        reads = f'-n {sample_reads}' if sample_reads else f'-p {sample_read_proportion}'
 
         for i in tqdm(range(nbootstrap), desc='Sample bootstrap replicates:'):
             seed_bs = random.randint(0, sys.maxsize)
             boot_file = self.outdir / bsdir / f"{self.boot_prefix}{i}"
-            delegator.run(f'fastq-sample -s {seed_bs} -r -n {sample_reads} -o {boot_file} {fastq}')
+            run_cmd(
+                f'fastq-sample -s {seed_bs} -r {reads}' 
+                f' -o {boot_file} {fastq}',
+                shell=True
+            )
 
         return list(
             (self.outdir / bsdir).glob('*.fastq')
@@ -112,6 +125,7 @@ class Evaluator:
                 sort_by='shared',
                 quiet=True
             )
+
             # Bootstrap replicate IDs
             df['bootstrap'] = [replicate_name for _ in df.score]
             score_data.append(df)
@@ -121,11 +135,11 @@ class Evaluator:
         return pandas.concat(score_data)
 
     def plot_bootstraps(
-            self,
-            bootstrap_data: Path,
-            truth_data: Path = None,
-            confidence=0.95,
-            display=False
+        self,
+        bootstrap_data: Path,
+        truth_data: Path = None,
+        confidence=0.95,
+        display=False
     ):
 
         df = pandas.read_csv(bootstrap_data, sep='\t', header=0, index_col=0)
@@ -137,14 +151,14 @@ class Evaluator:
         for b, group in df.groupby('bootstrap'):
             lineage, genotype = self.get_thresholds(
                 df=group,
-                true_lineage=258,
+                true_lineage=8,
                 true_genotype="KL106-O2v2-299-0-0-0",
                 true_susceptibility=None
             )
 
             lineage_score, genotype_score = self.get_line_data(
                 df=group,
-                true_lineage=258,
+                true_lineage=8,
                 true_genotype="KL106-O2v2-299-0-0-0"
             )
 
@@ -424,16 +438,35 @@ class Evaluator:
         )
 
         if boxplot:
-            sns.boxplot(data=df, hue=hue,
-                        x='reads', y='label', palette="YlGnBu", ax=ax)
+            sns.boxplot(
+                data=df,
+                hue=hue,
+                x='reads',
+                y='label',
+                palette="YlGnBu",
+                ax=ax
+            )
         if violinplot:
-            sns.violinplot(data=df, hue=hue, x='reads', y='label', color=".8",
-                           ax=ax)
+            sns.violinplot(
+                data=df,
+                hue=hue,
+                x='reads',
+                y='label',
+                color=".8",
+                ax=ax
+            )
 
         p = sns.stripplot(
-            data=df, hue=hue,
-            x='reads', y='label', jitter=True, size=2.5,
-            linewidth=1, palette="YlGnBu", alpha=.25, ax=ax
+            data=df,
+            hue=hue,
+            x='reads',
+            y='label',
+            jitter=True,
+            size=2.5,
+            linewidth=1,
+            palette="YlGnBu",
+            alpha=.25,
+            ax=ax
         )
 
         ax.set_xlabel('Reads')

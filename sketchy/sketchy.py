@@ -10,17 +10,15 @@ TODO: do not jointly count genotypes, count each individually!
 import re
 import pandas
 import random
-import numpy
+import dateutil
 
-import delegator
 
 from pathlib import Path
 
+from sketchy.utils import run_cmd
 from sketchy.minhash import MashScore
-from sketchy.minhash import MashSketch
 
 from Bio import SeqIO
-from datetime import datetime
 from colorama import Fore
 
 Y = Fore.YELLOW
@@ -48,147 +46,20 @@ class Sketchy:
 
         pass
 
-    @staticmethod
-    def create_mash_sketch(
-        data: Path or str = Path().home() / 'data.tab',
-        kmer_length: int or [int] = 15,
-        sketch_size: int or [int] = 1000,
-        outdir: Path or str = Path().home(),
-        file_glob: str = "*.fasta",
-        file_copy: bool = False,
-        prefix: str = 'sketchy',
-        sep: str = '\t',
-        index_col: int = 0
-    ):
-
-        sketch = MashSketch()
-
-        sketch.read_data(
-            fpath=data, sep=sep, index=index_col
-        )
-
-        files = sketch.link(
-            fdir=outdir,
-            rename=None,
-            symlink=not file_copy,
-            progbar=True
-        )
-
-        sketch.sketch(
-            name=f'{prefix}_{kmer_length}',
-            fdir=outdir,
-            k=kmer_length,
-            size=sketch_size,
-            glob=file_glob
-        )
-
-        for file in files:
-            file.unlink()
-
-    def predict_nanopore(
+    def create_refdb_sketch(
             self,
-            fastq: Path or str,
-            sketch: Path or str,
-            data: Path or str,
-            cores: int = 16,
-            score: bool = True,
-            header: bool = False,
-            nreads: int = 100,
-            top: int = 1,
-            out: Path = None,
-            tmp: Path = Path.cwd() / 'tmp',
-            sort_by: str = 'shared',
-            quiet: bool = False,
-    ) -> pandas.DataFrame:
+            domains: list = None
+        ):
 
-        """ Online predictions on nanopore reads
-
-        :param fastq:
-            fastq file to slice into temporary cumulative slices to
-            compute scores on and simulate sequencing, extracts
-            timestamps from read header (Albacore)
-
-        :param sketch:
-            mash sketch of database to compute prediction on
-
-        :param cores:
-            number of compute cores for mash dist
-
-        :param top_results:
-            number of top mash dist results to compute scores with
-
-        :returns
-            None
-        """
-
-        tmp.mkdir(parents=True, exist_ok=True)
-
-        if score:
-            # Cumulative read slicing for score predictions
-            reads = [
-                self._slice_fastq(
-                    fastq=fastq, nreads=i, tmpdir=tmp, cumulative=True
-                ) for i in range(1, nreads+1, 1)
-            ]
-        else:
-            # Single read slicing for shared hashes output:
-            reads = self._slice_fastq(
-                fastq=fastq, nreads=1, tmpdir=tmp, cumulative=False
-            )
-
-        if header:
-            self._print_header1()
-
-        ms = MashScore()
-        results = ms.run(
-            read_files=reads,
-            sketch=sketch,
-            cores=cores,
-            top=top,
-            score=score,
-            data=data,
-            out=out,
-            sort_by=sort_by,
-            quiet=quiet,
-        )
-
-        return results
+        pass
 
     @staticmethod
-    def _print_header1():
-
-        print(
-            f"{C}{'-' * 143}{RE}\n"
-            f"{LC}{'Read':<5}{RE}",
-            f"{LM}{'ST:1':<7}{RE}",
-            f"{LC}{'Count':<7}{RE}",
-            f"{LM}{'ST:2':<7}{RE}",
-            f"{LC}{'Count':<7}{RE}",
-            f"{LC}{'Score':<7}{RE}",
-            f"{LY}{'Profile':<15}{RE}",
-            f"{LY}{'Genotype':<50}{RE}",
-            f"{LC}{'Length':<10}{RE}",
-            f"{LC}{'Start Time':<15}{RE}",
-            f"\n{C}{'-' * 143}{RE}"
-        )
-
-    @staticmethod
-    def _print_header2():
-
-        print(
-            f"{C}{'-' * 75}{RE}\n"
-            f"{LC}{'Genome':<7}{RE}",
-            f"{LM}{'Predict':<10}{RE}",
-            f"{LY}{'Predict':<12}{RE}",
-            f"{LC}{'Hashes':<10}{RE}",
-            f"{LM}{'True':<10}{RE}",
-            f"{LY}{'True':<12}{RE}",
-            f"{LY}{'Diff':<5}{RE}",
-            f"\n{C}{'-' * 75}{RE}"
-        )
-
-    @staticmethod
-    def sort_fastq(file: str = None, fastq: str = None, shuffle: bool = False) -> list or str:
+    def sort_fastq(
+        file: str = None,
+        fastq: str = None,
+        shuffle: bool = False,
+        regex='start_time=(.*)Z'
+    ) -> list or str:
         """ Not very efficient FASTQ sort and shuffle """
 
         dates = []
@@ -198,13 +69,9 @@ class Sketchy:
         with open(file, "r") as input_handle:
             for record in SeqIO.parse(input_handle, "fastq"):
                 # Extract start time
-                try:
-                    time = record.description.split('start_time=')[1]
-                    time = time.replace('T', '-').strip('Z')
-                    dtime = datetime.strptime(time, '%Y-%m-%d-%H:%M:%S')
-                except IndexError:
-                    time = '-'
-                    dtime = '-'
+                timestr = re.search(regex, record.description)
+                time = timestr.group(1).strip().replace('start_time=', '')
+                dtime = dateutil.parser.parse(time)
 
                 dates.append(dtime)
 
@@ -253,12 +120,12 @@ class Sketchy:
         if cumulative:
             fpath = tmpdir / f'reads_{nreads}.fq'
             nreads = 4*nreads
-            delegator.run(
-                f'head -n {nreads} {fastq.resolve()} > {fpath.resolve()}'
+            run_cmd(
+                f'head -n {nreads} {fastq} > {fpath}', shell=True
             )
         else:
             fpath = []
-            with fastq.resolve().open('r') as input_handle:
+            with fastq.open('r') as input_handle:
                 for record in SeqIO.parse(input_handle, "fastq"):
                     fp = tmpdir / f'{record.id}.fq'
                     with fp.open('w') as outfile:
