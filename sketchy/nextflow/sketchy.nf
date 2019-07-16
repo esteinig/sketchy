@@ -28,47 +28,67 @@ fastq = Channel
     .fromPath(params.fastq)
     .map { file -> tuple(file.baseName, file) }
 
+if (params.bootstrap) {
 
-process Bootstrapping {
+  process Bootstrapping {
 
-    label "sketchy"
-    label "bootstrap"
+      label "sketchy"
+      label "bootstrap"
 
-    tag { "Sampling from shuffled reads with replacement." }
+      tag { "Sampling from shuffled reads with replacement." }
 
-    input:
-    set id, file(fastq) from fastq
+      input:
+      set id, file(fastq) from fastq
 
-    output:
-    file("bootstraps/${id}/boot*.fastq") into predict_bootstrap mode flatten
-    val id into predict_id
+      output:
+      file("bootstraps/${id}/boot*.fastq") into predict_bootstrap mode flatten
+      val id into predict_id
 
-    """
-    sketchy boot --fastq $fastq -b $params.bootstraps -r $params.sample_reads -o bootstraps
-    """
+      """
+      sketchy boot --fastq $fastq -b $params.bootstraps -r $params.sample_reads -o bootstraps
+      """
+  }
+
+
+  process Bootstrap {
+
+      label "sketchy"
+      label "predict"
+
+      publishDir "${params.outdir}/${id}", mode: "copy"
+
+      input:
+      set val(id), file(replica) from predict_id.combine(predict_bootstrap)
+
+      output:
+      file("${replica.baseName}.tab")
+
+      """
+      sketchy pboot -f $replica -s $sketch -d $sketch_data -r $params.predict_reads \
+      -c $task.cpus -o . -p ${replica.baseName}
+      """
+
+  }
 }
 
+if (params.zymo) {
 
-process Bootstrap {
+  process Kraken2 {
 
-    label "sketchy"
-    label "predict"
+      label "kraken2"
 
-    publishDir "${params.outdir}/${id}", mode: "copy"
+      tag { "Kraken2 for Zymo mock community: $id" }
 
-    input:
-    set val(id), file(replica) from predict_id.combine(predict_bootstrap)
+      input:
+      set id, file(fastq) from fastq
 
-    output:
-    file("${replica.baseName}.tab")
+      output:
+      file("bootstraps/${id}/boot*.fastq") into predict_bootstrap mode flatten
+      val id into predict_id
 
-    """
-    sketchy pboot -f $replica -s $sketch -d $sketch_data -r $params.predict_reads \
-    -c $task.cpus -o . -p ${replica.baseName}
-    """
+      """
+      sketchy boot --fastq $fastq -b $params.bootstraps -r $params.sample_reads -o bootstraps
+      """
+  }
 
 }
-
-
-
-

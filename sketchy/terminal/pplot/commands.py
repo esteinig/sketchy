@@ -2,7 +2,7 @@ import click
 import pandas
 import shutil
 
-from sketchy.evaluation import Evaluator
+from sketchy.evaluation import BootstrapEvaluator
 from pathlib import Path
 
 

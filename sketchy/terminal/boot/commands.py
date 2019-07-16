@@ -1,6 +1,6 @@
 import click
 
-from sketchy.evaluation import Evaluator
+from sketchy.evaluation import BootstrapEvaluator
 from pathlib import Path
 
 

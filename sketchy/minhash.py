@@ -64,7 +64,7 @@ class MashScore(PoreLogger):
         cores: int = 8,
         top: int = 10,
         out: Path = None,
-        mode: str = "single",
+        mode: str = 'single',
         sort_by: str = 'shared',
         tmpdir: Path = Path().cwd() / 'tmp',
         online: bool = False,
@@ -96,7 +96,8 @@ class MashScore(PoreLogger):
         else:
             for nread in range(nreads):
                 # TODO: boundary number of read files < nreads
-                n = 4*(nread+1)
+
+                n = 4 * (nread + 1)
 
                 if mode == "cumulative":
                     fpath = tmpdir / f'reads_{n}.fq'
@@ -137,24 +138,24 @@ class MashScore(PoreLogger):
                 interim = interim.join(df, how='inner')
                 self.pretty_print(interim, fpath, mode, nread)
 
+                read = n if mode == "cumulative" else n//4
                 if online:
                     # Reduce size of output IO by selecting only top 10
                     if out:
                         interim[:top].to_csv(
-                            tmpdir / f'top.counts.{n}', sep='\t'
+                            tmpdir / f'top.counts.{read}', sep='\t'
                         )
                 else:
                     if out:
                         interim.to_csv(
-                            tmpdir / f'total.counts.{n}', sep='\t'
+                            tmpdir / f'total.counts.{read}', sep='\t'
                         )
                     else:
                         pass
 
-                # Original: Select best results from mash dist
-                # ordered by shared hash matches:
+                # Legacy method depracated: Select best results from mash dist
+                # ordered by shared hash matches, vulnerable to strain mixtures
 
-                # TODO: Old method
                 sketchy = None
                 if sketchy == "legacy":
                     # Originally used with top 2
@@ -176,23 +177,18 @@ class MashScore(PoreLogger):
                         result = df.loc[idx, :]
                         results.append(result)
 
+                # Clean up temporary read file
                 fpath.unlink()
-
-            result_df = pandas.concat(results, axis=1).T
 
             # Clean index of Inter:
             self.inter.index = self.inter.index.map(
                 lambda x: Path(x).stem
             )
 
-            self.inter.join(
-                df, how='inner'
-            ).to_csv('total.counts.out', sep='\t')
-
         if out:
-            result_df.to_csv(out, index=False, header=True, sep='\t')
+            self.inter.to_csv(out, index=False, header=True, sep='\t')
 
-        return result_df
+        return self.inter
 
     def pretty_print(
         self,

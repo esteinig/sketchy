@@ -12,7 +12,6 @@ import seaborn as sns
 
 from tqdm import tqdm
 from matplotlib import pyplot as plt
-
 from sketchy.utils import run_cmd
 
 
@@ -24,7 +23,281 @@ def mean_confidence_interval(data, confidence=0.95):
     return m, m-h, m+h
 
 
-class Evaluator:
+class SampleEvaluator:
+    """ Base access to evaluation and plotting for pre-print analysis """
+
+    def __init__(self, indir: Path, outdir: Path = None, limit: int = 1000):
+
+        self.indir = indir  # Temporary output directory of predict + --keep
+
+        self.limit = limit
+
+        self.outdir = outdir
+
+        self.true_lineage = '243'
+        self.true_susceptibility = 'SSSSSSSSSSSS'
+        self.true_genotype = 'nan-nan-nan-nan-nan-nan-nan-nan-nan-nan-nan-nan'
+
+        self.true_color = "#41ab5d"
+        self.lineage_color = "#ec7014"  # L. correct, not genotype or susceptibility
+        self.false_color = "#d9d9d9"
+
+        self.top: int = 10
+        self.reads: int = 0
+
+        self.top_ssh: pandas.DataFrame = self._parse_hashes()
+        self.top_ssh_all: pandas.DataFrame = self._parse_all_hashes()
+
+        print(
+            f'There are {len(self.top_ssh.index.unique())} unique genomes '
+            f'hit in the top {self.top} of {len(self.top_ssh.read.unique())} '
+            f'reads including {len(self.top_ssh.lineage.unique())} lineages, '
+            f'{len(self.top_ssh.susceptibility.unique())} resistance profiles, '
+            f'and {len(self.top_ssh.genotype.unique())} genotypes.'
+        )
+
+        self.top_ssh = self._assign_truth(self.top_ssh)
+
+        match_count = self.top_ssh.groupby(
+            self.top_ssh.index
+        ).apply(self._sum_matches).sum()
+
+        print(f'There were {match_count} unique matches on lineage and traits in'
+              f' the top {self.top} ssh-matches over {self.reads} reads.')
+
+        # Uncertainty Heatmap
+        self.top_ssh_all = self._assign_truth(
+            self.top_ssh_all, category=True
+        )
+        self.create_timeline_heatmap()
+
+        # Concordance Plot
+        self.create_concordance_plot()
+        self.create_race_plot()
+
+    @staticmethod
+    def _sum_matches(data):
+        """ Joint lineage / genotype / susceptibility match """
+        d = data['truth'].values[0]
+        if d == 2:
+            return 1
+        else:
+            return 0
+
+    def _assign_truth(self, df, name: bool = False, category: bool = True):
+
+        grouped = df.groupby(by=df.index)
+
+        df['truth'] = [
+            'None' for _ in df.shared
+        ]
+
+        for k, v in grouped:
+            _df = grouped.get_group(k)
+            df.at[
+                _df.index[0], 'truth'
+            ] = self._get_truth_color(_df, category=category, name=name)
+
+        return df
+
+    def create_timeline_heatmap(self, ranks: int = 50):
+
+        self.top_ssh_all.reset_index(inplace=True)
+
+        hm = self.top_ssh_all.pivot('rank', 'read', 'truth')
+
+        hm = hm[hm.columns].astype(float)
+
+        p1 = sns.heatmap(
+            hm.iloc[:ranks, :], linewidths=0, cbar=False,
+            cmap=["#c2a5cf", "#d9f0d3", "#5aae61"]
+        )
+
+        xticks = [i for i in range(0, self.limit+1, 50)]
+
+        p1.set_ylabel('Rank', fontsize=8)
+        p1.set_xlabel('Reads', fontsize=8)
+
+        plt.yticks([])
+        p1.set_yticklabels([])
+
+        plt.xticks(xticks)
+        p1.set_xticklabels(xticks, fontdict={'fontsize': 6})
+
+        p1.tick_params(length=1, width=0.5)
+
+        plt.axvline(x=160, linewidth=1, color='black')
+
+        p1.get_figure().savefig('ranked_heatmap.pdf', figsize=(8.0, 5.0))
+        plt.close()
+
+    def create_race_plot(self):
+
+        # Re-assign truth as colors for plotting
+        self.top_ssh_all = self._assign_truth(
+            self.top_ssh_all, name=False, category=False
+        )
+
+        colors = [
+            self.top_ssh_all.at[idx, 'truth']
+            for idx in self.top_ssh_all.index.unique().values
+        ]
+
+        # Re-assign truth as names for plotting
+        self.top_ssh_all = self._assign_truth(
+            self.top_ssh_all, name=False, category=False
+        )
+
+        df = self.top_ssh_all.rename(
+            {'truth': 'Concordance'}, axis=1
+        )
+
+        from cycler import cycler
+
+        plt.rc(
+            'axes', prop_cycle=(cycler('color', colors))
+        )
+
+        p1 = sns.lineplot(
+            data=df, x='read', y='shared', hue='index', legend=False,
+            estimator=None, err_style=None, ci=None, lw=0.8,
+        )
+
+        p1.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        p1.set_xlabel('Read', fontsize=8)
+
+        p1.tick_params(labelsize=6)
+
+        plt.axvline(x=1, linewidth=1, linestyle='--', color='black')
+        plt.axvline(x=160, linewidth=1, color='black')
+        p1.get_figure().savefig('race_plot.pdf', figsize=(8.0, 5.0))
+        plt.close()
+
+    def create_concordance_plot(self):
+
+        df = self.top_ssh_all.rename(
+            {'truth': 'Concordance'}, axis=1
+        )
+
+        p1 = sns.lineplot(
+            data=df, x='read', y='shared', hue='Concordance',
+            ci=95, estimator='mean',
+            palette=sns.color_palette(
+                ["#5aae61", "#c2a5cf", "#d9f0d3"], len(
+                    df['Concordance'].unique()
+                )
+            )
+        )
+
+        p1.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        p1.set_xlabel('Read', fontsize=8)
+
+        p1.tick_params(labelsize=6)
+
+        plt.axvline(x=1, linewidth=1, linestyle='--', color='black')
+        plt.axvline(x=160, linewidth=1, color='black')
+        p1.get_figure().savefig('race_plot_mean_95.pdf', figsize=(8.0, 5.0))
+        plt.close()
+
+    def _get_truth_color(
+        self,
+        df: pandas.DataFrame,
+        name: bool = False,
+        category: bool = False
+    ):
+        """
+        Get truthy color for each attribute in the uuid-grouped dataframe.
+
+        Used as part of loop iterating over index-grouped DataFrame
+        """
+
+        lineage = str(df.lineage.iloc[0])
+        susceptibility = str(df.susceptibility.iloc[0])
+        genotype = str(df.genotype.iloc[0])
+
+        if lineage == self.true_lineage:
+            color = self.true_color
+            if name:
+                color = 'True'
+            if category:
+                color = 2
+            if genotype != self.true_genotype:
+                color = self.lineage_color
+                if name:
+                    color = 'Lineage'
+                if category:
+                    color = 1
+            if susceptibility != self.true_susceptibility:
+                color = self.lineage_color
+                if name:
+                    color = 'Lineage'
+                if category:
+                    color = 1
+        else:
+            color = self.false_color
+            if name:
+                color = 'False'
+            if category:
+                color = 0
+
+        return color
+
+    def _parse_hashes(self) -> pandas.DataFrame:
+
+        print(f'Parsing read hashes output in {self.indir}')
+        hash_dfs = []
+        for i, fpath in enumerate(sorted(
+            self.indir.glob('*.counts.*'),
+            key=lambda x: int(
+                x.name.split('.')[-1]
+            )
+        )):
+            df = pandas.read_csv(fpath, sep="\t", index_col=0)[:self.top]
+            n = int(fpath.name.split('.')[-1])
+            df['read'] = [n for _ in df.shared]
+            if self.limit is not None and i >= self.limit:
+                break
+
+            hash_dfs.append(df)
+            self.reads = i
+
+        if self.limit is None:
+            self.limit = self.reads
+
+        return pandas.concat(hash_dfs).sort_values(by='read')
+
+    def _parse_all_hashes(self):
+        """ Parse the hashes of the unique genomes in the top reads
+        This is required because these may drop out and not be represented
+        in the top matches at higher read numbers.
+        """
+
+        print(f'Parsing unique genome hash output in {self.indir}')
+        hash_dfs = []
+        for i, fpath in enumerate(sorted(
+                self.indir.glob('*.counts.*'),
+                key=lambda x: int(
+                    x.name.split('.')[-1]
+                )
+        )):
+
+            if self.limit is not None and i >= self.limit:
+                break
+
+            df = pandas.read_csv(fpath, sep="\t", index_col=0)
+            df = df[
+                df.index.isin(self.top_ssh.index.unique())
+            ]
+            df['read'] = [i for _ in df.shared]
+            df['rank'] = [i for i in range(len(df))]
+
+            hash_dfs.append(df)
+
+        return pandas.concat(hash_dfs)
+
+
+
+class BootstrapEvaluator:
     """ Base access class of algorithm evaluation for the manuscript """
 
     def __init__(self, outdir: Path = None):
@@ -84,7 +357,10 @@ class Evaluator:
 
         reads = f'-n {sample_reads}' if sample_reads else f'-p {sample_read_proportion}'
 
-        for i in tqdm(range(nbootstrap), desc='Sample bootstrap replicates:'):
+        for i in tqdm(
+            range(nbootstrap),
+            desc='Sample bootstrap replicates:'
+        ):
             seed_bs = random.randint(0, sys.maxsize)
             boot_file = self.outdir / bsdir / f"{self.boot_prefix}{i}"
             run_cmd(
@@ -111,7 +387,7 @@ class Evaluator:
         score_data = []
         for fq in tqdm(bsfiles, desc='Bootstrap replicates'):
             replicate_name = fq.stem
-            df = self.sketchy.predict_nanopore(
+            df = self.sketchy.predict(
                 fastq=fq,
                 sketch=sketch,
                 data=data,
