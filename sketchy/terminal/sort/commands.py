@@ -14,7 +14,7 @@ from sketchy.sketchy import Sketchy
     '--shuffle', '-s', is_flag=True, help='Shuffle start datetimes or  in FASTQ'
 )
 def sort(fastq, output, shuffle):
-    """ Sort basecalled reads by start time (Albacore) """
+    """ Sort basecalled reads by start time in header """
 
     sketchy = Sketchy()
     sketchy.sort_fastq(

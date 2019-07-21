@@ -2,7 +2,7 @@ import logging
 import subprocess
 import sys
 import shlex
-
+from pathlib import Path
 
 class PoreLogger:
 
@@ -68,3 +68,9 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
         return callback(output)
 
     return output
+
+
+def get_default_index(index) -> (Path, Path):
+    """ Return the default database and index for Sketchy """
+    return Path(__file__).parent / 'index' / f'{index}.default.msh',\
+        Path(__file__).parent / 'index' / f'{index}.data.tsv'

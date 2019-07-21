@@ -7,71 +7,69 @@ log.info """
 =======================================================
 
 fastq                   =           $params.fastq
-sketch                  =           $params.sketch
-sketch_data             =           $params.sketch_data
-bootstraps              =           $params.bootstraps
-sample_reads            =           $params.sample_reads
-predict_reads           =           $params.predict_reads
+
+sketchy                 =           $params.sketchy
+mixture                 =           $params.mixture
+
 prefix                  =           $params.prefix
 outdir                  =           $params.outdir
 
+reads                   =           $params.reads
+sketch                  =           $params.sketch
+index                   =           $params.index
+lineage                 =           $params.true_lineage
+
+conda                   =           $params.conda
+resources               =           $params.resources
 =======================================================
 =======================================================
 """
-
-sketch = file(params.sketch)
-sketch_data = file(params.sketch_data)
 
 // Bootstrap pipeline:
 
 fastq = Channel
     .fromPath(params.fastq)
     .map { file -> tuple(file.baseName, file) }
+//
+// reads = Channel.fromPath(params.fastq)
+//      .splitFastq( by: 10, file: true )
+//      .println()
 
-if (params.bootstrap) {
-
-  process Bootstrapping {
+if (params.sketchy) {
+  process Sketchy {
 
       label "sketchy"
-      label "bootstrap"
 
-      tag { "Sampling from shuffled reads with replacement." }
+      tag { "Sketchy predictions on $id and $read reads" }
+
+      publishDir "${params.outdir}/sketchy", mode: "copy"
 
       input:
       set id, file(fastq) from fastq
+      each read from params.reads
 
       output:
-      file("bootstraps/${id}/boot*.fastq") into predict_bootstrap mode flatten
-      val id into predict_id
+      file("${id}_${read}")
+      file("${id}_${read}_evaluation")
 
       """
-      sketchy boot --fastq $fastq -b $params.bootstraps -r $params.sample_reads -o bootstraps
+      sketchy predict -s $params.sketch -d $params.index -f $fastq \
+        -r $read --keep --tmp ${id}_${read} \
+        --output ${id}_${read}.out \
+        --mode $params.mode --cores $task.cpus
+
+      sketchy evaluate --indir ${id}_${read} \
+        --limit $read \
+        --color green \
+        --outdir ${id}_${read}_evaluation \
+        --lineage $params.true_lineage
       """
-  }
-
-
-  process Bootstrap {
-
-      label "sketchy"
-      label "predict"
-
-      publishDir "${params.outdir}/${id}", mode: "copy"
-
-      input:
-      set val(id), file(replica) from predict_id.combine(predict_bootstrap)
-
-      output:
-      file("${replica.baseName}.tab")
-
-      """
-      sketchy pboot -f $replica -s $sketch -d $sketch_data -r $params.predict_reads \
-      -c $task.cpus -o . -p ${replica.baseName}
-      """
-
   }
 }
 
-if (params.zymo) {
+if (params.mixture) {
+
+  // Classify and extract S. aureus reads from Zymo Mocks
 
   process Kraken2 {
 
@@ -79,16 +77,39 @@ if (params.zymo) {
 
       tag { "Kraken2 for Zymo mock community: $id" }
 
+      publishDir "${params.outdir}/kraken", mode: "copy"
+
       input:
       set id, file(fastq) from fastq
 
       output:
-      file("bootstraps/${id}/boot*.fastq") into predict_bootstrap mode flatten
-      val id into predict_id
+      set id, file("$fastq"), file("${id}.out") into kraken_filter
 
       """
-      sketchy boot --fastq $fastq -b $params.bootstraps -r $params.sample_reads -o bootstraps
+      kraken2 --db ${params.resources}/${params.minikraken} --threads $task.cpus --output "${id}.out" \
+      --gzip-compressed --report ${id}.report --use-names ${fastq}
       """
-  }
+    }
+
+    process KrakenFilter {
+
+        label "sketchy"
+
+        tag { "Sketchy filter for Zymo mock community: $id" }
+
+        publishDir "${params.outdir}/species", mode: "copy"
+
+        input:
+        set id, file(fastq), file(kraken) from kraken_filter
+
+        output:
+        set file("${id}.species.reads.out"), file("${id}.species.fq"), file("$kraken")
+
+        """
+        zcat $fastq > reads.fq
+        cat $kraken | grep "$params.species" > ${id}.species.reads.out
+        sketchy select-fastq -f reads.fq -i ${id}.species.reads.out -o ${id}.species.fq
+        """
+      }
 
 }

@@ -1,10 +1,7 @@
 import click
 
+from .sum import sum
 from .sort import sort
-from .boot import boot
-from .psum import psum
-from .pplot import pplot
-from .pboot import pboot
 from .link import link
 from .merge import merge
 from .watch import watch
@@ -12,7 +9,7 @@ from .sketch import sketch
 from .survey import survey
 from .predict import predict
 from .evaluate import evaluate
-
+from.select_fastq import select_fastq
 
 VERSION = '0.2'
 
@@ -23,12 +20,9 @@ def terminal_client():
     """Sketchy: online lineage and genotype matching using MinHash"""
     pass
 
+terminal_client.add_command(select_fastq)
 terminal_client.add_command(merge)
 terminal_client.add_command(sort)
-terminal_client.add_command(boot)
-terminal_client.add_command(psum)
-terminal_client.add_command(pplot)
-terminal_client.add_command(pboot)
 terminal_client.add_command(link)
 terminal_client.add_command(watch)
 terminal_client.add_command(survey)

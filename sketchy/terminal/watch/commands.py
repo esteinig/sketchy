@@ -1,9 +1,4 @@
 import click
-import shutil
-
-from pathlib import Path
-
-from sketchy.sketchy import Sketchy
 
 
 @click.command()
@@ -21,8 +16,6 @@ def watch(dir, taxid, index):
 
     """ Watch live run and pre-filter reads by taxonomic identifier """
 
-    if index:
-        show_indices()
 
 
 

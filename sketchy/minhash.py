@@ -15,6 +15,7 @@ from uuid import uuid4
 from tqdm import tqdm
 from pathlib import Path
 import dateutil.parser
+import multiprocessing as mp
 
 from collections import Counter
 
@@ -44,7 +45,8 @@ class MashScore(PoreLogger):
 
         # Lachlan suggested keeping a sum od total shared hashes;
         # this which is the default from Sketchy
-        self.inter = pandas.DataFrame()  # Reduced MASH outputs, updated
+        self.inter = pandas.DataFrame()  #  MASH outputs, updated
+        self.interim = pandas.DataFrame()  # MASH outputs, updated, with data
 
         self.lineage = Counter()        # Prime lineage counter
         self.genotype = dict()          # Genotype counters by lineage
@@ -61,18 +63,19 @@ class MashScore(PoreLogger):
         nreads: int = 100,
         sep: str = '\t',
         index: int = 0,
-        cores: int = 8,
+        cores: int = 2,
+        ncpu: int = 0,
         top: int = 10,
         out: Path = None,
         mode: str = 'single',
         sort_by: str = 'shared',
         tmpdir: Path = Path().cwd() / 'tmp',
-        online: bool = False,
-    ) -> pandas.DataFrame:
+        show_top: int = 5,
+        show_genotype: bool = False,
+        nextflow: bool = False,
+    ) -> pandas.DataFrame or list:
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
-
-        results = []
 
         if mode == "direct":
             mash = self.mash_dist(
@@ -94,129 +97,282 @@ class MashScore(PoreLogger):
             )
 
         else:
-            for nread in range(nreads):
-                # TODO: boundary number of read files < nreads
 
-                n = 4 * (nread + 1)
-
-                if mode == "cumulative":
-                    fpath = tmpdir / f'reads_{n}.fq'
-                    run_cmd(
-                        f'head -n {n} {fastq} > {fpath}', shell=True
-                    )
-                elif mode == "single":
-                    fpath = tmpdir / f'read_{n//4}.fq'
-                    run_cmd(
-                        f'head -n {n} {fastq} | tail -4 > {fpath}', shell=True
-                    )
-                else:
-                    raise
-
-                mash = self.mash_dist(
-                    fpath, mashdb=sketch, ncpu=cores, sort_by=sort_by
+            if nextflow:
+                # Cut and predict on a single read for dist compute;
+                # given by --reads argument on CLI, used in Nextflow
+                fpath = self.cut_read(
+                    nread=nreads, mode=mode, fastq=fastq, tmpdir=tmpdir
                 )
-
-                # TODO: NEW METHOD START HERE
-                # TODO: Warning: setting index to ID, requires IDs to be UUID
-
-                inter = mash.drop(
-                    columns=['file', 'dist', 'p-value']
-                ).set_index('id')
-
-                if self.inter.empty:
-                    self.inter = inter
-                else:
-                    self.inter = self.inter.add(inter).sort_values(
-                        by='shared', ascending=False
-                    )
-
-                interim = self.inter.copy()
-                interim.index = interim.index.map(
-                    lambda x: Path(x).stem
+                self.compute_ssh(
+                    fpath,
+                    df,
+                    sketch,
+                    nreads,
+                    cores,
+                    mode,
+                    sort_by,
+                    tmpdir,
+                    show_top,
+                    show_genotype,
+                    sequential=False
                 )
-
-                interim = interim.join(df, how='inner')
-                self.pretty_print(interim, fpath, mode, nread)
-
-                read = n if mode == "cumulative" else n//4
-                if online:
-                    # Reduce size of output IO by selecting only top 10
-                    if out:
-                        interim[:top].to_csv(
-                            tmpdir / f'top.counts.{read}', sep='\t'
-                        )
-                else:
-                    if out:
-                        interim.to_csv(
-                            tmpdir / f'total.counts.{read}', sep='\t'
-                        )
-                    else:
-                        pass
-
-                # Legacy method depracated: Select best results from mash dist
-                # ordered by shared hash matches, vulnerable to strain mixtures
-
-                sketchy = None
-                if sketchy == "legacy":
-                    # Originally used with top 2
-                    top_results = mash[:top]
-
-                    scores = True
-                    if scores:
-                        row = self._compute(
-                            i=nread,
-                            data=df,
-                            tops=top_results,
-                            read_file=fpath,
-                        )
-                        results.append(row)
-                    else:
-                        idx = Path(
-                            top_results.id.values[0]
-                        ).stem
-                        result = df.loc[idx, :]
-                        results.append(result)
 
                 # Clean up temporary read file
                 fpath.unlink()
 
-            # Clean index of Inter:
-            self.inter.index = self.inter.index.map(
-                lambda x: Path(x).stem
+                return
+
+            if ncpu > 0:
+
+                with mp.Pool(processes=ncpu) as pool:
+                    results = [pool.apply_async(
+                        func=self._multi_compute, args=(
+                            fastq,
+                            df,
+                            sketch,
+                            nread,
+                            cores,
+                            mode,
+                            sort_by,
+                            tmpdir,
+                            show_top,
+                            show_genotype,
+                        )) for nread in range(nreads)
+                    ]
+                    output = [p.get() for p in results]
+
+                    return output
+            else:
+                for nread in range(nreads):
+                    fpath = self.cut_read(
+                        nread=nread, mode=mode, fastq=fastq, tmpdir=tmpdir
+                    )
+                    self.compute_ssh(
+                        fpath,
+                        df,
+                        sketch,
+                        nread,
+                        cores,
+                        mode,
+                        sort_by,
+                        tmpdir,
+                        show_top,
+                        show_genotype,
+                        sequential=True
+                    )
+
+                    # Clean up temporary read file
+                    fpath.unlink()
+            if out:
+                self.inter.to_csv(out, index=True, header=True, sep='\t')
+
+            return self.inter
+
+    def _multi_compute(
+            self,
+            fastq,
+            df,
+            sketch,
+            nread,
+            cores,
+            mode,
+            sort_by,
+            tmpdir,
+            show_top,
+            show_genotype,
+    ):
+        """ Wrapper for multiprocessing sum of shared hashes """
+
+        fpath = self.cut_read(
+            nread=nread, mode=mode, fastq=fastq, tmpdir=tmpdir
+        )
+        self.compute_ssh(
+            fpath,
+            df,
+            sketch,
+            nread,
+            cores,
+            mode,
+            sort_by,
+            tmpdir,
+            show_top,
+            show_genotype,
+            sequential=False
+        )
+
+        # Clean up temporary read file
+        fpath.unlink()
+
+        return nread
+
+    @staticmethod
+    def cut_read(nread, mode, fastq, tmpdir):
+
+        n = 4 * (nread + 1)
+
+        if mode == "cumulative":
+            fpath = tmpdir / f'reads_{n}.fq'
+            run_cmd(
+                f'head -n {n} {fastq} > {fpath}', shell=True
             )
+        elif mode == "single":
+            fpath = tmpdir / f'read_{n // 4}.fq'
+            run_cmd(
+                f'head -n {n} {fastq} | tail -4 > {fpath}', shell=True
+            )
+        else:
+            raise
 
-        if out:
-            self.inter.to_csv(out, index=False, header=True, sep='\t')
+        return fpath
 
-        return self.inter
+    def compute_ssh(
+        self,
+        fpath: Path,
+        df: pandas.DataFrame,
+        sketch: Path,
+        nread: int,
+        cores: int,
+        mode: str = 'single',
+        sort_by: str = 'shared',
+        tmpdir: Path = Path().cwd() / 'tmp',
+        show_top: int = 5,
+        show_genotype: bool = False,
+        sequential: bool = True,
+    ):
+
+        mash = self.mash_dist(
+            fpath, mashdb=sketch, ncpu=cores, sort_by=sort_by
+        )
+
+        # TODO: NEW METHOD START HERE
+        # TODO: Warning: setting index to ID, requires IDs to be UUID
+
+        inter = mash.drop(
+            columns=['file', 'dist', 'p-value']
+        ).set_index('id')
+
+        if sequential:
+            # Update scores in sequential mode
+            if self.inter.empty:
+                self.inter = inter
+            else:
+                # Sum of shared hashes
+                self.inter = self.inter.add(inter).sort_values(
+                    by='shared', ascending=False
+                )
+            interim = self.inter.copy()
+        else:
+            # Do not update in distributed mode, output only to file
+            interim = inter.copy()
+
+        # Ops to merge with meta data for printing to console
+        interim.index = interim.index.map(
+            lambda x: Path(x).stem
+        )
+        interim.index.name = 'uuid'
+        interim = interim.join(df, how='inner')
+
+        self.pretty_print(
+            interim, fpath, mode, nread, show_top, show_genotype
+        )
+
+        # Output sum of shared hashes (
+        n = 4 * (nread + 1)
+        read = n if mode == "cumulative" else n // 4
+
+        output_prefix = 'total.counts' if sequential else 'read'
+
+        interim.to_csv(
+            tmpdir / f'{output_prefix}.{read}', sep='\t'
+        )
+
+        if sequential:
+            self.interim = interim
+
+        # Legacy method depracated: Select best results from mash dist
+        # ordered by shared hash matches, vulnerable to strain mixtures
+
+        # sketchy = None
+        # if sketchy == "legacy":
+        #     # Originally used with top 2
+        #     top_results = mash[:top]
+        #
+        #     scores = True
+        #     if scores:
+        #         row = self._compute(
+        #             i=nread,
+        #             data=df,
+        #             tops=top_results,
+        #             read_file=fpath,
+        #         )
+        #         results.append(row)
+        #     else:
+        #         idx = Path(
+        #             top_results.id.values[0]
+        #         ).stem
+        #         result = df.loc[idx, :]
+        #         results.append(result)
+
+        return tmpdir / f'total.counts.{read}'
+
+    def sum_read_hashes(self, indir, outdir):
+
+        reads = sorted([
+            int(fpath.name.split('.')[-1]) for fpath in indir.glob('read.*')
+        ])
+
+        # Check if all reads present:
+
+        for i in range(reads[-1]):
+            if i not in reads:
+                raise ValueError(
+                    f'Read output directory is missing hashes at read {i}'
+                )
+
+        for i in tqdm(reads, desc='Process read'):
+            df = pandas.read_csv(
+                outdir / f'read.{i}', sep='\t'
+            ).sort_values(by='shared')
+
+            print(df)
+
+
+
+
 
     def pretty_print(
         self,
         interim: pandas.DataFrame,
         fpath: Path,
         mode: str,
-        nread: int
+        nread: int,
+        select_top: int = 5,
+        show_genotype: bool = False,
     ):
 
         seqlen, timestamp = self._parse_read_stats(fpath)
 
         lineage_string = f"Lineage match: {LG}" \
                          f"{interim[:1].lineage.tolist()[0]}{G} : " + \
-                         f"{' : '.join([str(lineage) for lineage in interim[1:5].lineage.tolist()])}"
+                         f"{' : '.join([str(lineage) for lineage in interim[1:select_top].lineage.tolist()])}"
 
         suscept_string = f"{Y}Suceptibility: " \
             f"{LC}{interim[:1].susceptibility.tolist()[0]}{RE}"
 
-        info_string = f"{Y}Sum of shared hashes ({LR}{mode}{Y}) " \
+        geno_string = f"{Y}Genotype: " \
+            f"{LC}{interim[:1].genotype.tolist()[0]}{RE}"
+
+        info_string = f"{Y}SSH ({LR}{mode}{Y}) " \
             f"@ read {LR}{str(nread)}{Y}"
 
         length_string = f"{Y}Read length: {C}{seqlen}"
         time_string = f"{Y}Time: {C}{timestamp}{RE}"
 
         print(
-            f"{info_string:<80}"
-            f"{lineage_string:<60}" +
-            f"{suscept_string:<50}" +
+            f"{info_string:<55}"
+            f"{lineage_string:<100}" +
+            f"{geno_string if show_genotype else suscept_string:<50}" +
             f"{length_string:<30}" +
             f"{time_string:<30}"
         )
@@ -384,9 +540,11 @@ class MashScore(PoreLogger):
 
         try:
             timestr = re.search(self.start_time_regex, header)
-            time = timestr.group(1).strip().replace('start_time=', '')
-
-            dtime = dateutil.parser.parse(time)
+            if timestr:
+                time = timestr.group(1).strip().replace('start_time=', '')
+                dtime = dateutil.parser.parse(time)
+            else:
+                dtime = '-'
         except IndexError:
             dtime = '-'
 

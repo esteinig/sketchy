@@ -1,5 +1,4 @@
 import click
-import pandas
 import json
 
 from pathfinder.pipelines.data import SurveyData
@@ -51,9 +50,20 @@ def survey(directory, output, template, config):
             lineage=dict(mlst='sequence_type'),
             genotype=dict(
                 kleborate=[
-                    'K_locus', 'O_locus', "YbST", "CbST", "AbST", "SmST"
+                    'K_locus', 'O_locus',
                 ]
             )
+        )
+    elif template == "tb":
+        # Default Kleb config
+        cfg = dict(
+            lineage=dict(
+                mykrobe_lineage=list()
+            ),
+            susceptibility=dict(
+                mykrobe_phenotype=list()
+            ),
+            genotype=None,
         )
     else:
         # Default MLST config
