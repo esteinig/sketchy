@@ -1,18 +1,12 @@
-from sketchy.sketchy import Sketchy
-from pathlib import Path
-
-import shutil
 import pandas
-import random
-import sys
-
 import numpy as np
 import scipy.stats
 import seaborn as sns
-from cycler import cycler
+
 from tqdm import tqdm
+from pathlib import Path
+from cycler import cycler
 from matplotlib import pyplot as plt
-from sketchy.utils import run_cmd
 
 BREWER = {
   'blue': [

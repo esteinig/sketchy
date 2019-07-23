@@ -4,28 +4,28 @@ import shutil
 from pathlib import Path
 
 from sketchy.minhash import MashScore
-
+from sketchy.utils import get_default_sketch
 
 @click.command()
 @click.option(
-    '--fastq', '-f', help='Input FASTQ file to predict from.', type=Path,
+    '--fastq', '-f', required=True, help='Input FASTQ file to predict from.', type=Path,
 )
 @click.option(
-    '--sketch', '-s', default='saureus-v1.msh', help='MASH sketch to query', type=Path
+    '--sketch', '-s', required=True, help='MASH sketch to query or one of the templates: kleb, mrsa, tb', type=str
 )
 @click.option(
-    '--data', '-d', help='Index data file for pull genotypes.', type=Path
+    '--data', '-d', help='Index data file for pull genotypes; optional if template sketch', type=Path
 )
 @click.option(
-    '--reads', '-r', default=500, help='Number of reads to type.', type=int
+    '--reads', '-r', default=1000, help='Number of reads to type.', type=int
 )
 @click.option(
     '--tmp', '-t', default=Path().cwd() / 'tmp', type=Path,
-    help='Temporary directory for slicing read file.'
+    help='Temporary directory for sum of shared hashes per read output.'
 )
 @click.option(
     '--keep', '-k', is_flag=True,
-    help='Keep temporary folder with match tables for each read / read set.'
+    help='Keep temporary folder for: sketchy evaluate if true lineage / genotype is known'
 )
 @click.option(
     '--cores', '-c', default=8, help='Number of processors for MASH'
@@ -39,7 +39,7 @@ from sketchy.minhash import MashScore
 )
 @click.option(
     '--output', '-o', default=Path().cwd() / 'shared_hashes.csv',
-    help='Output summary files, use --keep to'
+    help='Output summary files, use --keep to; deprecated.'
 )
 @click.option(
     '--show', default=3, help='Show this many lineages in pretty print.'
@@ -72,6 +72,12 @@ def predict(
 
     fastq_path = Path(fastq)
     sketch_path = Path(sketch)
+
+    if sketch in ('kleb', 'mrsa', 'tb'):
+        defaults = Path(__file__).parent.parent.parent / 'sketch'
+        sketch_path = defaults / f'{sketch}.default.msh'
+        data = defaults / f'{sketch}.data.tsv'
+
 
     if not fastq_path.exists():
         click.echo(f'File {fastq_path} does not exist.')

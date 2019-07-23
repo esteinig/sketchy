@@ -70,7 +70,7 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
     return output
 
 
-def get_default_index(index) -> (Path, Path):
+def get_default_sketch(index) -> (Path, Path):
     """ Return the default database and index for Sketchy """
-    return Path(__file__).parent / 'index' / f'{index}.default.msh',\
-        Path(__file__).parent / 'index' / f'{index}.data.tsv'
+    return (Path(__file__).parent / 'sketch' / f'{index}.default.msh',
+        Path(__file__).parent / 'sketch' / f'{index}.data.tsv')

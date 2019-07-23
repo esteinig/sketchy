@@ -2,7 +2,6 @@ import click
 import pandas
 
 from pathlib import Path
-from sketchy.minhash import MashSketch
 
 
 @click.command()
@@ -19,8 +18,6 @@ from sketchy.minhash import MashSketch
 )
 def select_fastq(fpath, ids, output):
     """ Select reads by ID from output of Kraken2 grep for species """
-
-    import sys
 
     ids_df = pandas.read_csv(ids, sep='\t')
 

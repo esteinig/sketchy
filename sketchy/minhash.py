@@ -290,7 +290,7 @@ class MashScore(PoreLogger):
         if sequential:
             self.interim = interim
 
-        # Legacy method depracated: Select best results from mash dist
+        # Legacy method deprecated: Select best results from mash dist
         # ordered by shared hash matches, vulnerable to strain mixtures
 
         # sketchy = None
@@ -315,7 +315,6 @@ class MashScore(PoreLogger):
         #         results.append(result)
 
         return tmpdir / f'total.counts.{read}'
-
 
     def pretty_print(
         self,
@@ -352,6 +351,7 @@ class MashScore(PoreLogger):
             f"{length_string:<30}" +
             f"{time_string:<30}"
         )
+
     @staticmethod
     def mash_dist(file, mashdb, ncpu=4, sort_by='shared'):
 

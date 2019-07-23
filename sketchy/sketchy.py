@@ -16,7 +16,6 @@ import dateutil
 from pathlib import Path
 
 from sketchy.utils import run_cmd
-from sketchy.minhash import MashScore
 
 from Bio import SeqIO
 from colorama import Fore
