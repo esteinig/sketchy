@@ -316,30 +316,6 @@ class MashScore(PoreLogger):
 
         return tmpdir / f'total.counts.{read}'
 
-    def sum_read_hashes(self, indir, outdir):
-
-        reads = sorted([
-            int(fpath.name.split('.')[-1]) for fpath in indir.glob('read.*')
-        ])
-
-        # Check if all reads present:
-
-        for i in range(reads[-1]):
-            if i not in reads:
-                raise ValueError(
-                    f'Read output directory is missing hashes at read {i}'
-                )
-
-        for i in tqdm(reads, desc='Process read'):
-            df = pandas.read_csv(
-                outdir / f'read.{i}', sep='\t'
-            ).sort_values(by='shared')
-
-            print(df)
-
-
-
-
 
     def pretty_print(
         self,

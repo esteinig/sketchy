@@ -310,24 +310,63 @@ class SampleEvaluator:
 
         return color
 
-    def _parse_hashes(self) -> pandas.DataFrame:
+    def _parse_hashes(self, sequential: bool = True) -> pandas.DataFrame:
 
         print(f'Parsing read hashes output in {self.indir}')
         hash_dfs = []
-        for i, fpath in enumerate(sorted(
-            self.indir.glob('*.counts.*'),
-            key=lambda x: int(
-                x.name.split('.')[-1]
-            )
-        )):
-            df = pandas.read_csv(fpath, sep="\t", index_col=0)[:self.top]
-            n = int(fpath.name.split('.')[-1])
-            df['read'] = [n for _ in df.shared]
-            if self.limit is not None and i >= self.limit:
-                break
+        if sequential:
+            for i, fpath in enumerate(sorted(
+                self.indir.glob('*.counts.*'),
+                key=lambda x: int(
+                    x.name.split('.')[-1]
+                )
+            )):
 
-            hash_dfs.append(df)
-            self.reads = i+1
+                df = pandas.read_csv(fpath, sep="\t", index_col=0)[:self.top]
+                n = int(fpath.name.split('.')[-1])
+                df['read'] = [n for _ in df.shared]
+                if self.limit is not None and i >= self.limit:
+                    break
+
+                hash_dfs.append(df)
+                self.reads = i+1
+        else:
+
+            inter = pandas.DataFrame()
+
+            reads = sorted([
+                int(
+                    fpath.name.split('.')[-1]
+                ) for fpath in self.indir.glob('read.*')
+            ])
+
+            # Check if all reads present:
+
+            for i in range(reads[-1]):
+                if i + 1 not in reads:
+                    raise ValueError(
+                        f'Read output directory is missing hashes at read {i}'
+                    )
+
+            for i in tqdm(reads, desc='Process read'):
+
+                df = pandas.read_csv(
+                    self.indir / f'read.{i}', sep='\t'
+                ).sort_values(by='shared', ascending=False)
+
+                if inter.empty:
+                    inter = df
+                else:
+                    # Sum of shared hashes
+                    inter = inter.add(df)
+
+                d = inter[:self.top]
+                d['read'] = [i for _ in d.shared]
+                if self.limit is not None and i >= self.limit:
+                    break
+
+                hash_dfs.append(d)
+                self.reads = i + 1
 
         if self.limit is None:
             self.limit = self.reads

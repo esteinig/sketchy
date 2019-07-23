@@ -11,7 +11,7 @@ from .predict import predict
 from .evaluate import evaluate
 from.select_fastq import select_fastq
 
-VERSION = '0.2'
+VERSION = '0.3'
 
 
 @click.group()
@@ -20,12 +20,14 @@ def terminal_client():
     """Sketchy: online lineage and genotype matching using MinHash"""
     pass
 
-terminal_client.add_command(select_fastq)
-terminal_client.add_command(merge)
+
+terminal_client.add_command(sum)
 terminal_client.add_command(sort)
 terminal_client.add_command(link)
+terminal_client.add_command(merge)
 terminal_client.add_command(watch)
 terminal_client.add_command(survey)
 terminal_client.add_command(sketch)
 terminal_client.add_command(predict)
 terminal_client.add_command(evaluate)
+terminal_client.add_command(select_fastq)

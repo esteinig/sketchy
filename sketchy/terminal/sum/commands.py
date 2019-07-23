@@ -6,10 +6,10 @@ from sketchy.minhash import MashScore
 
 @click.command()
 @click.option(
-    '--indir', '-i', help='Temporary directory with read hashes (--ncpu > 0).'
+    '--indir', '-i', type=Path, help='Temporary directory with read hashes (--ncpu > 0).'
 )
 @click.option(
-    '--outdir', '-o', help='Output directory for read-wise sum of shared hashes.'
+    '--outdir', '-o', type=Path, help='Output directory for read-wise sum of shared hashes.'
 )
 def sum(indir, outdir):
     """ Sum a temporary read hashes into the sum of shared hashes """
