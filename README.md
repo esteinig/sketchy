@@ -1,13 +1,13 @@
-# Sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="220" /></a>
+# Sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="210" /></a>
 
 ![](https://img.shields.io/badge/version-alpha-red.svg)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 ![](https://img.shields.io/badge/docs-latest-green.svg)
 ![](https://img.shields.io/badge/BioRxiv-prep-green.svg)
 
-## Overview
-
 Real-time lineage matching and genotyping from uncorrected nanopore reads
+
+## Overview
 
 **`v0.3-alpha: test build, still no tests`**
 
