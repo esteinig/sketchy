@@ -12,6 +12,7 @@ import pandas
 import random
 import dateutil
 
+from tqdm import tqdm
 
 from pathlib import Path
 
@@ -57,7 +58,9 @@ class Sketchy:
         file: str = None,
         fastq: str = None,
         shuffle: bool = False,
-        regex='start_time=(.*)Z'
+        regex='start_time=(.*)Z',
+        first_read: bool = False,
+        outfile: Path = None,
     ) -> list or str:
         """ Not very efficient FASTQ sort and shuffle """
 
@@ -65,24 +68,36 @@ class Sketchy:
         ids = []
         lengths = []
         records = {}
+
+        out = run_cmd(f'wc -l {file}').decode("utf-8").strip().split()
+
+        try:
+            total = int(out[0]) // 4
+        except (IndexError, TypeError):
+            total = None
+
         with open(file, "r") as input_handle:
-            for record in SeqIO.parse(input_handle, "fastq"):
+            for record in tqdm(SeqIO.parse(input_handle, "fastq"), total=total):
                 # Extract start time
                 timestr = re.search(regex, record.description)
                 time = timestr.group(1).strip().replace('start_time=', '')
                 dtime = dateutil.parser.parse(time)
 
                 dates.append(dtime)
-
                 ids.append(record.id)
                 lengths.append(
                     len(record.seq)
                 )
 
-                records[record.id] = record
-
-                if not fastq:
-                    print(record.id, time, len(record.seq))
+                if not first_read:
+                    # Do not store the records if
+                    # detect first read time is on
+                    records[record.id] = record
+                #
+                # if not fastq:
+                #     print(
+                #         record.id, time, len(record.seq)
+                #     )
 
         df = pandas.DataFrame(
             data={
@@ -94,17 +109,25 @@ class Sketchy:
 
         pandas.set_option('display.max_rows', 120)
 
-        df = df.reset_index()
+        if first_read:
+            print(
+                df
+            )
+            if outfile:
+                df.to_csv(outfile, sep='\t')
+        else:
+            df = df.reset_index()
 
-        recs = [
-            records[read] for read in df['read']
-        ]
+            recs = [
+                records[read] for read in df['read']
+            ]
 
-        if shuffle:
-            recs = random.shuffle(recs)
+            if shuffle:
+                recs = random.shuffle(recs)
 
-        with open(fastq, "w") as output_handle:
-            SeqIO.write(recs, output_handle, 'fastq')
+            with open(fastq, "w") as output_handle:
+                print(f'Writing to {fastq}')
+                SeqIO.write(recs, output_handle, 'fastq')
 
         return fastq
 

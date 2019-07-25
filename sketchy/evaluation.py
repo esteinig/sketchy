@@ -44,6 +44,7 @@ class SampleEvaluator:
         indir: Path,
         outdir: Path = None,
         limit: int = 1000,
+        top: int = 10,
         true_lineage: str = '8',
         true_genotype: str = 'nan-nan-blaZ-nan-nan-nan-nan-nan-nan-tetL-nan-nan',
         true_resistance: str = 'RSSSSSSSRRRS',
@@ -78,7 +79,7 @@ class SampleEvaluator:
             f'{self.true_genotype}'
         )
 
-        self.top: int = 10
+        self.top: int = top
         self.reads: int = 0
 
         self.top_ssh: pandas.DataFrame = self._parse_hashes()
@@ -142,7 +143,7 @@ class SampleEvaluator:
 
         p1 = sns.heatmap(
             hm.iloc[:ranks, :], linewidths=0, cbar=False,
-            cmap=[self.false_color, self.true_color, self.lineage_color]
+            cmap=[self.false_color, self.lineage_color, self.true_color]
         )
 
         xticks = [i for i in range(0, self.limit+1, 50)]
@@ -199,7 +200,7 @@ class SampleEvaluator:
             legend=False, estimator=None, ci=None, lw=0.8,
         )
 
-        p1.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        p1.set_ylabel('Sum of shared hashes', fontsize=8)
         p1.set_xlabel('Read', fontsize=8)
 
         p1.tick_params(labelsize=6)
@@ -232,11 +233,8 @@ class SampleEvaluator:
             data=df, x='read', y='shared', hue='Concordance',
             ci=95, estimator='mean',
             palette=sns.color_palette(
-                [self.false_color, self.lineage_color, self.true_color], len(
-                    df['Concordance'].unique()
-                )
-            )
-        )
+                [self.true_color, self.false_color, self.lineage_color], 3
+        ))
 
         p1.set_ylabel('Mean sum of shared hashes', fontsize=8)
         p1.set_xlabel('Read', fontsize=8)

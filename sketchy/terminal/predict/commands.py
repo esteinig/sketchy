@@ -4,17 +4,20 @@ import shutil
 from pathlib import Path
 
 from sketchy.minhash import MashScore
-from sketchy.utils import get_default_sketch
+
 
 @click.command()
 @click.option(
-    '--fastq', '-f', required=True, help='Input FASTQ file to predict from.', type=Path,
+    '--fastq', '-f', required=True, type=Path,
+    help='Input FASTQ file to predict from.',
 )
 @click.option(
-    '--sketch', '-s', required=True, help='MASH sketch to query or one of the templates: kleb, mrsa, tb', type=str
+    '--sketch', '-s',  type=str, default=None, required=True,
+    help='MASH sketch to query or one of the templates: kleb, mrsa, tb'
 )
 @click.option(
-    '--data', '-d', help='Index data file for pull genotypes; optional if template sketch', type=Path
+    '--data', '-d', help='Index data file for pull genotypes; '
+                         'optional if template sketch', type=Path
 )
 @click.option(
     '--reads', '-r', default=1000, help='Number of reads to type.', type=int
@@ -25,7 +28,8 @@ from sketchy.utils import get_default_sketch
 )
 @click.option(
     '--keep', '-k', is_flag=True,
-    help='Keep temporary folder for: sketchy evaluate if true lineage / genotype is known'
+    help='Keep temporary folder for: sketchy evaluate'
+         ' if true lineage / genotype is known'
 )
 @click.option(
     '--cores', '-c', default=8, help='Number of processors for MASH'
@@ -52,6 +56,12 @@ from sketchy.utils import get_default_sketch
     help='Disable sequential online computation for '
          'distributed compute with Nextflow.'
 )
+@click.option(
+    '--pretty',  '-p', is_flag=True, help='Pretty print output.'
+)
+@click.option(
+    '--info',  '-i', is_flag=True, help='Read length and timestamp (adds IO).'
+)
 def predict(
         fastq,
         sketch,
@@ -65,7 +75,9 @@ def predict(
         output,
         show,
         genotype,
-        nextflow
+        nextflow,
+        pretty,
+        info
 ):
 
     """ Online lineage matching from uncorrected nanopore reads"""
@@ -77,7 +89,6 @@ def predict(
         defaults = Path(__file__).parent.parent.parent / 'sketch'
         sketch_path = defaults / f'{sketch}.default.msh'
         data = defaults / f'{sketch}.data.tsv'
-
 
     if not fastq_path.exists():
         click.echo(f'File {fastq_path} does not exist.')
@@ -106,7 +117,9 @@ def predict(
             show_top=show,
             show_genotype=genotype,
             nextflow=nextflow,
-            ncpu=ncpu
+            ncpu=ncpu,
+            pretty=pretty,
+            info=info
         )
 
     except KeyboardInterrupt:

@@ -73,6 +73,8 @@ class MashScore(PoreLogger):
         show_top: int = 5,
         show_genotype: bool = False,
         nextflow: bool = False,
+        pretty: bool = False,
+        info: bool = False,
     ) -> pandas.DataFrame or list:
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
@@ -101,21 +103,24 @@ class MashScore(PoreLogger):
             if nextflow:
                 # Cut and predict on a single read for dist compute;
                 # given by --reads argument on CLI, used in Nextflow
+
                 fpath = self.cut_read(
                     nread=nreads, mode=mode, fastq=fastq, tmpdir=tmpdir
                 )
                 self.compute_ssh(
-                    fpath,
-                    df,
-                    sketch,
-                    nreads,
-                    cores,
-                    mode,
-                    sort_by,
-                    tmpdir,
-                    show_top,
-                    show_genotype,
-                    sequential=False
+                    fpath=fpath,
+                    df=df,
+                    sketch=sketch,
+                    nread=nreads,  # print read at >> nreads <<
+                    cores=cores,
+                    mode=mode,
+                    sort_by=sort_by,
+                    tmpdir=tmpdir,
+                    show_top=show_top,
+                    show_genotype=show_genotype,
+                    sequential=False,
+                    pretty=pretty,
+                    info=info
                 )
 
                 # Clean up temporary read file
@@ -131,13 +136,15 @@ class MashScore(PoreLogger):
                             fastq,
                             df,
                             sketch,
-                            nread,
+                            nread,  # print read at >> nread << in loop
                             cores,
                             mode,
                             sort_by,
                             tmpdir,
                             show_top,
                             show_genotype,
+                            pretty,
+                            info
                         )) for nread in range(nreads)
                     ]
                     output = [p.get() for p in results]
@@ -149,17 +156,19 @@ class MashScore(PoreLogger):
                         nread=nread, mode=mode, fastq=fastq, tmpdir=tmpdir
                     )
                     self.compute_ssh(
-                        fpath,
-                        df,
-                        sketch,
-                        nread,
-                        cores,
-                        mode,
-                        sort_by,
-                        tmpdir,
-                        show_top,
-                        show_genotype,
-                        sequential=True
+                        fpath=fpath,
+                        df=df,
+                        sketch=sketch,
+                        nread=nread,  # print read at >> nread << in loop
+                        cores=cores,
+                        mode=mode,
+                        sort_by=sort_by,
+                        tmpdir=tmpdir,
+                        show_top=show_top,
+                        show_genotype=show_genotype,
+                        sequential=True,
+                        pretty=pretty,
+                        info=info
                     )
 
                     # Clean up temporary read file
@@ -181,6 +190,8 @@ class MashScore(PoreLogger):
             tmpdir,
             show_top,
             show_genotype,
+            pretty,
+            info,
     ):
         """ Wrapper for multiprocessing sum of shared hashes """
 
@@ -198,7 +209,9 @@ class MashScore(PoreLogger):
             tmpdir,
             show_top,
             show_genotype,
-            sequential=False
+            sequential=False,
+            pretty=pretty,
+            info=info
         )
 
         # Clean up temporary read file
@@ -239,6 +252,8 @@ class MashScore(PoreLogger):
         show_top: int = 5,
         show_genotype: bool = False,
         sequential: bool = True,
+        pretty: bool = False,
+        info: bool = False,
     ):
 
         mash = self.mash_dist(
@@ -273,9 +288,30 @@ class MashScore(PoreLogger):
         interim.index.name = 'uuid'
         interim = interim.join(df, how='inner')
 
-        self.pretty_print(
-            interim, fpath, mode, nread, show_top, show_genotype
-        )
+        if info:
+            seqlen, timestamp = self._parse_read_stats(fpath)
+        else:
+            seqlen, timestamp = None, None
+
+        if pretty:
+            self.pretty_print(
+                interim=interim,
+                mode=mode,
+                nread=nread,
+                seqlen=seqlen,
+                timestamp=timestamp,
+                select_top=show_top,
+                show_genotype=show_genotype
+            )
+        else:
+            self.regular_print(
+                interim=interim,
+                nread=nread,
+                seqlen=seqlen,
+                timestamp=timestamp,
+                select_top=show_top,
+                show_genotype=show_genotype
+            )
 
         # Output sum of shared hashes (
         n = 4 * (nread + 1)
@@ -316,21 +352,49 @@ class MashScore(PoreLogger):
 
         return tmpdir / f'total.counts.{read}'
 
-    def pretty_print(
-        self,
+    @staticmethod
+    def regular_print(
         interim: pandas.DataFrame,
-        fpath: Path,
-        mode: str,
         nread: int,
+        seqlen: int,
+        timestamp: str,
         select_top: int = 5,
         show_genotype: bool = False,
     ):
 
-        seqlen, timestamp = self._parse_read_stats(fpath)
+        lineages = ':'.join([
+            str(lineage) for lineage in interim[:select_top].lineage.tolist()
+        ])
+        susceptibility = interim[:1].susceptibility.tolist()[0]
+        genotype = interim[:1].genotype.tolist()[0]
+
+        print(
+            f"{nread}\t"
+            f"{lineages}\t"
+            f"{seqlen}\t",
+            f"{timestamp}\t",
+            f"{susceptibility}\t",
+            f"{genotype if show_genotype else None}"
+        )
+
+    @staticmethod
+    def pretty_print(
+        interim: pandas.DataFrame,
+        mode: str,
+        nread: int,
+        seqlen: int,
+        timestamp: str,
+        select_top: int = 5,
+        show_genotype: bool = False,
+    ):
+
+        lineages = ' : '.join([
+            str(lineage) for lineage in interim[1:select_top].lineage.tolist()
+        ])
 
         lineage_string = f"Lineage match: {LG}" \
-                         f"{interim[:1].lineage.tolist()[0]}{G} : " + \
-                         f"{' : '.join([str(lineage) for lineage in interim[1:select_top].lineage.tolist()])}"
+            f"{interim[:1].lineage.tolist()[0]}{G} : " + \
+            f"{lineages}"
 
         suscept_string = f"{Y}Suceptibility: " \
             f"{LC}{interim[:1].susceptibility.tolist()[0]}{RE}"

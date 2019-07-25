@@ -41,7 +41,15 @@ from pathlib import Path
     '--secondary', default="#8c96c6",  type=str,
     help='Secondary color for hitmap (lineage correct only).'
 )
-def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary, secondary):
+@click.option(
+    '--show_ranks', '--ranks', default=50,  type=int,
+    help='Secondary color for hitmap (lineage correct only).'
+)
+@click.option(
+    '--top', default=50,  type=int,
+    help='Collect the top ranked genome hits by sum of shared hashes to plot.'
+)
+def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary, secondary, show_ranks, top):
 
     """ Evaluate a sample for detection boundaries """
 
@@ -49,6 +57,7 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         indir, outdir,
         limit=limit,
         palette=color,
+        top=top,
         true_lineage=lineage,
         true_resistance=resistance,
         true_genotype=genotype,
@@ -56,6 +65,6 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         secondary_color=secondary,
     )
 
-    se.create_timeline_hitmap()
+    se.create_timeline_hitmap(ranks=show_ranks)
     se.create_race_plot()
     se.create_concordance_plot()

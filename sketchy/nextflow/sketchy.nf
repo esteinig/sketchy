@@ -103,7 +103,7 @@ if (params.mixture) {
         set id, file(fastq), file(kraken) from kraken_filter
 
         output:
-        set file("${id}.species.reads.out"), file("${id}.species.fq"), file("$kraken")
+        set file("${id}.species.reads.out"), file("${id}.species.fq"), file("$kraken"), file("reads.fq")
 
         """
         zcat $fastq > reads.fq
