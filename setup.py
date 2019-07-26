@@ -14,7 +14,9 @@ setup(
         "click",
         "pytest",
         "seaborn",
-        "scipy"
+        "scipy",
+        "pysmartdl",
+        "biopython"
     ],
     entry_points="""
         [console_scripts]

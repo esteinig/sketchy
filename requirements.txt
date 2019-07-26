@@ -1,8 +1,9 @@
 tqdm
 colorama
 pandas
-biopython
 click
-delegator.py
 pytest
+seaborn
 scipy
+pysmartdl
+biopython
