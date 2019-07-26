@@ -1,9 +1,9 @@
 # Sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="210" /></a>
 
 ![](https://img.shields.io/badge/version-alpha-red.svg)
-![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
-![](https://img.shields.io/badge/docs-latest-green.svg)
-![](https://img.shields.io/badge/BioRxiv-prep-green.svg)
+![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
+![](https://img.shields.io/badge/docs-github-green.svg)
+![](https://img.shields.io/badge/BioRxiv-v1-green.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
