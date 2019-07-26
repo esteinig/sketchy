@@ -23,7 +23,7 @@ def terminal_client():
     pass
 
 
-terminal_client.add_command(sum)
+terminal_client.add_command(summary)
 terminal_client.add_command(sort)
 terminal_client.add_command(link)
 terminal_client.add_command(merge)
