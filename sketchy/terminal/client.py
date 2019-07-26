@@ -9,7 +9,9 @@ from .sketch import sketch
 from .survey import survey
 from .predict import predict
 from .evaluate import evaluate
-from.select_fastq import select_fastq
+from .db_list import db_list
+from .db_pull import db_pull
+from .select_fastq import select_fastq
 
 VERSION = '0.3'
 
@@ -31,3 +33,5 @@ terminal_client.add_command(sketch)
 terminal_client.add_command(predict)
 terminal_client.add_command(evaluate)
 terminal_client.add_command(select_fastq)
+terminal_client.add_command(db_list)
+terminal_client.add_command(db_pull)

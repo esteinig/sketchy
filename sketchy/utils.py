@@ -4,14 +4,18 @@ import sys
 import shlex
 from pathlib import Path
 
+
 class PoreLogger:
 
     def __init__(self):
 
-        self.logger = logging.getLogger(self.__class__.__name__)
         logging.basicConfig(
-            filename=f"{self.__class__.__name__}.log"
+            level=logging.INFO,
+            format="[%(asctime)s] [%(name)-10s] \t %(message)s",
+            datefmt='%H:%M:%S'
         )
+
+        self.logger = logging.getLogger(self.__class__.__name__)
 
 
 def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):

@@ -9,15 +9,16 @@ from sketchy.minhash import MashScore
 @click.command()
 @click.option(
     '--fastq', '-f', required=True, type=Path,
-    help='Input FASTQ file to predict from.',
+    help='Input FASTQ file to predict lineage and traits from.',
 )
 @click.option(
     '--sketch', '-s',  type=str, default=None, required=True,
-    help='MASH sketch to query or one of the templates: kleb, mrsa, tb'
+    help='MASH sketch file to query; or a template, one of: kleb, mrsa, tb'
 )
 @click.option(
-    '--data', '-d', help='Index data file for pull genotypes; '
-                         'optional if template sketch', type=Path
+    '--data', '-d', type=Path,
+    help='Index data file for pull genotypes; '
+         'optional if template sketch provided'
 )
 @click.option(
     '--reads', '-r', default=1000, help='Number of reads to type.', type=int
@@ -29,24 +30,21 @@ from sketchy.minhash import MashScore
 @click.option(
     '--keep', '-k', is_flag=True,
     help='Keep temporary folder for: sketchy evaluate'
-         ' if true lineage / genotype is known'
 )
 @click.option(
-    '--cores', '-c', default=8, help='Number of processors for MASH'
+    '--cores', '-c', default=2, help='Number of processors for MASH'
 )
 @click.option(
-    '--ncpu', default=0, help='Do not compute SSH online; spread over CPUs.'
+    '--ncpu', default=0, type=int,
+    help='Do not compute SSH online; spread over CPUs; not online yet.'
 )
 @click.option(
     '--mode', type=str, default="single",
     help='Analysis mode; single, cumulative, direct.'
 )
 @click.option(
-    '--output', '-o', default=Path().cwd() / 'shared_hashes.csv',
-    help='Output summary files, use --keep to; deprecated.'
-)
-@click.option(
-    '--show', default=3, help='Show this many lineages in pretty print.'
+    '--show', default=10,
+    help='Show this many lineages in pretty print; set to 3 for TB.'
 )
 @click.option(
     '--genotype',  '-g', is_flag=True, help='Show genotype in pretty print.'
@@ -62,6 +60,10 @@ from sketchy.minhash import MashScore
 @click.option(
     '--info',  '-i', is_flag=True, help='Read length and timestamp (adds IO).'
 )
+@click.option(
+    '--sketchy',  default=Path.home() / '.sketchy',
+    help='Path to Sketchy home directory [ ~/.sketchy/ ]'
+)
 def predict(
         fastq,
         sketch,
@@ -72,12 +74,12 @@ def predict(
         ncpu,
         reads,
         mode,
-        output,
         show,
         genotype,
         nextflow,
         pretty,
-        info
+        info,
+        sketchy
 ):
 
     """ Online lineage matching from uncorrected nanopore reads"""
@@ -86,9 +88,8 @@ def predict(
     sketch_path = Path(sketch)
 
     if sketch in ('kleb', 'mrsa', 'tb'):
-        defaults = Path(__file__).parent.parent.parent / 'sketch'
-        sketch_path = defaults / f'{sketch}.default.msh'
-        data = defaults / f'{sketch}.data.tsv'
+        sketch_path = sketchy / 'db' / f'{sketch}.default.msh'
+        data = sketchy / 'data' / f'{sketch}.data.tsv'
 
     if not fastq_path.exists():
         click.echo(f'File {fastq_path} does not exist.')
@@ -108,10 +109,10 @@ def predict(
             nreads=reads,
             sketch=sketch_path,
             cores=cores,
-            top=10,
+            top=10,  # direct mode
             mode=mode,
             data=data,
-            out=output,
+            out=None,
             sort_by='shared',
             tmpdir=tmp,
             show_top=show,
