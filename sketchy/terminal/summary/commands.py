@@ -11,7 +11,7 @@ from sketchy.minhash import MashScore
 @click.option(
     '--outdir', '-o', type=Path, help='Output directory for read-wise sum of shared hashes.'
 )
-def sum(indir, outdir):
+def summary(indir, outdir):
     """ Sum a temporary read hashes into the sum of shared hashes """
 
     mash_score = MashScore()

@@ -1,6 +1,5 @@
 import click
 
-from .sum import sum
 from .sort import sort
 from .link import link
 from .merge import merge
@@ -11,6 +10,7 @@ from .predict import predict
 from .evaluate import evaluate
 from .db_list import db_list
 from .db_pull import db_pull
+from .summary import summary
 from .select_fastq import select_fastq
 
 VERSION = '0.3'
