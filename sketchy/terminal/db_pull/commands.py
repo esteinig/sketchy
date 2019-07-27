@@ -17,7 +17,10 @@ def db_pull(path):
     data_path = (path / 'data')
     data_path.mkdir(exist_ok=True, parents=True)
 
-    gcs = GoogleCloudSketch(sketch_path=path / 'db')
+    db_path = path / 'db'
+    db_path.mkdir(exist_ok=True, parents=True)
+
+    gcs = GoogleCloudSketch(sketch_path=db_path)
 
     # Data index setup
     gcs.pl.logger.info(f'Copy database index files to {data_path}')
