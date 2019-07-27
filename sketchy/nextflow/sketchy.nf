@@ -1,81 +1,126 @@
 // Sketchy Nextflow managing switchable tasks that require mo4e compute power (like bootstrapping)
 
 log.info """
-=======================================================
-                      Sketchy
-                  Development v0.1
-=======================================================
+--------------------------------------------------------------------------------
+fastq          =  $params.fastq
+meta           =  $params.meta
+conda          =  $params.conda
+resources      =  $params.resources
 
-fastq                   =           $params.fastq
+prefix         =  $params.prefix
+outdir         =  $params.outdir
 
-sketchy                 =           $params.sketchy
-mixture                 =           $params.mixture
-
-prefix                  =           $params.prefix
-outdir                  =           $params.outdir
-
-reads                   =           $params.reads
-sketch                  =           $params.sketch
-index                   =           $params.index
-lineage                 =           $params.true_lineage
-
-conda                   =           $params.conda
-resources               =           $params.resources
-=======================================================
-=======================================================
+preprint       =  $params.preprint
+mixture        =  $params.mixture
+reads          =  $params.reads
+evaluation     =  $params.evaluation
+ranks          =  $params.ranks
+--------------------------------------------------------------------------------
 """
 
 // Bootstrap pipeline:
 
-fastq = Channel
-    .fromPath(params.fastq)
-    .map { file -> tuple(file.baseName, file) }
 //
 // reads = Channel.fromPath(params.fastq)
 //      .splitFastq( by: 10, file: true )
 //      .println()
 
-if (params.sketchy) {
-  process Sketchy {
+
+
+import groovy.json.JsonSlurper
+
+if (params.preprint) {
+
+  jsonSlurper = new JsonSlurper();
+
+  meta = new File(params.meta)
+  meta_json = meta.text
+  meta_data = jsonSlurper.parseText(meta_json)
+
+  fastq = Channel
+      .fromPath(params.fastq)
+      .map { file -> tuple(file.baseName, file) }
+
+  process LineageCaller {
 
       label "sketchy"
 
       tag { "Sketchy predictions on $id and $read reads" }
 
-      publishDir "${params.outdir}/sketchy", mode: "copy"
+      publishDir "${params.outdir}/${id}", mode: "copy"
 
       input:
       set id, file(fastq) from fastq
-      each read from params.reads
 
       output:
-      file("${id}_${read}")
-      file("${id}_${read}_evaluation")
+      set id, file("${id}_${params.reads}") into evaluate
+      val id into concat2
 
       """
-      sketchy predict -s $params.sketch -d $params.index -f $fastq \
-        -r $read --keep --tmp ${id}_${read} \
-        --output ${id}_${read}.out \
-        --mode $params.mode --cores $task.cpus
+      sketchy predict -f $fastq -s ${meta_data[id].sketch} \
+      -r $params.reads --mode $params.mode --tmp ${id}_${params.reads} --keep \
+      --cores $task.cpus
+      """
+  }
 
-      sketchy evaluate --indir ${id}_${read} \
-        --limit $read \
-        --color green \
-        --outdir ${id}_${read}_evaluation \
-        --lineage $params.true_lineage
+  process Evaluation {
+
+      label "sketchy"
+
+      publishDir "${params.outdir}/${id}", mode: "copy"
+
+      input:
+      set id, file(indir) from evaluate
+      each eval from params.evaluation
+
+      output:
+      file("${id}_${eval}_evaluation")
+      file("${id}.${eval}.pdf") into concat
+
+      """
+      sketchy evaluate --indir $indir \
+        --limit $eval --ranks $params.ranks \
+        --primary ${meta_data[id].color} \
+        --secondary ${meta_data[id].color} \
+        --lineage ${meta_data[id].lineage} \
+        --genotype ${meta_data[id].genotype} \
+        --resistance ${meta_data[id].resistance} \
+        --outdir ${id}_${eval}_evaluation
+
+      mv ${id}_${eval}_evaluation/evaluation.pdf ${id}.${eval}.pdf
+      """
+  }
+
+  process ConcatEvaluation {
+
+      label "sketchy"
+
+      publishDir "${params.outdir}/", mode: "copy"
+
+      input:
+      file('*.pdf') from concat.collect()
+      val id from concat2
+
+      output:
+      file("${id}.evaluation.pdf")
+
+      """
+      sketchy concat --output ${id}.evaluations.pdf
       """
   }
 }
 
 if (params.mixture) {
 
+    fastq = Channel
+        .fromPath(params.fastq)
+        .map { file -> tuple(file.baseName, file) }
+
   // Classify and extract S. aureus reads from Zymo Mocks
 
   process Kraken2 {
 
       label "kraken2"
-
-      tag { "Kraken2 for Zymo mock community: $id" }
 
       publishDir "${params.outdir}/kraken", mode: "copy"
 
@@ -94,8 +139,6 @@ if (params.mixture) {
     process KrakenFilter {
 
         label "sketchy"
-
-        tag { "Sketchy filter for Zymo mock community: $id" }
 
         publishDir "${params.outdir}/species", mode: "copy"
 

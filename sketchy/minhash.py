@@ -79,6 +79,8 @@ class MashScore(PoreLogger):
 
         df = MashSketch().read_data(fpath=data, sep=sep, index=index)
 
+        total_reads = self._get_total_reads(fastq)
+
         if mode == "direct":
             mash = self.mash_dist(
                 fastq, mashdb=sketch, ncpu=cores, sort_by=sort_by
@@ -103,6 +105,13 @@ class MashScore(PoreLogger):
             if nextflow:
                 # Cut and predict on a single read for dist compute;
                 # given by --reads argument on CLI, used in Nextflow
+
+                if nreads > total_reads:
+                    self.logger.info(
+                        f'Selected reads index {nreads} is larger than'
+                        f' total number of reads in input file {total_reads}'
+                    )
+                    exit(1)
 
                 fpath = self.cut_read(
                     nread=nreads, mode=mode, fastq=fastq, tmpdir=tmpdir
@@ -129,6 +138,13 @@ class MashScore(PoreLogger):
                 return
 
             if ncpu > 0:
+                if nreads > total_reads:
+                    if nreads > total_reads:
+                        self.logger.info(
+                            f'Selected number of reads {nreads} is larger than'
+                            f' total number of reads in input file {total_reads}'
+                        )
+                        exit(1)
 
                 with mp.Pool(processes=ncpu) as pool:
                     results = [pool.apply_async(
@@ -152,6 +168,14 @@ class MashScore(PoreLogger):
                     return output
             else:
                 for nread in range(nreads):
+                    if nread == total_reads:
+                        self.logger.info(
+                            f'Reached total number of '
+                            f'reads in file: {total_reads}'
+                        )
+                        # Exit gracefully prevents braking Nextflows
+                        exit(0)
+
                     fpath = self.cut_read(
                         nread=nread, mode=mode, fastq=fastq, tmpdir=tmpdir
                     )
@@ -173,6 +197,7 @@ class MashScore(PoreLogger):
 
                     # Clean up temporary read file
                     fpath.unlink()
+
             if out:
                 self.inter.to_csv(out, index=True, header=True, sep='\t')
 
@@ -238,6 +263,16 @@ class MashScore(PoreLogger):
             raise
 
         return fpath
+
+    def _get_total_reads(self, fastq: Path) -> int or None:
+
+        try:
+            out = run_cmd(f'wc -l {fastq}', shell=True)
+            return int(out.decode("utf-8").strip('\n').split()[0]) // 4
+        except:
+            self.logger.debug('Error in getting total read count.')
+            self.logger.info(f'Could not detect total read number in {fastq}')
+            raise
 
     def compute_ssh(
         self,

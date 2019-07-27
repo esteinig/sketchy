@@ -11,7 +11,7 @@ class PoreLogger:
 
         logging.basicConfig(
             level=logging.INFO,
-            format="[%(asctime)s] [%(name)-10s] \t %(message)s",
+            format="[%(asctime)s] [%(name)-10s]     %(message)s",
             datefmt='%H:%M:%S'
         )
 

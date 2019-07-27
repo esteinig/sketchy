@@ -107,7 +107,6 @@ class SampleEvaluator:
         self.breakpoint_detection = 0  #  self.to[df['A'] == 5].index.item()
         self.breakpoint_stable = 0
 
-
     @staticmethod
     def _sum_matches(data):
         """ Joint lineage / genotype / susceptibility match """
@@ -133,30 +132,51 @@ class SampleEvaluator:
 
         return df
 
-    def create_timeline_hitmap(self, ranks: int = 50):
+    def create_timeline_hitmap(self, ranks: int = 50, ax=None):
 
         self.top_ssh_all.reset_index(inplace=True)
 
         hm = self.top_ssh_all.pivot('rank', 'read', 'truth')
 
         hm = hm[hm.columns].astype(float)
-
+        hm2 = hm.iloc[:ranks, :]
+        print(hm2.shape)
         p1 = sns.heatmap(
-            hm.iloc[:ranks, :], linewidths=0, cbar=False,
+            hm.iloc[:ranks, :], linewidths=0, cbar=False, ax=ax,
             cmap=[self.false_color, self.lineage_color, self.true_color]
         )
 
-        xticks = [i for i in range(0, self.limit+1, 50)]
+        if self.reads <= 200:
+            xticks = [i for i in range(0, self.reads+1, 20)]
+        elif 200 < self.reads <= 500:
+            xticks = [i for i in range(0, self.reads+1, 50)]
+        elif 500 < self.reads <= 1500:
+            xticks = [i for i in range(0, self.reads+1, 100)]
+        else:
+            xticks = [i for i in range(0, self.reads+1, 500)]
 
-        p1.set_ylabel('Rank', fontsize=12)
-        p1.set_xlabel('Reads', fontsize=12)
+        p1.set_xticks(xticks)
+        p1.set_xticklabels(xticks)
 
-        plt.yticks([])
-        p1.set_yticklabels([])
+        p1.set_xlabel('Reads', fontsize=8)
+        p1.set_ylabel('', fontsize=8)
 
-        plt.xticks(xticks)
-        p1.set_xticklabels(xticks, fontdict={'fontsize': 10})
+        if ranks > 10:
+            yticks = [i for i in range(0, ranks+1, 10)]
+        else:
+            yticks = [i for i in range(0, ranks+1)]
 
+        print(yticks)
+
+        # Rank based index from 1
+        yticks[0] = 1
+
+        print(yticks)
+
+        p1.set_yticks(yticks)
+        p1.set_yticklabels(yticks)
+
+        p1.tick_params(axis='both', which='major', labelsize=6)
         p1.tick_params(length=1, width=0.5)
 
         if self.breakpoint_stable:
@@ -170,7 +190,7 @@ class SampleEvaluator:
 
         return p1
 
-    def create_race_plot(self):
+    def create_race_plot(self, ax=None):
 
         # Re-assign truth as colors for plotting
         self.top_ssh_all = self._assign_truth(
@@ -197,7 +217,7 @@ class SampleEvaluator:
 
         p1 = sns.lineplot(
             data=df, x='read', y='shared', hue='uuid', style='Concordance',
-            legend=False, estimator=None, ci=None, lw=0.8,
+            legend=False, estimator=None, ci=None, lw=0.8, ax=ax
         )
 
         p1.set_ylabel('Sum of shared hashes', fontsize=8)
@@ -223,23 +243,25 @@ class SampleEvaluator:
 
         return p1
 
-    def create_concordance_plot(self):
+    def create_concordance_plot(self, ax=None):
 
         df = self.top_ssh_all.rename(
             {'truth': 'Concordance'}, axis=1
         )
 
-        p1 = sns.lineplot(
+        p2 = sns.lineplot(
             data=df, x='read', y='shared', hue='Concordance',
-            ci=95, estimator='mean',
+            ci=None, estimator='mean', ax=ax,
             palette=sns.color_palette(
-                [self.true_color, self.false_color, self.lineage_color], 3
+                [self.true_color, self.false_color, self.lineage_color], len(
+                    df.Concordance.unique()
+                )
         ))
 
-        p1.set_ylabel('Mean sum of shared hashes', fontsize=8)
-        p1.set_xlabel('Read', fontsize=8)
+        p2.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        p2.set_xlabel('Read', fontsize=8)
 
-        p1.tick_params(labelsize=6)
+        p2.tick_params(labelsize=6)
 
         if self.breakpoint_detection:
             plt.axvline(
@@ -251,13 +273,13 @@ class SampleEvaluator:
         if self.breakpoint_stable:
             plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
 
-        p1.get_figure().savefig(
+        p2.get_figure().savefig(
             f'{self.outdir / "race_plot_mean_95.pdf"}',
             figsize=(11.0, 7.0)
         )
         plt.close()
 
-        return p1
+        return p2
 
     def _get_truth_color(
         self,

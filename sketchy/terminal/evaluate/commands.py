@@ -2,7 +2,7 @@ import click
 
 from sketchy.evaluation import SampleEvaluator
 from pathlib import Path
-
+from matplotlib import pyplot as plt
 
 @click.command()
 @click.option(
@@ -42,7 +42,7 @@ from pathlib import Path
     help='Secondary color for hitmap (lineage correct only).'
 )
 @click.option(
-    '--show_ranks', '--ranks', default=50,  type=int,
+    '--show_ranks', '--ranks', default=100,  type=int,
     help='Secondary color for hitmap (lineage correct only).'
 )
 @click.option(
@@ -65,6 +65,17 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         secondary_color=secondary,
     )
 
-    se.create_timeline_hitmap(ranks=show_ranks)
-    se.create_race_plot()
-    se.create_concordance_plot()
+    fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(21.0, 7.0))
+    fig.subplots_adjust(hspace=0.5)
+    fig.suptitle(f'{indir.name} - {limit}')
+
+    se.create_timeline_hitmap(ranks=show_ranks, ax=ax1)
+    se.create_race_plot(ax=ax2)
+    se.create_concordance_plot(ax=ax3)
+
+    plt.tight_layout()
+
+    fig.savefig(
+        outdir / 'evaluation.pdf',
+    )
+

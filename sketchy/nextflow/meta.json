@@ -1,0 +1,107 @@
+{
+  "marwa.ref": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "zymo.rlb11": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "9",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "zymo.rlb12": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "9",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "zymo.r94": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "9",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "zymo.r10": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "9",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "sputum.rlb6": {
+    "sketch": "mrsa",
+    "color": "blue",
+    "lineage": "9",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr121.dna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "253",
+    "resistance": "null",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr1220.dna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr131.dna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr1316.dna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr121.rna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr1220.rna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr131.rna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "gr1316.rna": {
+    "sketch": "kleb",
+    "color": "blue",
+    "lineage": "243",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "MSSA:PVL-"
+  },
+  "tb.daru": {
+    "sketch": "tb",
+    "color": "blue",
+    "lineage": "Beijing_East_Asia",
+    "resistance": "SSSSSSSSSS",
+    "genotype": "null"
+  }
+}

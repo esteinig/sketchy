@@ -16,7 +16,8 @@ setup(
         "seaborn",
         "scipy",
         "pysmartdl",
-        "biopython"
+        "biopython",
+        "pypdf2"
     ],
     entry_points="""
         [console_scripts]

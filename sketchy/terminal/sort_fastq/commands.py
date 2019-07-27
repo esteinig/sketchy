@@ -21,7 +21,7 @@ from sketchy.sketchy import Sketchy
     '--sorted_out',  default=None, type=Path,
     help='Sorted tab-delimited data frame of read IDs and start time.'
 )
-def sort(fastq, output, shuffle, start, sorted_out):
+def sort_fastq(fastq, output, shuffle, start, sorted_out):
     """ Sort basecalled reads by start time in header """
 
     sketchy = Sketchy()

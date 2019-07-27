@@ -1,1 +1,1 @@
-from .commands import sort
+from .commands import sort_fastq

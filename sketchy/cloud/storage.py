@@ -30,8 +30,6 @@ class GoogleCloudSketch:
         self.pl = PoreLogger()
         self.sketch_path = sketch_path
 
-        self.sketch_path.mkdir(exist_ok=True, parents=True)
-
     def list_dbs(self):
 
         for sketch in self.sketch_files.keys():

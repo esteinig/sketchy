@@ -7,7 +7,7 @@ from sketchy.cloud.storage import GoogleCloudSketch
 
 @click.command()
 @click.option(
-    '--path', '--p', default=Path.home() / '.sketchy',
+    '--path', '--p', default=Path.home() / '.sketchy', type=Path,
     help='Path to sketchy home directory [default: ~/.sketchy ]'
 )
 def db_pull(path):
