@@ -63,7 +63,7 @@ from sketchy.utils import PoreLogger
     '--info',  '-i', is_flag=True, help='Read length and timestamp (adds IO).'
 )
 @click.option(
-    '--sketchy',  default=Path.home() / '.sketchy',
+    '--sketchy',  default=Path.home() / '.sketchy', type=Path,
     help='Path to Sketchy home directory [ ~/.sketchy/ ]'
 )
 def predict(
