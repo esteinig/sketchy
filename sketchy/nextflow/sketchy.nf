@@ -29,6 +29,59 @@ ranks          =  $params.ranks
 
 import groovy.json.JsonSlurper
 
+if (params.sketch){
+
+  if (params.uuid){
+    uuid = '--uuid'
+  } else {
+    uuid = ''
+  }
+
+  sketchies = Channel
+      .fromPath(params.sketch_files)
+      .map { file -> tuple(file.baseName, file) }
+
+
+  process LinkSketchy {
+
+      label "sketchy"
+
+      publishDir "${params.outdir}/", mode: "copy"
+
+      input:
+      set id, file(sketch_file) from sketchies
+
+      output:
+      set id, file("${id}.out") into sketch
+
+      """
+      sketchy link --data $sketch_file --outdir ${id}.out $uuid
+      """
+  }
+
+  process SketchSketchy {
+
+      label "sketchy"
+
+      publishDir "${params.outdir}/", mode: "copy"
+
+      input:
+      set id, file(fasta_dir) from sketch
+      each k from params.kmers
+      each hash_size from params.hash_sizes
+
+      output:
+      file("*.msh")
+
+      """
+      sketchy sketch -f $fasta_dir --kmer $k --size $hash_size --prefix ${id}.$k.$hash_size
+      """
+  }
+
+
+
+}
+
 if (params.preprint) {
 
   jsonSlurper = new JsonSlurper();
