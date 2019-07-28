@@ -26,7 +26,7 @@
   "zymo.r94": {
     "sketch": "mrsa",
     "primary": "'#41b6c4'",
-    "secondary": "'#7fcdbb'",,
+    "secondary": "'#7fcdbb'",
     "lineage": "9",
     "resistance": "SSSSRSSSRSSS",
     "genotype": "MSSA:PVL-"
