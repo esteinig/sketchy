@@ -14,7 +14,7 @@ def db_pull(path):
     """ Pull sketch databases into local storage. """
 
     # Managed on GitHub not GCS; keep distinct
-    data_path = (path / 'data')
+    data_path = path / 'data'
     data_path.mkdir(exist_ok=True, parents=True)
 
     db_path = path / 'db'

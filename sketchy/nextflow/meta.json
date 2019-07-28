@@ -1,107 +1,122 @@
 {
-  "marwa.ref": {
+  "ref.atcc": {
     "sketch": "mrsa",
-    "color": "blue",
+    "primary": "'#225ea8'",
+    "secondary": "'#1d91c0'",
     "lineage": "243",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "SSSSSSSSSSSS",
     "genotype": "MSSA:PVL-"
   },
   "zymo.rlb11": {
     "sketch": "mrsa",
-    "color": "blue",
+    "primary": "'#225ea8'",
+    "secondary": "'#1d91c0'",
     "lineage": "9",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "SSSSRSSSRSSS",
     "genotype": "MSSA:PVL-"
   },
   "zymo.rlb12": {
     "sketch": "mrsa",
-    "color": "blue",
+    "primary": "'#225ea8'",
+    "secondary": "'#1d91c0'",
     "lineage": "9",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "SSSSRSSSRSSS",
     "genotype": "MSSA:PVL-"
   },
   "zymo.r94": {
     "sketch": "mrsa",
-    "color": "blue",
+    "primary": "'#41b6c4'",
+    "secondary": "'#7fcdbb'",,
     "lineage": "9",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "SSSSRSSSRSSS",
     "genotype": "MSSA:PVL-"
   },
   "zymo.r10": {
     "sketch": "mrsa",
-    "color": "blue",
+    "primary": "'#7fcdbb'",
+    "secondary": "'#c7e9b4'",
     "lineage": "9",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "SSSSRSSSRSSS",
     "genotype": "MSSA:PVL-"
   },
   "sputum.rlb6": {
     "sketch": "mrsa",
-    "color": "blue",
-    "lineage": "9",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#78c679'",
+    "secondary": "'#addd8e'",
+    "lineage": "8",
+    "resistance": "SSSSRSSSRSSS",
+    "genotype": "MRSA:PVL+"
   },
-  "gr121.dna": {
+  "gr122.dna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "253",
+    "primary": "'#88419d9'",
+    "secondary": "'#8c6bb1'",
+    "lineage": "258",
     "resistance": "null",
-    "genotype": "MSSA:PVL-"
+    "genotype": "KL106-O2v2"
   },
   "gr1220.dna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#88419d9'",
+    "secondary": "'#8c6bb1'",
+    "lineage": "258",
+    "resistance": "null",
+    "genotype": "KL106-O2v2"
   },
   "gr131.dna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#8c96c6'",
+    "secondary": "'#9ebcda'",
+    "lineage": "147",
+    "resistance": "null",
+    "genotype": "KL64-O2v1"
   },
   "gr1316.dna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#9ebcda'",
+    "secondary": "'#bfd3e6'",
+    "lineage": "11",
+    "resistance": "null",
+    "genotype": "KL15-O4"
   },
-  "gr121.rna": {
+  "gr122.rna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#0868ac'",
+    "secondary": "'#2b8cbe'",
+    "lineage": "258",
+    "resistance": "null",
+    "genotype": "KL106-O2v2"
   },
   "gr1220.rna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#0868ac'",
+    "secondary": "'#2b8cbe'",
+    "lineage": "258",
+    "resistance": "null",
+    "genotype": "KL106-O2v2"
   },
   "gr131.rna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#2b8cbe'",
+    "secondary": "'#4eb3d3e'",
+    "lineage": "147",
+    "resistance": "null",
+    "genotype": "Kl64-O2v1"
   },
   "gr1316.rna": {
     "sketch": "kleb",
-    "color": "blue",
-    "lineage": "243",
-    "resistance": "SSSSSSSSSS",
-    "genotype": "MSSA:PVL-"
+    "primary": "'#4eb3d3'",
+    "secondary": "'#7bccc4'",
+    "lineage": "11",
+    "resistance": "null",
+    "genotype": "KL15-O4"
   },
   "tb.daru": {
     "sketch": "tb",
-    "color": "blue",
+    "primary": "'#fd8d3c'",
+    "secondary": "'#feb24c'",
     "lineage": "Beijing_East_Asia",
-    "resistance": "SSSSSSSSSS",
+    "resistance": "RRRSSSRSSSS",
     "genotype": "null"
   }
 }

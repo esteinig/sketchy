@@ -55,11 +55,11 @@ class GoogleCloudSketch:
                 f'{color}{str(file_path):<45}{RE}'
             )
 
-    def download(
-        self,
-    ):
+    def download(self):
 
         self.pl.logger.info(f'Initiating  download to: {self.sketch_path}')
+
+        self.sketch_path.mkdir(parents=True, exist_ok=True)
 
         db_paths = []
         for sketch in self.sketch_files.keys():

@@ -37,6 +37,8 @@ if (params.preprint) {
   meta_json = meta.text
   meta_data = jsonSlurper.parseText(meta_json)
 
+log.info "$meta_data"
+
   fastq = Channel
       .fromPath(params.fastq)
       .map { file -> tuple(file.baseName, file) }
@@ -80,8 +82,8 @@ if (params.preprint) {
       """
       sketchy evaluate --indir $indir \
         --limit $eval --ranks $params.ranks \
-        --primary ${meta_data[id].color} \
-        --secondary ${meta_data[id].color} \
+        --primary ${meta_data[id].primary} \
+        --secondary ${meta_data[id].secondary} \
         --lineage ${meta_data[id].lineage} \
         --genotype ${meta_data[id].genotype} \
         --resistance ${meta_data[id].resistance} \

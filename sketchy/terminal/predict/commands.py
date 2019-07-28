@@ -1,9 +1,11 @@
 import click
 import shutil
+import pysam
 
 from pathlib import Path
 
 from sketchy.minhash import MashScore
+from sketchy.utils import PoreLogger
 
 
 @click.command()
@@ -84,8 +86,26 @@ def predict(
 
     """ Online lineage matching from uncorrected nanopore reads"""
 
+    pl = PoreLogger()
+
     fastq_path = Path(fastq)
     sketch_path = Path(sketch)
+
+    tmp.mkdir(parents=True, exist_ok=True)
+
+    if fastq.suffix == '.gz':
+        # Unpack into temporary directory
+        tmp_path = tmp / fastq_path.with_suffix('')
+        pl.logger.debug(f'Decompressing file {fastq_path} to {tmp_path}')
+        with pysam.FastxFile(fastq_path) as fin, \
+                open(tmp / fastq_path.with_suffix(''), mode='w') as fout:
+            for entry in fin:
+                string_out = str(entry)
+                if not string_out.endswith('\n'):
+                    string_out += '\n'
+                fout.write(string_out)
+
+        fastq_path = tmp_path
 
     if sketch in ('kleb', 'mrsa', 'tb'):
         sketch_path = sketchy / 'db' / f'{sketch}.default.msh'
@@ -98,8 +118,6 @@ def predict(
     if not sketch_path.exists():
         click.echo(f'Mash sketch {sketch_path} does not exist.')
         exit(1)
-
-    tmp.mkdir(parents=True, exist_ok=True)
 
     try:
 

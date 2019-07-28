@@ -156,7 +156,7 @@ class SampleEvaluator:
             xticks = [i for i in range(0, self.reads+1, 500)]
 
         p1.set_xticks(xticks)
-        p1.set_xticklabels(xticks)
+        p1.set_xticklabels(xticks, rotation='horizontal')
 
         p1.set_xlabel('Reads', fontsize=8)
         p1.set_ylabel('', fontsize=8)

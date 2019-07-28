@@ -8,3 +8,4 @@ scipy
 pysmartdl
 biopython
 pypdf2
+pysam
