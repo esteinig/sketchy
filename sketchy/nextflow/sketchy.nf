@@ -46,8 +46,6 @@ if (params.sketch){
 
       label "sketchy"
 
-      publishDir "${params.outdir}/", mode: "copy"
-
       input:
       set id, file(sketch_file) from sketchies
 
@@ -74,7 +72,7 @@ if (params.sketch){
       file("*.msh")
 
       """
-      sketchy sketch -f $fasta_dir --kmer $k --size $hash_size --prefix ${id}.$k.$hash_size
+      sketchy sketch -f $fasta_dir --kmer $k --size $hash_size --prefix ${id}
       """
   }
 
@@ -90,7 +88,7 @@ if (params.preprint) {
   meta_json = meta.text
   meta_data = jsonSlurper.parseText(meta_json)
 
-log.info "$meta_data"
+  log.info "$meta_data"
 
   fastq = Channel
       .fromPath(params.fastq)
@@ -99,8 +97,6 @@ log.info "$meta_data"
   process LineageCaller {
 
       label "sketchy"
-
-      tag { "Sketchy predictions on $id and $read reads" }
 
       publishDir "${params.outdir}/${id}", mode: "copy"
 

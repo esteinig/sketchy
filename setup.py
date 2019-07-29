@@ -15,7 +15,6 @@ setup(
         "pytest",
         "seaborn",
         "scipy",
-        "pysmartdl",
         "biopython",
         "pypdf2"
     ],

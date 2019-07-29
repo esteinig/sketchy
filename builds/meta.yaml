@@ -1,0 +1,43 @@
+{% set version = "0.3.a3" %}
+
+package:
+    name: sketchy
+    version: {{ version }}
+
+source:
+    url: https://github.com/esteinig/sketchy/archive/v{{ version }}.tar.gz
+
+build:
+    number: 0 
+
+requirements:
+    build:
+        - python=3.7
+        - pip
+    host:
+        - python=3.7
+        - pip
+    run:
+        - python=3.7
+        - tqdm
+        - colorama
+        - pandas
+        - click
+        - pytest
+        - seaborn
+        - scipy
+        - biopython
+        - pypdf2
+        - pysam
+        - mash
+
+test:
+    commands:
+        - sketchy --help
+
+about:
+    home: https://github.com/esteinig/sketchy
+    license: MIT
+    license_file: LICENSE
+    summary: 'Real-time lineage matching and genotyping from uncorrected nanopore reads'
+

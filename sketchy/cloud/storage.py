@@ -1,6 +1,5 @@
-from pySmartDL import SmartDL
 from pathlib import Path
-from sketchy.utils import PoreLogger
+from sketchy.utils import PoreLogger, run_cmd
 
 from colorama import Fore
 
@@ -66,11 +65,10 @@ class GoogleCloudSketch:
             file = self.sketch_files[sketch]
             file_path = self.sketch_path / file
 
-            downloader = SmartDL(
-                self.base_url + file,  str(file_path)
-            )
+            cmd = f'wget {self.base_url + file} -O {file_path}'
             if not file_path.exists():
-                downloader.start()
+                self.pl.logger.info(f'Downloading {file} from {self.base_url}')
+                run_cmd(cmd)
             else:
                 self.pl.logger.info(f'File exists: {file_path}')
 
