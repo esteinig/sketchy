@@ -24,8 +24,6 @@ setup(
     """,
     version="0.3",
     license="MIT",
-    description="Rapid lineage matching and antimicrobial susceptibility "
-                "predictions using uncorrected nanopore reads. Uses MinHash "
-                "sketches of species assembly databases genotyped with "
-                "reproducible analysis pipelines from Pathfinder.",
+    description="Real-time lineage hashing and genotyping of bacterial"
+                "pathogens from uncorrected nanopore reads.",
 )

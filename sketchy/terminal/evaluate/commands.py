@@ -22,15 +22,15 @@ from matplotlib import pyplot as plt
     help='Color of heatmap output: red,orange,green,blue'
 )
 @click.option(
-    '--lineage', default='9',  type=str,
+    '--lineage', default=None,  type=str or None,
     help='True lineage to evaluate on.'
 )
 @click.option(
-    '--resistance', default='SRSSSSSSRSSS',  type=str,
+    '--resistance', default=None,  type=str or None,
     help='True resistance profile to evaluate on.'
 )
 @click.option(
-    '--genotype', default='',  type=str,
+    '--genotype', default=None,  type=str or None,
     help='True genotype to evaluate on.'
 )
 @click.option(
@@ -65,17 +65,31 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         secondary_color=secondary,
     )
 
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(21.0, 7.0))
-    fig.subplots_adjust(hspace=0.5)
-    fig.suptitle(f'{indir.name} - {limit}')
+    if all(
+        v for v in (lineage, resistance, genotype)
+    ):
+        fig, (ax1, ax2) = plt.subplots(
+            nrows=1, ncols=2, figsize=(21.0, 7.0)
+        )
+        fig.subplots_adjust(hspace=0.5)
+        fig.suptitle(f'{indir.name} - {limit}')
 
-    se.create_timeline_hitmap(ranks=show_ranks, ax=ax1)
-    se.create_race_plot(ax=ax2)
-    se.create_concordance_plot(ax=ax3)
+        se.create_lineage_plot(ax=ax1)
+
+    else:
+        fig, (ax1, ax2, ax3) = plt.subplots(
+            nrows=1, ncols=3, figsize=(21.0, 7.0)
+        )
+        fig.subplots_adjust(hspace=0.5)
+        fig.suptitle(f'{indir.name} - {limit}')
+
+        se.create_timeline_hitmap(ranks=show_ranks, ax=ax1)
+        se.create_race_plot(ax=ax2)
+        se.create_concordance_plot(ax=ax3)
 
     plt.tight_layout()
 
     fig.savefig(
-        outdir / 'evaluation.pdf',
+        outdir / 'lineage_plot.pdf',
     )
 

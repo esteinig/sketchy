@@ -101,6 +101,7 @@ class SampleEvaluator:
 
         print(f'There were {match_count} unique matches on lineage and traits in'
               f' the top {self.top} ssh-matches over {self.reads} reads.')
+
         self.top_ssh_all = self._assign_truth(
             self.top_ssh_all, category=True
         )
@@ -140,7 +141,7 @@ class SampleEvaluator:
 
         hm = hm[hm.columns].astype(float)
         hm2 = hm.iloc[:ranks, :]
-        print(hm2.shape)
+
         p1 = sns.heatmap(
             hm.iloc[:ranks, :], linewidths=0, cbar=False, ax=ax,
             cmap=[self.false_color, self.lineage_color, self.true_color]
@@ -151,9 +152,9 @@ class SampleEvaluator:
         elif 200 < self.reads <= 500:
             xticks = [i for i in range(0, self.reads+1, 50)]
         elif 500 < self.reads <= 1500:
-            xticks = [i for i in range(0, self.reads+1, 100)]
-        else:
             xticks = [i for i in range(0, self.reads+1, 500)]
+        else:
+            xticks = [i for i in range(0, self.reads+1, 5000)]
 
         p1.set_xticks(xticks)
         p1.set_xticklabels(xticks, rotation='horizontal')
@@ -170,8 +171,6 @@ class SampleEvaluator:
 
         # Rank based index from 1
         yticks[0] = 1
-
-        print(yticks)
 
         p1.set_yticks(yticks)
         p1.set_yticklabels(yticks)
@@ -280,6 +279,52 @@ class SampleEvaluator:
         plt.close()
 
         return p2
+
+    def create_lineage_plot(self, ax=None):
+
+
+        # Select 10 lineages ranked by mean SSH
+
+        top_lineages = self.top_ssh_all.groupby(by='lineage')\
+            .mean('shared').sort_values('shared', ascending=False)
+
+        print('Test', top_lineages)
+
+        col = sns.color_palette("muted")
+
+
+        # p3 = sns.lineplot(
+        #     data=df, x='read', y='shared', hue='lineage',
+        #     ci=None, estimator='mean', ax=ax,
+        #     palette=sns.color_palette(
+        #         len(
+        #             df.Concordance.unique()
+        #         )
+        #     ))
+        #
+        # p3.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        # p3.set_xlabel('Read', fontsize=8)
+        #
+        # p2.tick_params(labelsize=6)
+        #
+        # if self.breakpoint_detection:
+        #     plt.axvline(
+        #         x=self.breakpoint_detection, linewidth=1,
+        #         linestyle='--', color='black'
+        #
+        #     )
+        #
+        # if self.breakpoint_stable:
+        #     plt.axvline(x=self.breakpoint_stable, linewidth=1,
+        #                 color='black')
+        #
+        # p2.get_figure().savefig(
+        #     f'{self.outdir / "race_plot_mean_95.pdf"}',
+        #     figsize=(11.0, 7.0)
+        # )
+        # plt.close()
+        #
+        # return p2
 
     def _get_truth_color(
         self,
