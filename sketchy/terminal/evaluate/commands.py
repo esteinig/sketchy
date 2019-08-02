@@ -49,7 +49,12 @@ from matplotlib import pyplot as plt
     '--top', default=50,  type=int,
     help='Collect the top ranked genome hits by sum of shared hashes to plot.'
 )
-def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary, secondary, show_ranks, top):
+@click.option(
+    '--top_lineages', default=10,  type=int,
+    help='Collect the top ranked lineages aggregated by mean sum of '
+         'shared hashes for plotting.'
+)
+def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary, secondary, show_ranks, top, top_lineages):
 
     """ Evaluate a sample for detection boundaries """
 
@@ -65,16 +70,23 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         secondary_color=secondary,
     )
 
-    if all(
-        v for v in (lineage, resistance, genotype)
-    ):
+    validate = [lineage, resistance, genotype]
+    if validate.count(None) == len(validate):
+        print('Computing plots...')
         fig, (ax1, ax2) = plt.subplots(
             nrows=1, ncols=2, figsize=(21.0, 7.0)
         )
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f'{indir.name} - {limit}')
 
-        se.create_lineage_plot(ax=ax1)
+        se.create_lineage_hitmap(top=top_lineages, ranks=show_ranks, ax=ax1)
+        se.create_lineage_plot(top=top_lineages, ax=ax2)
+
+        plt.tight_layout()
+
+        fig.savefig(
+            outdir / 'lineage_plots.pdf',
+        )
 
     else:
         fig, (ax1, ax2, ax3) = plt.subplots(
@@ -87,9 +99,6 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         se.create_race_plot(ax=ax2)
         se.create_concordance_plot(ax=ax3)
 
-    plt.tight_layout()
-
-    fig.savefig(
-        outdir / 'lineage_plot.pdf',
-    )
-
+        fig.savefig(
+            outdir / 'validation_plots.pdf',
+        )

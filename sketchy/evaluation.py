@@ -140,7 +140,6 @@ class SampleEvaluator:
         hm = self.top_ssh_all.pivot('rank', 'read', 'truth')
 
         hm = hm[hm.columns].astype(float)
-        hm2 = hm.iloc[:ranks, :]
 
         p1 = sns.heatmap(
             hm.iloc[:ranks, :], linewidths=0, cbar=False, ax=ax,
@@ -280,51 +279,110 @@ class SampleEvaluator:
 
         return p2
 
-    def create_lineage_plot(self, ax=None):
+    def create_lineage_hitmap(self, top: int = 10, ranks: int = 100, ax=None):
 
+        top_lineages = self.top_ssh_all.groupby(by='lineage') \
+            .mean().shared.sort_values(ascending=False)[:top]
+
+        top_lineages = top_lineages.index.tolist()
+
+        df = self.top_ssh_all[self.top_ssh_all.lineage.isin(top_lineages)]
+
+        lineage_keys = {l: i for i, l in enumerate(top_lineages)}
+
+        df = df.assign(
+            vals=[lineage_keys[l] for l in df.lineage]
+        )
+
+        hm = df.pivot('rank', 'read', 'vals')
+
+        hm = hm[hm.columns].astype(float)
+
+        p1 = sns.heatmap(
+            hm.iloc[:ranks, :], linewidths=0, cbar=False, ax=ax,
+            cmap=sns.hls_palette(top)
+        )
+
+        p1.set_facecolor(self.false_color)
+
+        if self.reads <= 200:
+            xticks = [i for i in range(0, self.reads+1, 20)]
+        elif 200 < self.reads <= 500:
+            xticks = [i for i in range(0, self.reads+1, 50)]
+        elif 500 < self.reads <= 1500:
+            xticks = [i for i in range(0, self.reads+1, 500)]
+        else:
+            xticks = [i for i in range(0, self.reads+1, 5000)]
+
+        p1.set_xticks(xticks)
+        p1.set_xticklabels(xticks, rotation='horizontal')
+
+        p1.set_xlabel('Reads', fontsize=8)
+        p1.set_ylabel('', fontsize=8)
+
+        if ranks > 10:
+            yticks = [i for i in range(0, ranks+1, 10)]
+        else:
+            yticks = [i for i in range(0, ranks+1)]
+
+        # Rank based index from 1
+        yticks[0] = 1
+
+        p1.set_yticks(yticks)
+        p1.set_yticklabels(yticks)
+
+        p1.tick_params(axis='both', which='major', labelsize=6)
+        p1.tick_params(length=1, width=0.5)
+
+        if self.breakpoint_stable:
+            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
+
+        p1.get_figure().savefig(
+            f'{self.outdir / "lineage_heatmap.pdf"}',
+            figsize=(11.0, 7.0)
+        )
+        plt.close()
+
+        return p1
+
+    def create_lineage_plot(self, top: int = 10, ax=None):
 
         # Select 10 lineages ranked by mean SSH
 
         top_lineages = self.top_ssh_all.groupby(by='lineage')\
-            .mean('shared').sort_values('shared', ascending=False)
+            .mean().shared.sort_values(ascending=False)[:top].index.tolist()
 
-        print('Test', top_lineages)
+        df = self.top_ssh_all[self.top_ssh_all.lineage.isin(top_lineages)]
 
-        col = sns.color_palette("muted")
+        p3 = sns.lineplot(
+            data=df, x='read', y='shared', hue='lineage',
+            ci=None, estimator='sum', ax=ax,
+            palette=sns.hls_palette(top)
+        )
 
+        p3.set_ylabel('Mean sum of shared hashes', fontsize=8)
+        p3.set_xlabel('Read', fontsize=8)
 
-        # p3 = sns.lineplot(
-        #     data=df, x='read', y='shared', hue='lineage',
-        #     ci=None, estimator='mean', ax=ax,
-        #     palette=sns.color_palette(
-        #         len(
-        #             df.Concordance.unique()
-        #         )
-        #     ))
-        #
-        # p3.set_ylabel('Mean sum of shared hashes', fontsize=8)
-        # p3.set_xlabel('Read', fontsize=8)
-        #
-        # p2.tick_params(labelsize=6)
-        #
-        # if self.breakpoint_detection:
-        #     plt.axvline(
-        #         x=self.breakpoint_detection, linewidth=1,
-        #         linestyle='--', color='black'
-        #
-        #     )
-        #
-        # if self.breakpoint_stable:
-        #     plt.axvline(x=self.breakpoint_stable, linewidth=1,
-        #                 color='black')
-        #
-        # p2.get_figure().savefig(
-        #     f'{self.outdir / "race_plot_mean_95.pdf"}',
-        #     figsize=(11.0, 7.0)
-        # )
-        # plt.close()
-        #
-        # return p2
+        p3.tick_params(labelsize=6)
+
+        if self.breakpoint_detection:
+            plt.axvline(
+                x=self.breakpoint_detection, linewidth=1,
+                linestyle='--', color='black'
+
+            )
+
+        if self.breakpoint_stable:
+            plt.axvline(x=self.breakpoint_stable, linewidth=1,
+                        color='black')
+
+        p3.get_figure().savefig(
+            f'{self.outdir / "lineage_plot.pdf"}',
+            figsize=(11.0, 7.0)
+        )
+        plt.close()
+
+        return p3
 
     def _get_truth_color(
         self,
