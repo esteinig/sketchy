@@ -1,9 +1,11 @@
 import click
 import shutil
 import pysam
+import matplotlib.pyplot as plt
 
 from pathlib import Path
 
+from sketchy.evaluation import SampleEvaluator
 from sketchy.minhash import MashScore
 from sketchy.utils import PoreLogger
 
@@ -14,13 +16,17 @@ from sketchy.utils import PoreLogger
     help='Input FASTQ file to predict lineage and traits from.',
 )
 @click.option(
+    '--outdir', '-o', required=True, type=Path,
+    help='Output directory for sum of shared hashes data and plots.',
+)
+@click.option(
     '--sketch', '-s',  type=str, default=None, required=True,
     help='MASH sketch file to query; or a template, one of: kleb, mrsa, tb'
 )
 @click.option(
     '--data', '-d', type=Path,
-    help='Index data file for pull genotypes; '
-         'optional if template sketch provided'
+    help='Index data file for pull genotypes; optional if template '
+         'sketch provided'
 )
 @click.option(
     '--reads', '-r', default=1000, help='Number of reads to type.', type=int
@@ -31,14 +37,15 @@ from sketchy.utils import PoreLogger
 )
 @click.option(
     '--keep', '-k', is_flag=True,
-    help='Keep temporary folder for: sketchy evaluate'
+    help='Keep temporary folder with per read shared hashes.'
 )
 @click.option(
     '--cores', '-c', default=2, help='Number of processors for MASH'
 )
 @click.option(
-    '--ncpu', default=0, type=int,
-    help='Do not compute SSH online; spread over CPUs; not online yet.'
+    '--ncpu', default=4, type=int,
+    help='Spin MASH computations into threads, then compute sum'
+         ' of shared hashes; not for online compute yet.'
 )
 @click.option(
     '--mode', type=str, default="single",
@@ -52,15 +59,23 @@ from sketchy.utils import PoreLogger
     '--genotype',  '-g', is_flag=True, help='Show genotype in pretty print.'
 )
 @click.option(
-    '--nextflow',  '-n', is_flag=True,
-    help='Disable sequential online computation for '
-         'distributed compute with Nextflow.'
-)
-@click.option(
-    '--pretty',  '-p', is_flag=True, help='Pretty print output.'
+    '--pretty',  '-p', is_flag=True, help='Pretty print output to console.'
 )
 @click.option(
     '--info',  '-i', is_flag=True, help='Read length and timestamp (adds IO).'
+)
+@click.option(
+    '--top', default=50,  type=int,
+    help='Collect the top ranked genome hits by sum of shared hashes to plot.'
+)
+@click.option(
+    '--top_lineages', default=5,  type=int,
+    help='Collect the top ranked lineages aggregated by sum of sums of '
+         'shared hashes from the --top collected genomes.'
+)
+@click.option(
+    '--online', is_flag=True,
+    help='Output parsed is raw MASH output from prediction with --ncpu == 1'
 )
 @click.option(
     '--sketchy',  default=Path.home() / '.sketchy', type=Path,
@@ -70,6 +85,7 @@ def predict(
         fastq,
         sketch,
         data,
+        outdir,
         tmp,
         keep,
         cores,
@@ -78,9 +94,11 @@ def predict(
         mode,
         show,
         genotype,
-        nextflow,
         pretty,
         info,
+        top,
+        online,
+        top_lineages,
         sketchy
 ):
 
@@ -88,31 +106,30 @@ def predict(
 
     pl = PoreLogger()
 
-    fastq_path = Path(fastq)
     sketch_path = Path(sketch)
 
     tmp.mkdir(parents=True, exist_ok=True)
 
     if fastq.suffix == '.gz':
         # Unpack into temporary directory
-        tmp_path = tmp / fastq_path.with_suffix('')
-        pl.logger.debug(f'Decompressing file {fastq_path} to {tmp_path}')
-        with pysam.FastxFile(fastq_path) as fin, \
-                open(tmp / fastq_path.with_suffix(''), mode='w') as fout:
+        tmp_path = tmp / fastq.with_suffix('')
+        pl.logger.debug(f'Decompressing file {fastq} to {tmp_path}')
+        with pysam.FastxFile(fastq) as fin, \
+                open(tmp / fastq.with_suffix(''), mode='w') as fout:
             for entry in fin:
                 string_out = str(entry)
                 if not string_out.endswith('\n'):
                     string_out += '\n'
                 fout.write(string_out)
 
-        fastq_path = tmp_path
+        fastq = tmp_path
 
     if sketch in ('kleb', 'mrsa', 'tb'):
         sketch_path = sketchy / 'db' / f'{sketch}.default.msh'
         data = sketchy / 'data' / f'{sketch}.data.tsv'
 
-    if not fastq_path.exists():
-        click.echo(f'File {fastq_path} does not exist.')
+    if not fastq.exists():
+        click.echo(f'File {fastq} does not exist.')
         exit(1)
 
     if not sketch_path.exists():
@@ -122,32 +139,65 @@ def predict(
     try:
 
         ms = MashScore()
+        pl.logger.info('Compute min-wise shared hashes against sketch ...')
+
         _ = ms.run(
-            fastq=fastq_path,
+            fastq=fastq,
             nreads=reads,
             sketch=sketch_path,
             cores=cores,
-            top=10,  # direct mode
+            top=top,  # direct mode only
             mode=mode,
             data=data,
-            out=None,
-            sort_by='shared',
             tmpdir=tmp,
             show_top=show,
             show_genotype=genotype,
-            nextflow=nextflow,
             ncpu=ncpu,
             pretty=pretty,
-            info=info
+            info=info,
+        )
+
+        se = SampleEvaluator(
+            tmp, outdir,
+            limit=reads,
+            top=top,
+            sequential=online,
+            sketch_data=data
+        )
+
+        fig, (ax1, ax2) = plt.subplots(
+            nrows=1, ncols=2, figsize=(21.0, 7.0)
+        )
+        fig.subplots_adjust(hspace=0.5)
+        fig.suptitle(f'{tmp.name}')
+
+        se.create_lineage_hitmap(top=top_lineages, ax=ax1)
+        se.create_lineage_plot(top=top_lineages, ax=ax2)
+
+        plt.tight_layout()
+
+        fig.savefig(
+            outdir / 'lineage_plots.pdf',
+        )
+
+        se.top_ssh.to_csv(
+            outdir / 'lineage_data.tsv', sep='\t'
         )
 
     except KeyboardInterrupt:
         if not keep:
             shutil.rmtree(tmp)
+        exit(0)
     except AttributeError:
         # KeyboardInterrupt SIGKILL to running Popen.PIPE
         if not keep:
             shutil.rmtree(tmp)
+        exit(0)
+    except RuntimeError:
+        # Multiprocessing interrupt
+        if not keep:
+            shutil.rmtree(tmp)
+        exit(0)
     else:
         if not keep:
             shutil.rmtree(tmp)

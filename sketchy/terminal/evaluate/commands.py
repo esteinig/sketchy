@@ -1,4 +1,5 @@
 import click
+import pandas
 
 from sketchy.evaluation import SampleEvaluator
 from pathlib import Path
@@ -6,8 +7,12 @@ from matplotlib import pyplot as plt
 
 @click.command()
 @click.option(
-    '--indir', '-d', default=None, required=True,  type=Path,
+    '--indir', '-i', default=None, required=True,  type=Path,
     help='Input directory from sketchy predict --keep.'
+)
+@click.option(
+    '--data', '-d',  type=str, default=None, required=True,
+    help='MASH sketch data; or a template, one of: kleb, mrsa, tb'
 )
 @click.option(
     '--outdir', '-o', default='sample_evaluation', type=Path,
@@ -42,7 +47,7 @@ from matplotlib import pyplot as plt
     help='Secondary color for hitmap (lineage correct only).'
 )
 @click.option(
-    '--show_ranks', '--ranks', default=100,  type=int,
+    '--ranks', default=100,  type=int,
     help='Secondary color for hitmap (lineage correct only).'
 )
 @click.option(
@@ -50,13 +55,32 @@ from matplotlib import pyplot as plt
     help='Collect the top ranked genome hits by sum of shared hashes to plot.'
 )
 @click.option(
-    '--top_lineages', default=10,  type=int,
-    help='Collect the top ranked lineages aggregated by mean sum of '
+    '--top_lineages', default=5,  type=int,
+    help='Collect the top ranked lineages aggregated by sum of sums of '
          'shared hashes for plotting.'
 )
-def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary, secondary, show_ranks, top, top_lineages):
+@click.option(
+    '--multi', '-m', is_flag=True,
+    help='Output parsed is raw MASH output from prediction with --ncpu > 1'
+)
+@click.option(
+    '--sketchy',  default=Path.home() / '.sketchy', type=Path,
+    help='Path to Sketchy home directory [ ~/.sketchy/ ]'
+)
+def evaluate(
+    indir, lineage, resistance, genotype, outdir, limit, multi, data,
+    color, primary, secondary, ranks, top, top_lineages, sketchy
+):
 
     """ Evaluate a sample for detection boundaries """
+    if data in ('kleb', 'mrsa', 'tb'):
+        sketch_data = pandas.read_csv(
+            sketchy / 'data' / f'{data}.data.tsv', sep='\t', index_col=0
+        )
+    else:
+        sketch_data = pandas.read_csv(
+            Path(data), sep='\t', index_col=0
+        )
 
     se = SampleEvaluator(
         indir, outdir,
@@ -68,18 +92,19 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         true_genotype=genotype,
         primary_color=primary,
         secondary_color=secondary,
+        sequential=not multi,
+        sketch_data=sketch_data
     )
 
     validate = [lineage, resistance, genotype]
     if validate.count(None) == len(validate):
-        print('Computing plots...')
         fig, (ax1, ax2) = plt.subplots(
             nrows=1, ncols=2, figsize=(21.0, 7.0)
         )
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f'{indir.name} - {limit}')
 
-        se.create_lineage_hitmap(top=top_lineages, ranks=show_ranks, ax=ax1)
+        se.create_lineage_hitmap(top=top_lineages, ax=ax1)
         se.create_lineage_plot(top=top_lineages, ax=ax2)
 
         plt.tight_layout()
@@ -95,7 +120,7 @@ def evaluate(indir, lineage, resistance, genotype, outdir, limit, color, primary
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f'{indir.name} - {limit}')
 
-        se.create_timeline_hitmap(ranks=show_ranks, ax=ax1)
+        se.create_validation_hitmap(ranks=ranks, ax=ax1)
         se.create_race_plot(ax=ax2)
         se.create_concordance_plot(ax=ax3)
 

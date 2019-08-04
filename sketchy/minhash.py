@@ -66,13 +66,10 @@ class MashScore(PoreLogger):
         cores: int = 2,
         ncpu: int = 0,
         top: int = 10,
-        out: Path = None,
         mode: str = 'single',
-        sort_by: str = 'shared',
         tmpdir: Path = Path().cwd() / 'tmp',
         show_top: int = 5,
         show_genotype: bool = False,
-        nextflow: bool = False,
         pretty: bool = False,
         info: bool = False,
     ) -> pandas.DataFrame or list:
@@ -82,8 +79,9 @@ class MashScore(PoreLogger):
         total_reads = self._get_total_reads(fastq)
 
         if mode == "direct":
+            # Direct mode on file:
             mash = self.mash_dist(
-                fastq, mashdb=sketch, ncpu=cores, sort_by=sort_by
+                fastq, mashdb=sketch, ncpu=cores, sort_by='shared'
             )
 
             # TODO: Warning: setting index to ID, requires IDs to be UUID
@@ -101,42 +99,7 @@ class MashScore(PoreLogger):
             )
 
         else:
-
-            if nextflow:
-                # Cut and predict on a single read for dist compute;
-                # given by --reads argument on CLI, used in Nextflow
-
-                if nreads > total_reads:
-                    self.logger.info(
-                        f'Selected reads index {nreads} is larger than'
-                        f' total number of reads in input file {total_reads}'
-                    )
-                    exit(1)
-
-                fpath = self.cut_read(
-                    nread=nreads, mode=mode, fastq=fastq, tmpdir=tmpdir
-                )
-                self.compute_ssh(
-                    fpath=fpath,
-                    df=df,
-                    sketch=sketch,
-                    nread=nreads,  # print read at >> nreads <<
-                    cores=cores,
-                    mode=mode,
-                    sort_by=sort_by,
-                    tmpdir=tmpdir,
-                    show_top=show_top,
-                    show_genotype=show_genotype,
-                    sequential=False,
-                    pretty=pretty,
-                    info=info
-                )
-
-                # Clean up temporary read file
-                fpath.unlink()
-
-                return
-
+            # Multiprocessing file mode:
             if ncpu > 0:
                 if nreads > total_reads:
                     if nreads > total_reads:
@@ -155,18 +118,19 @@ class MashScore(PoreLogger):
                             nread,  # print read at >> nread << in loop
                             cores,
                             mode,
-                            sort_by,
                             tmpdir,
-                            show_top,
-                            show_genotype,
-                            pretty,
-                            info
-                        )) for nread in range(nreads)
+                        ), callback=lambda x: self.logger.debug(
+                            f'Computed shared hashes for read '
+                            f'{x.stem.split("_")[-1]} @ {x}'
+                        ))
+                        for nread in range(nreads)
                     ]
-                    output = [p.get() for p in results]
+
+                    output = [p.get() for p in tqdm(results)]
 
                     return output
             else:
+                # Online mode, single CPU
                 for nread in range(nreads):
                     if nread == total_reads:
                         self.logger.info(
@@ -186,22 +150,20 @@ class MashScore(PoreLogger):
                         nread=nread,  # print read at >> nread << in loop
                         cores=cores,
                         mode=mode,
-                        sort_by=sort_by,
+                        sort_by='shared',
                         tmpdir=tmpdir,
                         show_top=show_top,
                         show_genotype=show_genotype,
                         sequential=True,
                         pretty=pretty,
-                        info=info
+                        info=info,
                     )
 
                     # Clean up temporary read file
                     fpath.unlink()
 
-            if out:
-                self.inter.to_csv(out, index=True, header=True, sep='\t')
+                    return self.inter
 
-            return self.inter
 
     def _multi_compute(
             self,
@@ -211,12 +173,7 @@ class MashScore(PoreLogger):
             nread,
             cores,
             mode,
-            sort_by,
             tmpdir,
-            show_top,
-            show_genotype,
-            pretty,
-            info,
     ):
         """ Wrapper for multiprocessing sum of shared hashes """
 
@@ -224,25 +181,23 @@ class MashScore(PoreLogger):
             nread=nread, mode=mode, fastq=fastq, tmpdir=tmpdir
         )
         self.compute_ssh(
-            fpath,
-            df,
-            sketch,
-            nread,
-            cores,
-            mode,
-            sort_by,
-            tmpdir,
-            show_top,
-            show_genotype,
+            fpath=fpath,
+            df=df,
+            sketch=sketch,
+            nread=nread,
+            cores=cores,
+            mode=mode,
+            sort_by='shared',
+            tmpdir=tmpdir,
             sequential=False,
-            pretty=pretty,
-            info=info
+            pretty=False,
+            info=False,
+            printout=False,
         )
 
-        # Clean up temporary read file
         fpath.unlink()
 
-        return nread
+        return fpath
 
     @staticmethod
     def cut_read(nread, mode, fastq, tmpdir):
@@ -276,11 +231,12 @@ class MashScore(PoreLogger):
 
     def compute_ssh(
         self,
-        fpath: Path,
-        df: pandas.DataFrame,
-        sketch: Path,
-        nread: int,
-        cores: int,
+        fpath: Path = None,
+        sketch: Path = None,
+        nread: int = None,
+        cores: int = 2,
+        mash: pandas.DataFrame or None = None,
+        df: pandas.DataFrame or None = None,
         mode: str = 'single',
         sort_by: str = 'shared',
         tmpdir: Path = Path().cwd() / 'tmp',
@@ -289,74 +245,89 @@ class MashScore(PoreLogger):
         sequential: bool = True,
         pretty: bool = False,
         info: bool = False,
+        printout: bool = True,
     ):
 
-        mash = self.mash_dist(
-            fpath, mashdb=sketch, ncpu=cores, sort_by=sort_by
-        )
+        if mash is None:
+            mash = self.mash_dist(
+                fpath, mashdb=sketch, ncpu=cores, sort_by=sort_by
+            )
 
-        # TODO: NEW METHOD START HERE
-        # TODO: Warning: setting index to ID, requires IDs to be UUID
+            inter = mash.drop(
+                columns=['file', 'dist', 'p-value']
+            ).set_index('id')
+        else:
 
-        inter = mash.drop(
-            columns=['file', 'dist', 'p-value']
-        ).set_index('id')
+            inter = mash.drop(
+                columns=['lineage', 'genotype', 'susceptibility']
+            )  # not setting index done before on mash: .set_index('uuid')
 
         if sequential:
             # Update scores in sequential mode
             if self.inter.empty:
                 self.inter = inter
             else:
-                # Sum of shared hashes
-                self.inter = self.inter.add(inter).sort_values(
+                # Sum of shared hashes - add (original)
+                self.inter = self.inter.add(inter, fill_value=0).sort_values(
                     by='shared', ascending=False
                 )
             interim = self.inter.copy()
         else:
-            # Do not update in distributed mode, output only to file
+            # Do not update in distributed mode,
+            # output reduced (filtered) to files
             interim = inter.copy()
+            interim = interim[interim.shared > 0].sort_values(
+                by='shared', ascending=False
+            )
+
 
         # Ops to merge with meta data for printing to console
         interim.index = interim.index.map(
             lambda x: Path(x).stem
         )
         interim.index.name = 'uuid'
-        interim = interim.join(df, how='inner')
 
-        if info:
-            seqlen, timestamp = self._parse_read_stats(fpath)
-        else:
-            seqlen, timestamp = None, None
+        if df is not None:
+            interim = interim.join(df, how='inner')
 
-        if pretty:
-            self.pretty_print(
-                interim=interim,
-                mode=mode,
-                nread=nread,
-                seqlen=seqlen,
-                timestamp=timestamp,
-                select_top=show_top,
-                show_genotype=show_genotype
+        if nread is not None:
+            # Output sum of shared hashes (
+            n = 4 * (nread + 1)
+            read = n if mode == "cumulative" else n // 4
+
+            output_prefix = 'total.counts' if sequential else 'read'
+
+            if not interim.empty:
+                interim.to_csv(
+                    tmpdir / f'{output_prefix}.{read}', sep='\t'
+                )
+
+        if printout and not interim.empty:
+
+            if info:
+                seqlen, timestamp = self._parse_read_stats(fpath)
+            else:
+                seqlen, timestamp = None, None
+
+            if pretty:
+                self.pretty_print(
+                    interim=interim,
+                    mode=mode,
+                    nread=nread,
+                    seqlen=seqlen,
+                    timestamp=timestamp,
+                    select_top=show_top,
+                    show_genotype=show_genotype
+                )
+            else:
+                self.regular_print(
+                    interim=interim,
+                    nread=nread,
+                    seqlen=seqlen,
+                    timestamp=timestamp,
+                    select_top=show_top,
+                    show_genotype=show_genotype
             )
-        else:
-            self.regular_print(
-                interim=interim,
-                nread=nread,
-                seqlen=seqlen,
-                timestamp=timestamp,
-                select_top=show_top,
-                show_genotype=show_genotype
-            )
-
-        # Output sum of shared hashes (
-        n = 4 * (nread + 1)
-        read = n if mode == "cumulative" else n // 4
-
-        output_prefix = 'total.counts' if sequential else 'read'
-
-        interim.to_csv(
-            tmpdir / f'{output_prefix}.{read}', sep='\t'
-        )
 
         if sequential:
             self.interim = interim
@@ -384,8 +355,6 @@ class MashScore(PoreLogger):
         #         ).stem
         #         result = df.loc[idx, :]
         #         results.append(result)
-
-        return tmpdir / f'total.counts.{read}'
 
     @staticmethod
     def regular_print(

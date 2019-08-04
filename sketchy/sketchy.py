@@ -77,11 +77,16 @@ class Sketchy:
             total = None
 
         with open(file, "r") as input_handle:
-            for record in tqdm(SeqIO.parse(input_handle, "fastq"), total=total):
-                # Extract start time
-                timestr = re.search(regex, record.description)
-                time = timestr.group(1).strip().replace('start_time=', '')
-                dtime = dateutil.parser.parse(time)
+            for record in tqdm(
+                    SeqIO.parse(input_handle, "fastq"), total=total
+            ):
+                try:
+                    # Extract start time
+                    timestr = re.search(regex, record.description)
+                    time = timestr.group(1).strip().replace('start_time=', '')
+                    dtime = dateutil.parser.parse(time)
+                except AttributeError:
+                    dtime = None
 
                 dates.append(dtime)
                 ids.append(record.id)
@@ -123,10 +128,9 @@ class Sketchy:
             ]
 
             if shuffle:
-                recs = random.shuffle(recs)
+                random.shuffle(recs)
 
             with open(fastq, "w") as output_handle:
-                print(f'Writing to {fastq}')
                 SeqIO.write(recs, output_handle, 'fastq')
 
         return fastq
