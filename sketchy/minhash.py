@@ -579,18 +579,24 @@ class MashScore(PoreLogger):
         )
 
         lines = read.decode("utf-8").split('\n')
-        header = lines[0]
-        seq = lines[1]
 
         try:
-            timestr = re.search(self.start_time_regex, header)
-            if timestr:
-                time = timestr.group(1).strip().replace('start_time=', '')
-                dtime = dateutil.parser.parse(time)
-            else:
+            header = lines[0]
+            seq = lines[1]
+
+            try:
+                timestr = re.search(self.start_time_regex, header)
+                if timestr:
+                    time = timestr.group(1).strip().replace('start_time=', '')
+                    dtime = dateutil.parser.parse(time)
+                else:
+                    dtime = '-'
+            except IndexError:
                 dtime = '-'
-        except IndexError:
-            dtime = '-'
+
+        except KeyError:
+            self.logger.info(f'Could not detect last read in: {read_file}')
+            dtime, seq = '-', ''
 
         return len(seq), str(dtime)
 

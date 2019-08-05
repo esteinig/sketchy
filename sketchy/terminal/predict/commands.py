@@ -24,11 +24,6 @@ from sketchy.utils import PoreLogger
     help='MASH sketch file to query; or a template, one of: kleb, mrsa, tb'
 )
 @click.option(
-    '--data', '-d', type=Path,
-    help='Index data file for pull genotypes; optional if template '
-         'sketch provided'
-)
-@click.option(
     '--reads', '-r', default=1000, help='Number of reads to type.', type=int
 )
 @click.option(
@@ -48,66 +43,42 @@ from sketchy.utils import PoreLogger
          ' of shared hashes; not for online compute yet.'
 )
 @click.option(
-    '--mode', type=str, default="single",
-    help='Analysis mode; single, cumulative, direct.'
-)
-@click.option(
-    '--show', default=10,
-    help='Show this many lineages in pretty print; set to 3 for TB.'
-)
-@click.option(
-    '--genotype',  '-g', is_flag=True, help='Show genotype in pretty print.'
-)
-@click.option(
-    '--pretty',  '-p', is_flag=True, help='Pretty print output to console.'
-)
-@click.option(
-    '--info',  '-i', is_flag=True, help='Read length and timestamp (adds IO).'
-)
-@click.option(
     '--top', default=50,  type=int,
     help='Collect the top ranked genome hits by sum of shared hashes to plot.'
 )
 @click.option(
-    '--top_lineages', default=5,  type=int,
+    '--lineages', default=5,  type=int,
     help='Collect the top ranked lineages aggregated by sum of sums of '
          'shared hashes from the --top collected genomes.'
-)
-@click.option(
-    '--online', is_flag=True,
-    help='Output parsed is raw MASH output from prediction with --ncpu == 1'
 )
 @click.option(
     '--sketchy',  default=Path.home() / '.sketchy', type=Path,
     help='Path to Sketchy home directory [ ~/.sketchy/ ]'
 )
+@click.option(
+    '--data', '-d', type=Path,
+    help='Index data file for pull genotypes; optional if template '
+         'sketch provided'
+)
 def predict(
-        fastq,
-        sketch,
-        data,
-        outdir,
-        tmp,
-        keep,
-        cores,
-        ncpu,
-        reads,
-        mode,
-        show,
-        genotype,
-        pretty,
-        info,
-        top,
-        online,
-        top_lineages,
-        sketchy
+    fastq,
+    sketch,
+    data,
+    outdir,
+    tmp,
+    keep,
+    cores,
+    ncpu,
+    reads,
+    top,
+    lineages,
+    sketchy
 ):
 
-    """ Online lineage matching from uncorrected nanopore reads"""
+    """ Lineage hashing from uncorrected nanopore reads (offline) """
 
     pl = PoreLogger()
-
     sketch_path = Path(sketch)
-
     tmp.mkdir(parents=True, exist_ok=True)
 
     if fastq.suffix == '.gz':
@@ -147,21 +118,17 @@ def predict(
             sketch=sketch_path,
             cores=cores,
             top=top,  # direct mode only
-            mode=mode,
+            mode='single',
             data=data,
             tmpdir=tmp,
-            show_top=show,
-            show_genotype=genotype,
             ncpu=ncpu,
-            pretty=pretty,
-            info=info,
         )
 
         se = SampleEvaluator(
-            tmp, outdir,
+            indir=tmp,
+            outdir=outdir,
             limit=reads,
             top=top,
-            sequential=online,
             sketch_data=data
         )
 
@@ -171,8 +138,8 @@ def predict(
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f'{tmp.name}')
 
-        se.create_lineage_hitmap(top=top_lineages, ax=ax1)
-        se.create_lineage_plot(top=top_lineages, ax=ax2)
+        se.create_lineage_hitmap(top=lineages, ax=ax1)
+        se.create_lineage_plot(top=lineages, ax=ax2)
 
         plt.tight_layout()
 
@@ -185,16 +152,6 @@ def predict(
         )
 
     except KeyboardInterrupt:
-        if not keep:
-            shutil.rmtree(tmp)
-        exit(0)
-    except AttributeError:
-        # KeyboardInterrupt SIGKILL to running Popen.PIPE
-        if not keep:
-            shutil.rmtree(tmp)
-        exit(0)
-    except RuntimeError:
-        # Multiprocessing interrupt
         if not keep:
             shutil.rmtree(tmp)
         exit(0)

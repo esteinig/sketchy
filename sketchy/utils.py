@@ -3,6 +3,8 @@ import subprocess
 import sys
 import shlex
 from pathlib import Path
+import numpy as np
+import scipy.stats
 
 
 class PoreLogger:
@@ -17,6 +19,34 @@ class PoreLogger:
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
+
+
+BREWER = {
+  'blue': [
+      "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0",
+      "#225ea8", "#253494", "#081d58"
+  ],
+  'green': [
+      "#f7fcb9", "#d9f0a3",	"#addd8e",	"#78c679", "#41ab5d",
+      "#238443", "#006837",	"#004529"
+  ],
+  'red': [
+      "#e7e1ef", "#d4b9da", "#c994c7",	"#df65b0", "#e7298a",
+      "#ce1256", "#980043", "#67001f"
+  ],
+  'orange': [
+      "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a",
+      "#e31a1c", "#bd0026",	"#800026"
+  ]
+}
+
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0 * np.array([v for v in data if v is not None])
+    n = len(a)
+    m, se = np.mean(a), scipy.stats.sem(a)
+    h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
+    return m, m-h, m+h
 
 
 def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):

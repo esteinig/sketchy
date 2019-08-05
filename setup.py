@@ -16,7 +16,8 @@ setup(
         "seaborn",
         "scipy",
         "biopython",
-        "pypdf2"
+        "pypdf2",
+        "deprecated"
     ],
     entry_points="""
         [console_scripts]
