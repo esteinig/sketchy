@@ -6,7 +6,6 @@ from .watch import watch
 from .sketch import sketch
 from .survey import survey
 from .predict import predict
-from .evaluate import evaluate
 from .summary import summary
 from .concat import concat
 from .db_pull import db_pull
@@ -33,7 +32,6 @@ terminal_client.add_command(watch)
 terminal_client.add_command(survey)
 terminal_client.add_command(sketch)
 terminal_client.add_command(predict)
-terminal_client.add_command(evaluate)
 terminal_client.add_command(select_fastq)
 terminal_client.add_command(db_list)
 terminal_client.add_command(db_pull)
