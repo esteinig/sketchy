@@ -35,12 +35,9 @@ from sketchy.utils import PoreLogger
     help='Keep temporary folder with per read shared hashes.'
 )
 @click.option(
-    '--cores', '-c', default=2, help='Number of processors for MASH'
-)
-@click.option(
-    '--ncpu', default=4, type=int,
-    help='Spin MASH computations into threads, then compute sum'
-         ' of shared hashes; not for online compute yet.'
+    '--threads', '-t', default=4, type=int,
+    help='Spin MASH into threads, compute post-hoc sum '
+         'of shared hashes.'
 )
 @click.option(
     '--top', default=50,  type=int,
@@ -48,17 +45,20 @@ from sketchy.utils import PoreLogger
 )
 @click.option(
     '--lineages', default=5,  type=int,
-    help='Collect the top ranked lineages aggregated by sum of sums of '
-         'shared hashes from the --top collected genomes.'
+    help='Collect top ranked lineages by sum of sums of '
+         'shared hashes to plot.'
+)
+@click.option(
+    '--cores', default=2, help='Number of processors for MASH'
+)
+@click.option(
+    '--data', type=Path,
+    help='Index data file for pull genotypes; optional if template '
+         'sketch provided'
 )
 @click.option(
     '--sketchy',  default=Path.home() / '.sketchy', type=Path,
     help='Path to Sketchy home directory [ ~/.sketchy/ ]'
-)
-@click.option(
-    '--data', '-d', type=Path,
-    help='Index data file for pull genotypes; optional if template '
-         'sketch provided'
 )
 def predict(
     fastq,
@@ -68,7 +68,7 @@ def predict(
     tmp,
     keep,
     cores,
-    ncpu,
+    threads,
     reads,
     top,
     lineages,
@@ -121,7 +121,7 @@ def predict(
             mode='single',
             data=data,
             tmpdir=tmp,
-            ncpu=ncpu,
+            ncpu=threads,
         )
 
         se = SampleEvaluator(
@@ -138,8 +138,8 @@ def predict(
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f'{tmp.name}')
 
-        se.create_lineage_hitmap(top=lineages, ax=ax1)
-        se.create_lineage_plot(top=lineages, ax=ax2)
+        se.create_hitmap(top=lineages, ax=ax1)
+        se.create_lineplot(top=lineages, ax=ax2)
 
         plt.tight_layout()
 

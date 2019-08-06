@@ -3,10 +3,11 @@ import click
 from pathlib import Path
 from PyPDF2 import PdfFileMerger
 
+
 @click.command()
 @click.option(
     '--path', '-p', default=Path.cwd(), type=Path,
-    help='Path to PDFs, default: PWD '
+    help='Path to PDFs to merge.'
 )
 @click.option(
     '--glob', '-g', default='*.pdf',
@@ -16,8 +17,8 @@ from PyPDF2 import PdfFileMerger
     '--output', '-o', default=Path.cwd() / 'concatenated.pdf', type=Path,
     help='Output concatenated PDF'
 )
-def concat(path, glob, output):
-    """ Concatenate PDFs """
+def sk_cat(path, glob, output):
+    """ Concatenate a clowder of PDF files """
 
     pdfs = [str(f) for f in path.glob(glob)]
 

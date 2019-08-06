@@ -24,7 +24,7 @@ from sketchy.minhash import MashSketch
     '--uuid', is_flag=True,
     help='Use a UUID instead of the data index to anonymise data collection.'
 )
-def link(data, outdir, copy, delimiter, uuid):
+def sk_link(data, outdir, copy, delimiter, uuid):
     """ Symlink a set of .fasta files from file """
 
     sketch = MashSketch()

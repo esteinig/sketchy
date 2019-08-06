@@ -15,7 +15,7 @@ from pathlib import Path
     '--out', '-o', default=Path('sketchy.merge.tsv'),
     help='Output data index file for Sketchy', type=Path
 )
-def merge(survey, key, out):
+def sk_merge(survey, key, out):
     """ Create Sketchy data by merging survey with a key file  """
 
     s = pandas.read_csv(survey, '\t', index_col=0)

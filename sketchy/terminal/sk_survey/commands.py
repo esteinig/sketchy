@@ -24,7 +24,7 @@ from pathlib import Path
          'genotype and susceptibility from results of molecular typing '
          'with pf-core/pf-survey.'
 )
-def survey(directory, output, template, config):
+def sk_survey(directory, output, template, config):
     """ Create survey data frame for creating a sketch with MASH """
 
     pass

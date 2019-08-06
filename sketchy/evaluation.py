@@ -1,13 +1,12 @@
 import pandas
 import seaborn as sns
+import itertools
 
 from tqdm import tqdm
-from deprecated import deprecated
 from sketchy.minhash import MashScore
 from pathlib import Path
-from cycler import cycler
 from matplotlib import pyplot as plt
-from sketchy.utils import PoreLogger, BREWER
+from sketchy.utils import PoreLogger
 
 
 class Sample:
@@ -15,11 +14,11 @@ class Sample:
     """ Base access to evaluation and plotting for pre-print analysis """
 
     def __init__(
-            self,
-            indir: Path,
-            outdir: Path = None,
-            limit: int = 1000,
-            top: int = 10,
+        self,
+        indir: Path = None,
+        outdir: Path = None,
+        limit: int = 1000,
+        top: int = 10,
     ):
 
         self.top = top
@@ -27,32 +26,38 @@ class Sample:
         self.limit = limit
 
         self.outdir = outdir
-        self.outdir.mkdir(parents=True, exist_ok=True)
-
+        if outdir:
+            self.outdir.mkdir(parents=True, exist_ok=True)
 
         self.false_color = "#d9d9d9"
 
         self.logger = PoreLogger().logger
 
         self.reads: int = 0
-        self.breakpoint_detection = 0
-        self.breakpoint_stable = 0
+
+        self.breakpoint_detection: int or None = None
+        self.breakpoint_stable: int or None = None
 
     def _parse_hashes(self) -> pandas.DataFrame:
 
-        """ Parse output of sketchy predict temporary directory - overwritten in subclasses """
+        """
+        Parse output of sketchy predict temporary directory
+         - overwritten in subclasses
+        """
 
         pass
+
 
 
 class SampleEvaluator(Sample):
 
     def __init__(
         self,
-        indir: Path,
+        indir: Path = None,
         outdir: Path = None,
         limit: int = 1000,
         top: int = 10,
+        plot_data: pandas.DataFrame = None,
         sketch_data: pandas.DataFrame or Path = None
     ):
 
@@ -67,7 +72,17 @@ class SampleEvaluator(Sample):
         else:
             self.sketch_data = sketch_data
 
-        self.top_ssh: pandas.DataFrame = self._parse_hashes()
+        if indir is not None:
+            self.top_ssh: pandas.DataFrame = self._parse_hashes()
+            self._log_info()
+
+        if plot_data is not None:
+            self.top_ssh = plot_data
+
+        if self.reads == 0:
+            self.reads = self.limit
+
+    def _log_info(self):
 
         self.logger.info(
             f'{len(self.top_ssh.index.unique())} unique genome hits were '
@@ -124,7 +139,7 @@ class SampleEvaluator(Sample):
 
         hash_dfs = []
         for i in tqdm(
-                read_range[:self.limit]
+            read_range[:self.limit]
         ):
             self.logger.debug(
                 f'Computing sum of shared hashes @ read {i}'
@@ -172,21 +187,84 @@ class SampleEvaluator(Sample):
         dd = pandas.concat(hash_dfs, sort=False)
         dd = dd.join(self.sketch_data, how='inner')  # Orders by index
 
-        if self.limit is None:
-            self.limit = self.reads
-
         return dd
 
-    def create_lineage_hitmap(self, top: int = 10, ax=None):
+    def sum_of_ssh(self, data):
 
-        self.logger.debug(
-            f'Generate lineage hitmap'
-        )
-
-        self.top_ssh.lineage = self.top_ssh.lineage.astype(str)
+        self.top_ssh.lineage = self.top_ssh[data].astype(str)
         self.top_ssh.shared = self.top_ssh.shared.astype(float)
 
-        top_lineages = self.top_ssh.groupby(by='lineage') \
+        # Compute the sum of sum of shared hashes
+
+        self.logger.info(
+            f'Computing sum of sums of shared hashes'
+            f' for {data.capitalize()} ...'
+        )
+        top_predictions = []
+        i = 0
+        for _, read_group in self.top_ssh.groupby('read'):
+            i += 1
+            data_sums = read_group.groupby(data).sum().reset_index() \
+                .sort_values('shared', ascending=False).reset_index()
+            top_predictions.append(
+                str(data_sums.loc[0, data])
+            )
+        self.logger.info(f'This many reads grouped: {i}')
+        return top_predictions
+
+    def find_breakpoints(
+            self, top: int = 5, data: str = 'lineage', block_size: int = 500
+    ):
+
+        top_predictions = self.sum_of_ssh(data)
+
+        top_data = self.top_ssh.groupby(by=data) \
+            .sum().shared.sort_values(ascending=False)[:top]
+
+        topaz = str(top_data.index.tolist()[0])
+
+        self.breakpoint_detection = top_predictions.index(topaz)+1
+        self.logger.debug(
+            f'Found detection breakpoint @'
+            f' {self.breakpoint_detection} reads.'
+        )
+        self.logger.info('Computing stable detection breakpoint ...')
+        for i, p in enumerate(top_predictions):
+            if p == topaz:
+                # Check for limit ahead:
+                uniform = set(
+                    top_predictions[i:i+block_size]
+                )
+
+                if len(uniform) == 1 and list(uniform)[0] == topaz:
+                    self.breakpoint_stable = i
+                    break
+
+        # TODO might change to most common lineage at last evaluated read
+        self.logger.debug(
+            f'Found stable breakpoint @'
+            f' {self.breakpoint_stable} reads.'
+        )
+        self.logger.info(
+            f'Breakpoints for {data.capitalize()} {topaz} '
+            f'@ {self.breakpoint_detection} reads (first) '
+            f'and {self.breakpoint_stable} reads (stable)'
+        )
+
+    def create_hitmap(
+            self, top: int = 5, data: str = 'lineage', ax=None, color='hls'
+    ):
+
+        self.logger.debug(
+            f'Generate lineage hitmap [ {top}, {data}]'
+        )
+
+        self.top_ssh[data] = self.top_ssh[data].astype(str)
+        self.top_ssh.shared = self.top_ssh.shared.astype(float)
+
+        palette = sns.color_palette(color, top)
+
+        top_lineages = self.top_ssh.groupby(by=data) \
             .sum().shared.sort_values(ascending=False)[:top]
 
         top_lineages = top_lineages.index.tolist()
@@ -201,7 +279,7 @@ class SampleEvaluator(Sample):
         lineage_keys = {l: i for i, l in enumerate(top_lineages)}
 
         df = df.assign(
-            vals=[lineage_keys.get(l, None) for l in df.lineage]
+            vals=[lineage_keys.get(l, None) for l in df[data]]
         )
 
         hm = df.pivot('rank', 'read', 'vals')
@@ -209,8 +287,8 @@ class SampleEvaluator(Sample):
         hm = hm[hm.columns].astype(float)
 
         p1 = sns.heatmap(
-            hm.iloc[:self.top, :], linewidths=0, cbar=False, ax=ax,
-            cmap=sns.hls_palette(top)
+            hm.iloc[:self.top, :self.limit], linewidths=0, cbar=False,
+            ax=ax, cmap=palette
         )
 
         p1.set_facecolor(self.false_color)
@@ -231,8 +309,8 @@ class SampleEvaluator(Sample):
         p1.set_xticks(xticks)
         p1.set_xticklabels(xticks, rotation='vertical')
 
-        p1.set_xlabel('\nReads', fontsize=10)
-        p1.set_ylabel('Ranked sum of shared hashes\n', fontsize=10)
+        p1.set_xlabel('\nReads', fontsize=9)
+        p1.set_ylabel('Ranked sum of shared hashes\n', fontsize=9)
 
         if self.top > 10:
             yticks = [i for i in range(0, self.top+1, 10)]
@@ -246,41 +324,42 @@ class SampleEvaluator(Sample):
         p1.tick_params(length=1, width=0.5)
 
         if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
-
-        plt.close()
+            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black') 
 
         return p1
 
-    def create_lineage_plot(
-            self, top: int = 10, ax=None
+    def create_lineplot(
+            self, top: int = 10, data: str = 'lineage', ax=None, color='hls'
     ):
 
         self.logger.debug(
             f'Generate lineage total sum plot'
         )
 
+        palette = sns.color_palette(color, top)
+
         # Changed from mean to sum() here:
-        top_lineages = self.top_ssh.groupby(by='lineage')\
+        top_lineages = self.top_ssh.groupby(by=data)\
             .sum().shared.sort_values(ascending=False)[:top].index.tolist()
 
-        df = self.top_ssh[self.top_ssh.lineage.isin(top_lineages)]
+        df = self.top_ssh[self.top_ssh[data].isin(top_lineages)]
 
-        df.rename(columns={'lineage': 'Lineage'})
+        df.rename(columns={data: data.capitalize()})
+
+        df = df[df['read'] <= self.limit]
 
         p3 = sns.lineplot(
-            data=df, x='read', y='shared', hue='lineage', hue_order=top_lineages,
-            ci=None, estimator='sum', ax=ax,
-            palette=sns.hls_palette(top)
+            data=df, x='read', y='shared', hue=data, hue_order=top_lineages,
+            ci=None, estimator='sum', ax=ax, palette=palette
         )
 
         legend = ax.legend()
-        legend.texts[0].set_text("Lineage")
+        legend.texts[0].set_text(data.capitalize())
 
         p3.set_ylabel(
-            'Sum total of ranked sums of shared hashes\n', fontsize=10
+            'Sum of ranked sums of shared hashes\n', fontsize=9
         )
-        p3.set_xlabel('\nRead', fontsize=10)
+        p3.set_xlabel('\nReads', fontsize=9)
 
         p3.tick_params(labelsize=6)
 
@@ -294,360 +373,4 @@ class SampleEvaluator(Sample):
             plt.axvline(x=self.breakpoint_stable, linewidth=1,
                         color='black')
 
-        plt.close()
-
         return p3
-
-
-@deprecated(version='v0.3.a2', reason="Validation plots have been replaced by lineage evaluation plots.")
-class SampleValidator(Sample):
-
-    def __init__(
-        self,
-        indir: Path,
-        outdir: Path = None,
-        limit: int = 1000,
-        top: int = 10,
-        true_lineage: str = '8',
-        true_genotype: str = 'MRSA:PVL+',
-        true_resistance: str = 'RSSSSSSSRRRS',
-        palette: str = None,
-        primary_color: str = "#41b6c4",
-        secondary_color: str = "#7fcdbb"
-    ):
-
-        super().__init__(
-            indir=indir, outdir=outdir, limit=limit, top=top
-        )
-
-        self.true_lineage = true_lineage
-        self.true_susceptibility = true_resistance
-        self.true_genotype = true_genotype
-
-        self.top_ssh: pandas.DataFrame = self._parse_hashes()
-
-        if palette in ('blue', 'red', 'green', 'orange'):
-            self.true_color = BREWER[palette][-3]
-            self.lineage_color = BREWER[palette][3]
-        else:
-            self.true_color = primary_color
-            self.lineage_color = secondary_color
-
-        self.logger.info(
-            f'Validation: {self.true_lineage} :: '
-            f'{self.true_susceptibility} :: '
-            f'{self.true_genotype}'
-        )
-        self.top_ssh = self._assign_truth(self.top_ssh)
-
-        # Parse complete data and assign truth for validation,
-        # this may take some time ...
-        self.top_ssh_all: pandas.DataFrame = self._parse_all_hashes()
-
-        self.logger.info(
-            'Assigning truth data, this may take some time...'
-        )
-        self.top_ssh_all = self._assign_truth(
-            self.top_ssh_all, category=True
-        )
-
-    @staticmethod
-    def _sum_matches(data):
-        """ Joint lineage / genotype / susceptibility match """
-        d = data['truth'].values[0]
-        if d == 2:
-            return 1
-        else:
-            return 0
-
-    def _get_truth_color(
-        self,
-        df: pandas.DataFrame,
-        name: bool = False,
-        category: bool = False
-    ):
-        """
-        Get truthy color for each attribute in the uuid-grouped dataframe.
-
-        Used as part of loop iterating over index-grouped DataFrame
-        """
-
-        lineage = str(df.lineage.iloc[0])
-        susceptibility = str(df.susceptibility.iloc[0])
-        genotype = str(df.genotype.iloc[0])
-
-        if lineage == self.true_lineage:
-            color = self.true_color
-            if name:
-                color = 'True'
-            if category:
-                color = 2
-            if genotype != self.true_genotype:
-                color = self.lineage_color
-                if name:
-                    color = 'Lineage'
-                if category:
-                    color = 1
-            if susceptibility != self.true_susceptibility:
-                color = self.lineage_color
-                if name:
-                    color = 'Lineage'
-                if category:
-                    color = 1
-        else:
-            color = self.false_color
-            if name:
-                color = 'False'
-            if category:
-                color = 0
-
-        return color
-
-    def _assign_truth(self, df, name: bool = False, category: bool = True):
-
-        grouped = df.groupby(by=df.index)
-
-        df['truth'] = [
-            'None' for _ in df.shared
-        ]
-
-        for k, v in grouped:
-            _df = grouped.get_group(k)
-            df.at[
-                _df.index[0], 'truth'
-            ] = self._get_truth_color(_df, category=category, name=name)
-
-        return df
-
-    def create_validation_hitmap(self, ranks: int = 50, ax=None):
-
-        self.logger.info(
-            f'Generate validation hitmap: {self.outdir / "heatmap.pdf"}'
-        )
-
-        self.top_ssh_all.reset_index(inplace=True)
-
-        hm = self.top_ssh_all.pivot('rank', 'read', 'truth')
-
-        hm = hm[hm.columns].astype(float)
-
-        p1 = sns.heatmap(
-            hm.iloc[:ranks, :], linewidths=0, cbar=False, ax=ax,
-            cmap=[self.false_color, self.lineage_color, self.true_color]
-        )
-
-        if self.reads <= 200:
-            xticks = [i for i in range(0, self.reads+1, 20)]
-        elif 200 < self.reads <= 500:
-            xticks = [i for i in range(0, self.reads+1, 50)]
-        elif 500 < self.reads <= 1500:
-            xticks = [i for i in range(0, self.reads+1, 500)]
-        else:
-            xticks = [i for i in range(0, self.reads+1, 5000)]
-
-        p1.set_xticks(xticks)
-        p1.set_xticklabels(xticks, rotation='horizontal')
-
-        p1.set_xlabel('Reads', fontsize=8)
-        p1.set_ylabel('', fontsize=8)
-
-        if ranks > 10:
-            yticks = [i for i in range(0, ranks+1, 10)]
-        else:
-            yticks = [i for i in range(0, ranks+1)]
-
-        # Rank based index from 1
-        yticks[0] = 1
-
-        p1.set_yticks(yticks)
-        p1.set_yticklabels(yticks)
-
-        p1.tick_params(axis='both', which='major', labelsize=6)
-        p1.tick_params(length=1, width=0.5)
-
-        if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
-
-        p1.get_figure().savefig(
-            f'{self.outdir / "heatmap.pdf"}',
-            figsize=(11.0, 7.0)
-        )
-        plt.close()
-
-        return p1
-
-    def create_race_plot(self, ax=None):
-
-        self.logger.info(
-            f'Generate lineage race plot: {self.outdir / "race_plot.pdf"}'
-        )
-
-        # Re-assign truth as colors for plotting
-        self.top_ssh_all = self._assign_truth(
-            self.top_ssh_all, name=False, category=False
-        )
-
-        colors = [
-            self.top_ssh_all.at[idx, 'truth']
-            for idx in self.top_ssh_all.index.unique().values
-        ]
-
-        # Re-assign truth as names for plotting
-        self.top_ssh_all = self._assign_truth(
-            self.top_ssh_all, name=True, category=False
-        )
-
-        df = self.top_ssh_all.rename(
-            {'truth': 'Concordance'}, axis=1
-        )
-
-        plt.rc(
-            'axes', prop_cycle=(cycler('color', colors))
-        )
-
-        p1 = sns.lineplot(
-            data=df, x='read', y='shared', hue='uuid', style='Concordance',
-            legend=False, estimator=None, ci=None, lw=0.8, ax=ax
-        )
-
-        p1.set_ylabel('Sum of shared hashes', fontsize=8)
-        p1.set_xlabel('Read', fontsize=8)
-
-        p1.tick_params(labelsize=6)
-
-        if self.breakpoint_detection:
-            plt.axvline(
-                x=self.breakpoint_detection, linewidth=1,
-                linestyle='--', color='black'
-
-            )
-
-        if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
-
-        p1.get_figure().savefig(
-            f'{self.outdir / "race_plot.pdf"}',
-            figsize=(11.0, 7.0)
-        )
-        plt.close()
-
-        return p1
-
-    def create_concordance_plot(self, ax=None):
-
-        self.logger.info(
-            f'Generate trait concordance plot: {self.outdir / "race_plot_mean_95.pdf"}'
-        )
-
-        df = self.top_ssh_all.rename(
-            {'truth': 'Concordance'}, axis=1
-        )
-
-        p2 = sns.lineplot(
-            data=df, x='read', y='shared', hue='Concordance',
-            ci=None, estimator='mean', ax=ax,
-            palette=sns.color_palette(
-                [self.true_color, self.false_color, self.lineage_color], len(
-                    df.Concordance.unique()
-                )
-        ))
-
-        p2.set_ylabel('Mean sum of shared hashes', fontsize=10)
-        p2.set_xlabel('Read', fontsize=10)
-
-        p2.tick_params(labelsize=6)
-
-        if self.breakpoint_detection:
-            plt.axvline(
-                x=self.breakpoint_detection, linewidth=1,
-                linestyle='--', color='black'
-
-            )
-
-        if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black')
-
-        p2.get_figure().savefig(
-            f'{self.outdir / "race_plot_mean_95.pdf"}',
-            figsize=(11.0, 7.0)
-        )
-        plt.close()
-
-        return p2
-
-    def _parse_hashes(self):
-
-        """ Online hash parsing on SSH count files.
-        """
-
-        self.logger.info(
-            f'Parse online read hashes output in {self.indir}'
-        )
-
-        hash_dfs = []
-        for i, fpath in enumerate(sorted(
-                self.indir.glob('*.counts.*'),
-                key=lambda x: int(
-                    x.name.split('.')[-1]
-                )
-        )[:self.limit]):
-            df = pandas.read_csv(
-                fpath, sep="\t", index_col=0, nrows=self.top
-            )  # [:self.top]
-
-            n = int(fpath.name.split('.')[-1])
-
-            self.logger.debug(f'Process Sketchy score at read: {n}')
-
-            df['read'] = [n for _ in df.shared]
-
-            hash_dfs.append(df)
-            self.reads = i + 1
-
-        dd = pandas.concat(hash_dfs)
-
-        if self.limit is None:
-            self.limit = self.reads
-
-        return dd
-
-    def _parse_all_hashes(self):
-        """ Parse the hashes of the unique genomes in the top reads
-        This is required because these may drop out and not be represented
-        in the top matches at higher read numbers.
-        """
-
-        self.logger.info(
-            f'Parse unique genome hash match outputs in {self.indir} ...'
-        )
-
-        hash_dfs = []
-        for i, fpath in enumerate(sorted(
-                self.indir.glob('*.counts.*'),
-                key=lambda x: int(
-                    x.name.split('.')[-1]
-                )
-        )):
-
-            if self.limit is not None and i >= self.limit:
-                break
-
-            self.logger.debug(f'Process Sketchy score at read: {i}')
-
-            top_hits = self.top_ssh.index.unique()
-
-            df = pandas.read_csv(
-                fpath, sep="\t", index_col=0,
-            )
-
-            df = df[
-                df.index.isin(top_hits)
-            ]
-
-            df['read'] = [i for _ in df.shared]
-            df['rank'] = [i for i in range(len(df))]
-
-            hash_dfs.append(df)
-
-        return pandas.concat(hash_dfs)
-

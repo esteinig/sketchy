@@ -25,8 +25,8 @@ from sketchy.minhash import MashSketch
     '--glob', '-g', default="*",
     help='Glob for Fasta files in directory --fasta.'
 )
-def sketch(fasta, kmer, prefix, glob, size):
-    """Create a MinHash sketch for matching with MASH"""
+def sk_sketch(fasta, kmer, prefix, glob, size):
+    """Create a MinHash sketch, wraps MASH"""
 
     sketch = MashSketch()
 
