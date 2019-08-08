@@ -1,21 +1,15 @@
 // Sketchy Nextflow managing switchable tasks that require mo4e compute power (like bootstrapping)
 
 log.info """
---------------------------------------------------------------------------------
+.
+.
+sketchy.nf v0.4a
+.
 fastq          =  $params.fastq
-meta           =  $params.meta
 conda          =  $params.conda
 resources      =  $params.resources
-
-prefix         =  $params.prefix
-outdir         =  $params.outdir
-
-preprint       =  $params.preprint
-mixture        =  $params.mixture
-reads          =  $params.reads
-evaluation     =  $params.evaluation
-ranks          =  $params.ranks
---------------------------------------------------------------------------------
+.
+.
 """
 
 // Bootstrap pipeline:
@@ -29,7 +23,7 @@ ranks          =  $params.ranks
 
 import groovy.json.JsonSlurper
 
-if (params.sketch){
+if (params.sketch_files){
 
   if (params.uuid){
     uuid = '--uuid'
@@ -76,90 +70,46 @@ if (params.sketch){
       """
   }
 
-
-
 }
 
-if (params.preprint) {
 
-  jsonSlurper = new JsonSlurper();
 
-  meta = new File(params.meta)
-  meta_json = meta.text
-  meta_data = jsonSlurper.parseText(meta_json)
+if (params.bootstrap) {
 
-  log.info "$meta_data"
+fastq = Channel
+        .fromPath(params.fastq)
+        .map { file -> tuple(file.baseName, file) }
 
-  fastq = Channel
-      .fromPath(params.fastq)
-      .map { file -> tuple(file.baseName, file) }
 
-  process LineageCaller {
+process Bootstrap {
 
-      label "sketchy"
+    // Create replicate shuffled data (--sample 1.0) with replacement (-r)
+    // Predict on bootstrap top 10 (default)
+    // Determine breakpoints at first 300 continous reads (--stable)
 
-      publishDir "${params.outdir}/${id}", mode: "copy"
+    // NB: plots secondary, primary summary are breakpoints
 
-      input:
-      set id, file(fastq) from fastq
+    label "sketchy"
+    publishDir "${params.outdir}/bootstrap", mode: "copy"
 
-      output:
-      set id, file("${id}_${params.reads}") into evaluate
-      val id into concat2
+    input:
+    set id, file(fq) from fastq
+    each bs from Channel.from(1..params.nboot)
 
-      """
-      sketchy predict -f $fastq -s ${meta_data[id].sketch} \
-      -r $params.reads --mode $params.mode --tmp ${id}_${params.reads} --keep \
-      --cores $task.cpus
-      """
-  }
+    output:
+    file("boot.${bs}.tsv")
+    file("${bs}.png")
+    file("${bs}.bp.tsv")
 
-  process Evaluation {
-
-      label "sketchy"
-
-      publishDir "${params.outdir}/${id}", mode: "copy"
-
-      input:
-      set id, file(indir) from evaluate
-      each eval from params.evaluation
-
-      output:
-      file("${id}_${eval}_evaluation")
-      file("${id}.${eval}.pdf") into concat
-
-      """
-      sketchy evaluate --indir $indir \
-        --limit $eval --ranks $params.ranks \
-        --primary ${meta_data[id].primary} \
-        --secondary ${meta_data[id].secondary} \
-        --lineage ${meta_data[id].lineage} \
-        --genotype ${meta_data[id].genotype} \
-        --resistance ${meta_data[id].resistance} \
-        --outdir ${id}_${eval}_evaluation
-
-      mv ${id}_${eval}_evaluation/evaluation.pdf ${id}.${eval}.pdf
-      """
-  }
-
-  process ConcatEvaluation {
-
-      label "sketchy"
-
-      publishDir "${params.outdir}/", mode: "copy"
-
-      input:
-      file('*.pdf') from concat.collect()
-      val id from concat2
-
-      output:
-      file("${id}.evaluation.pdf")
-
-      """
-      sketchy concat --output ${id}.evaluations.pdf
-      """
-  }
+    """
+    sketchy fq-sample -f $fq -o ${fq}.bs -r -s 1.0
+    sketchy predict -f ${fq}.bs -s $params.sketch -t $task.cpus --top 10 \
+    -o boot.$bs -r $params.reads
+    sketchy plot -d boot.${bs}.tsv -b --stable 100 $params.boot_plot -t 5 -p $bs -f png
+    """
 }
+}
+
 
 if (params.mixture) {
 

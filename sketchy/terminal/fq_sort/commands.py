@@ -17,13 +17,21 @@ from sketchy.utils import query_fastq, construct_fastq
 @click.option(
     '--start',  is_flag=True, help='Print start datetime of first read in fastq.'
 )
-def fq_sort(fastq, output, shuffle, start):
+@click.option(
+    '--outlist', '-l', help='List output of read headers, lengths and date times', type=Path
+)
+def fq_sort(fastq, output, shuffle, start, outlist):
     """ Sort or shuffle reads by start date time in header. """
 
-    df, records = query_fastq(fpath=fastq, full=True)
+    if output:
+        df, records = query_fastq(fpath=fastq, full=True)
+    else:
+        df = query_fastq(fpath=fastq)
 
     if start:
-        print(str(df.loc[0, 'date']))
+        print(
+            str(df.loc[0, 'date'])
+        )
         exit(0)
 
     if shuffle:
@@ -31,6 +39,10 @@ def fq_sort(fastq, output, shuffle, start):
 
     headers = df['header'].tolist()
 
-    construct_fastq(
-        output=output, headers=headers, records=records
-    )
+    if output:
+        construct_fastq(
+            output=output, headers=headers, records=records
+        )
+
+    if outlist:
+        df.to_csv(outlist, sep='\t', index=False)

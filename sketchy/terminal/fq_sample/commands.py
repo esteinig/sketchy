@@ -13,8 +13,9 @@ from sketchy.utils import query_fastq, construct_fastq
     '--output', '-o', type=Path, help='Output to Fastq file.'
 )
 @click.option(
-    '--sample', '-s', type=int or float, default=0.1,
-    help='Number of reads to sample or fraction of reads to sample.'
+    '--sample', '-s', type=float, default=0.1,
+    help='Number of reads (> 1)to sample or '
+         'fraction of reads (0 - 1) to sample.'
 )
 @click.option(
     '--replace', '-r', is_flag=True,
@@ -25,7 +26,7 @@ def fq_sample(fpath, output, sample, replace):
 
     df, records = query_fastq(fpath, full=True)
 
-    if isinstance(sample, int):
+    if sample > 1.:
         df = df.sample(n=sample, replace=replace)
     else:
         df = df.sample(frac=sample, replace=replace)

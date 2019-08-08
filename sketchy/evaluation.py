@@ -23,6 +23,7 @@ class Sample:
 
         self.top = top
         self.indir = indir
+
         self.limit = limit
 
         self.outdir = outdir
@@ -46,7 +47,6 @@ class Sample:
         """
 
         pass
-
 
 
 class SampleEvaluator(Sample):
@@ -78,6 +78,19 @@ class SampleEvaluator(Sample):
 
         if plot_data is not None:
             self.top_ssh = plot_data
+
+            if self.limit is None:
+                try:
+                    self.limit = int(sorted(
+                        plot_data.read.unique().tolist()
+                    )[-1])
+                except IndexError:
+                    self.logger.info(
+                        f'Could not detect last read in dataframe reads.'
+                    )
+                self.logger.info(
+                    f'No limit; set limit to last evaluated read @ {self.limit}'
+                )
 
         if self.reads == 0:
             self.reads = self.limit
@@ -112,7 +125,8 @@ class SampleEvaluator(Sample):
         read_range = list(
             range(1, reads[-1] + 1)
         )
-        self.logger.info(
+
+        self.logger.debug(
             f'Detected last computed read @ {reads[-1]};'
             f' set read range: 1 - {reads[-1]}'
         )
@@ -142,7 +156,7 @@ class SampleEvaluator(Sample):
             read_range[:self.limit]
         ):
             self.logger.debug(
-                f'Computing sum of shared hashes @ read {i}'
+                f'Compute sum of shared hashes @ read {i}'
             )
             read_output = self.indir / f'read.{i}'
 
@@ -197,24 +211,28 @@ class SampleEvaluator(Sample):
         # Compute the sum of sum of shared hashes
 
         self.logger.info(
-            f'Computing sum of sums of shared hashes'
-            f' for {data.capitalize()} ...'
+            f'Compute sum of sums of shared hashes for {data} ...'
         )
         top_predictions = []
         i = 0
         for _, read_group in self.top_ssh.groupby('read'):
-            i += 1
             data_sums = read_group.groupby(data).sum().reset_index() \
                 .sort_values('shared', ascending=False).reset_index()
             top_predictions.append(
                 str(data_sums.loc[0, data])
             )
-        self.logger.info(f'This many reads grouped: {i}')
-        return top_predictions
+            if i == self.limit:
+                break  # speedup
+
+            i += 1
+
+        return top_predictions[:self.limit]  # make sure
 
     def find_breakpoints(
             self, top: int = 5, data: str = 'lineage', block_size: int = 500
     ):
+
+        breakpoint_stable, breakpoint_detection = None, None
 
         top_predictions = self.sum_of_ssh(data)
 
@@ -223,12 +241,11 @@ class SampleEvaluator(Sample):
 
         topaz = str(top_data.index.tolist()[0])
 
-        self.breakpoint_detection = top_predictions.index(topaz)+1
+        breakpoint_detection = top_predictions.index(topaz)+1
         self.logger.debug(
-            f'Found detection breakpoint @'
-            f' {self.breakpoint_detection} reads.'
+            f'Found detection breakpoint @ {breakpoint_detection} reads.'
         )
-        self.logger.info('Computing stable detection breakpoint ...')
+        self.logger.info('Compute stable detection breakpoint ...')
         for i, p in enumerate(top_predictions):
             if p == topaz:
                 # Check for limit ahead:
@@ -237,30 +254,41 @@ class SampleEvaluator(Sample):
                 )
 
                 if len(uniform) == 1 and list(uniform)[0] == topaz:
-                    self.breakpoint_stable = i
+                    breakpoint_stable = i+1
+
+                    # TODO might change to at last evaluated read
+                    self.logger.debug(
+                        f'Found stable breakpoint @ {breakpoint_stable} reads.'
+                    )
+
                     break
 
-        # TODO might change to most common lineage at last evaluated read
-        self.logger.debug(
-            f'Found stable breakpoint @'
-            f' {self.breakpoint_stable} reads.'
-        )
+        cond1 = "read" if breakpoint_detection == 1 else "reads"
+        cond2 = "read" if breakpoint_stable == 1 else "reads"
+
         self.logger.info(
-            f'Breakpoints for {data.capitalize()} {topaz} '
-            f'@ {self.breakpoint_detection} reads (first) '
-            f'and {self.breakpoint_stable} reads (stable)'
+            f'Breakpoints for {data} ({topaz}) '
+            f'@ {breakpoint_detection} {cond1} (first) '
+            f'and {breakpoint_stable} {cond2} (stable)'
         )
+
+        return breakpoint_detection, breakpoint_stable
 
     def create_hitmap(
             self, top: int = 5, data: str = 'lineage', ax=None, color='hls'
     ):
 
         self.logger.debug(
-            f'Generate lineage hitmap [ {top}, {data}]'
+            f'Generate lineage hitmap [ {self.top}, {data} ]'
         )
 
         self.top_ssh[data] = self.top_ssh[data].astype(str)
         self.top_ssh.shared = self.top_ssh.shared.astype(float)
+
+        unique_values = self.top_ssh[data].unique()
+        if len(unique_values) == 1 and unique_values[0] == 'nan':
+            self.logger.info(f'No data in database sketch for: {data}')
+            return None
 
         palette = sns.color_palette(color, top)
 
@@ -332,9 +360,10 @@ class SampleEvaluator(Sample):
             self, top: int = 10, data: str = 'lineage', ax=None, color='hls'
     ):
 
-        self.logger.debug(
-            f'Generate lineage total sum plot'
-        )
+        unique_values = self.top_ssh[data].unique()
+        if len(unique_values) == 1 and unique_values[0] == 'nan':
+            self.logger.info(f'No data in database sketch for: {data}')
+            return None
 
         palette = sns.color_palette(color, top)
 

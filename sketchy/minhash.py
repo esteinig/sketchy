@@ -104,10 +104,13 @@ class MashScore(PoreLogger):
                 if nreads > total_reads:
                     if nreads > total_reads:
                         self.logger.info(
-                            f'Selected number of reads {nreads} is larger than'
-                            f' total number of reads in input file {total_reads}'
+                            f'Selected reads {nreads} are larger than'
+                            f' total number of reads: {total_reads}'
                         )
-                        exit(1)
+                        self.logger.info(
+                            f'Set reads to total number of reads: {total_reads}'
+                        )
+                        nreads = total_reads
 
                 with mp.Pool(processes=ncpu) as pool:
                     results = [pool.apply_async(

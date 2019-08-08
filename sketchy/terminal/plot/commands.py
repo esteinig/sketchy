@@ -8,7 +8,7 @@ from pathlib import Path
 
 @click.command()
 @click.option(
-    '--data', '-d', help='Sketchy data file from predict output', type=Path
+    '--data', '-d', help='Sketchy data file from predict output', type=Path, required=True,
 )
 @click.option(
     '--top', '-t', default=5,  type=int,
@@ -28,15 +28,16 @@ from pathlib import Path
          'stable detection of most common trait.'
 )
 @click.option(
-    '--stable', '-s', default=500, type=int,
-    help='Define block size i nreads to define a stable breakpoint.'
+    '--stable', '-s', default=300, type=int,
+    help='Define block size of consecutive prediction'
+         'across reads to define a stable breakpoint.'
 )
 @click.option(
-    '--color', '-c', default=None,
-    help='Color palette'
+    '--color', '-c', default='BuGn',
+    help='Color palette, Brewer colors for Seaborn'
 )
 @click.option(
-    '--format', '-f', default='pdf',  type=str,
+    '--format', '-f', default='png',  type=str,
     help='Output format for plot file'
 )
 @click.option(
@@ -54,11 +55,11 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
 
     split_colors = color.split(',')
 
+    color, gcolor, rcolor = color, color, color
     if len(split_colors) == 3:
         color, gcolor, rcolor = split_colors
-    else:
-        color, gcolor, rcolor = color, color, color
-
+    elif len(split_colors) == 2:
+        color, gcolor = split_colors
 
     nreads = len(
         df['read'].unique()
@@ -94,8 +95,23 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
     fig.subplots_adjust(hspace=0.8)
     fig.suptitle('')
 
+    se.logger.info(f'Generate hitmap [ {top}, {se.limit} ] for lineage ...')
+    se.logger.info(
+        f'Generate lineplot for sum of sums of shared hashes by lineage ...'
+    )
+
     se.create_hitmap(top=top, ax=axes[0, 0], color=color)
     se.create_lineplot(top=top, ax=axes[0, 1], color=color)
+
+    if genotype and resistance:
+        by = 'genotype and susceptibility'
+    else:
+        by = 'genotype' if genotype and not resistance else 'susceptibility'
+
+    se.logger.info(f'Generate hitmap [ {top}, {se.limit} ] for {by} ...')
+    se.logger.info(
+        f'Generate lineplot for sum of sums of shared hashes by {by} ...'
+    )
 
     if genotype and not resistance:
         se.create_hitmap(
@@ -105,6 +121,7 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
             top=top, data='genotype', ax=axes[1, 1], color=gcolor
         )
     elif resistance and not genotype:
+
         se.create_hitmap(
             top=top, data='susceptibility', ax=axes[1, 0], color=rcolor
         )
@@ -126,11 +143,41 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
         )
 
     if breakpoints:
-        se.find_breakpoints(top=top, data='lineage', block_size=stable)
+
+        if stable > se.limit:
+            se.logger.info(
+                f'Breakpoints could not be computed: block detection {stable} '
+                f'(--stable) must be smaller than last evaluated read @ {se.limit}'
+            )
+            se.logger.info(
+                f'Exiting ...'
+            )  # Nextflow break
+            exit(1)
+
+        lineage = se.find_breakpoints(
+            top=top, data='lineage', block_size=stable
+        )
+
+        b1, b2 = None, None
         if genotype:
-            se.find_breakpoints(top=top, data='genotype', block_size=stable)
+            b1 = se.find_breakpoints(
+                top=top, data='genotype', block_size=stable
+            )
         if resistance:
-            se.find_breakpoints(top=top, data='susceptibility', block_size=stable)
+            b2 = se.find_breakpoints(
+                top=top, data='susceptibility', block_size=stable
+            )
+
+        bp = pandas.DataFrame(
+            data={
+                'lineage': lineage,
+                'genotype': b1,
+                'susceptibility': b2
+            },
+            index=['first', 'stable']
+        )
+
+        bp.to_csv(f'{prefix}.bp.tsv', sep='\t')
 
     plt.tight_layout()
 

@@ -10,18 +10,19 @@ import re
 import dateutil
 import tqdm
 
+
 class PoreLogger:
 
     def __init__(self):
 
         logging.basicConfig(
             level=logging.INFO,
-            format="[%(asctime)s] [%(name)-10s]     %(message)s",
+            format="[%(asctime)s] [%(name)-7s]     %(message)s",
             datefmt='%H:%M:%S',
             filename=None
         )
 
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger('Sketchy')
 
 
 BREWER = {
@@ -135,7 +136,7 @@ def construct_fastq(output, headers: list, records: dict):
     with output.open('w') as outfq:
         for header in tqdm.tqdm(headers):
             outfq.write(
-                f"{records[header]['name']}\n{records[header]['sequence']}\n"
+                f"{header}\n{records[header]['sequence']}\n"
                 f"{records[header]['optional']}\n{records[header]['quality']}\n"
             )
 
@@ -200,3 +201,13 @@ def get_default_sketch(index) -> (Path, Path):
     """ Return the default database and index for Sketchy """
     return (Path(__file__).parent / 'sketch' / f'{index}.default.msh',
         Path(__file__).parent / 'sketch' / f'{index}.data.tsv')
+
+
+def get_total_reads(fastq: Path) -> int or None:
+
+    try:
+        out = run_cmd(f'wc -l {fastq}', shell=True)
+        return int(out.decode("utf-8").strip('\n').split()[0]) // 4
+    except:
+        print(f'Could not execute: wc -l on {fastq}')
+        exit(1)
