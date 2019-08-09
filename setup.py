@@ -17,7 +17,7 @@ setup(
         "scipy",
         "biopython",
         "pypdf2",
-        "deprecated"
+        "pysam"
     ],
     entry_points="""
         [console_scripts]

@@ -8,4 +8,3 @@ scipy
 biopython
 pypdf2
 pysam
-deprecated
