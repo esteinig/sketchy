@@ -1,5 +1,4 @@
 import click
-import pandas
 
 from pathlib import Path
 from sketchy.utils import query_fastq, construct_fastq

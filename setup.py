@@ -15,8 +15,8 @@ setup(
         "pytest",
         "seaborn",
         "scipy",
-        "biopython",
-        "pypdf2",
+        "dateutil",
+        "numpy",
         "pysam"
     ],
     entry_points="""

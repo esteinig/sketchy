@@ -1,6 +1,5 @@
 import pandas
 import seaborn as sns
-import itertools
 
 from tqdm import tqdm
 from sketchy.minhash import MashScore

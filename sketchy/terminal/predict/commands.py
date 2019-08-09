@@ -1,7 +1,6 @@
 import click
 import shutil
 import pysam
-import matplotlib.pyplot as plt
 
 from pathlib import Path
 

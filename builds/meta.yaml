@@ -21,16 +21,16 @@ requirements:
   run:
       - python=3.7
       - tqdm
+      - numpy
       - colorama
       - pandas
       - click
       - pytest
       - seaborn
       - scipy
-      - biopython
-      - pypdf2
       - pysam
       - mash
+      - dateutil
 
 test:
   commands:
