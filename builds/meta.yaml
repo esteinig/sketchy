@@ -1,4 +1,4 @@
-{% set version = "0.3.a2" %}
+{% set version = "0.3.a3" %}
 
 package:
   name: sketchy
@@ -38,9 +38,8 @@ test:
       - mash dist -h
 
 about:
-  home: https://github.com/esteinig/sketchy
+  home: 'https://github.com/esteinig/sketchy'
   license: MIT
   license_file: LICENSE
-  summary: 'Real-time lineage hashing and genotyping of bacterial'
-           'pathogens from uncorrected nanopore reads.'
+  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads.'
 
