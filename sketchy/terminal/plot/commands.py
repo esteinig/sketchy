@@ -55,11 +55,13 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
 
     split_colors = color.split(',')
 
-    color, gcolor, rcolor = color, color, color
     if len(split_colors) == 3:
         color, gcolor, rcolor = split_colors
     elif len(split_colors) == 2:
         color, gcolor = split_colors
+        rcolor = None
+    else:
+        color, gcolor, rcolor = color, color, color
 
     nreads = len(
         df['read'].unique()
@@ -154,27 +156,27 @@ def plot(data, top, genotype, resistance, limit, format, prefix, color, breakpoi
             )  # Nextflow break
             exit(1)
 
-        lineage = se.find_breakpoints(
+        b1 = se.find_breakpoints(
             top=top, data='lineage', block_size=stable
         )
 
-        b1, b2 = None, None
+        b2, b3 = None, None
         if genotype:
-            b1 = se.find_breakpoints(
+            b2 = se.find_breakpoints(
                 top=top, data='genotype', block_size=stable
             )
         if resistance:
-            b2 = se.find_breakpoints(
+            b3 = se.find_breakpoints(
                 top=top, data='susceptibility', block_size=stable
             )
 
         bp = pandas.DataFrame(
             data={
-                'lineage': lineage,
-                'genotype': b1,
-                'susceptibility': b2
+                'lineage': b1,
+                'genotype': b2,
+                'susceptibility': b3
             },
-            index=['first', 'stable']
+            index=['first', 'stable', 'prediction']
         )
 
         bp.to_csv(f'{prefix}.bp.tsv', sep='\t')

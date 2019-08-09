@@ -27,8 +27,9 @@ class Sample:
         self.limit = limit
 
         self.outdir = outdir
+
         if outdir:
-            self.outdir.mkdir(parents=True, exist_ok=True)
+            outdir.mkdir(parents=True, exist_ok=True)
 
         self.false_color = "#d9d9d9"
 
@@ -89,7 +90,7 @@ class SampleEvaluator(Sample):
                         f'Could not detect last read in dataframe reads.'
                     )
                 self.logger.info(
-                    f'No limit; set limit to last evaluated read @ {self.limit}'
+                    f'No limit argument. Set limit to last evaluated read @ {self.limit}'
                 )
 
         if self.reads == 0:
@@ -272,10 +273,12 @@ class SampleEvaluator(Sample):
             f'and {breakpoint_stable} {cond2} (stable)'
         )
 
-        return breakpoint_detection, breakpoint_stable
+        top_value = topaz
+
+        return breakpoint_detection, breakpoint_stable, top_value
 
     def create_hitmap(
-            self, top: int = 5, data: str = 'lineage', ax=None, color='hls'
+        self, top: int = 5, data: str = 'lineage', ax=None, color='hls'
     ):
 
         self.logger.debug(
@@ -313,6 +316,9 @@ class SampleEvaluator(Sample):
         hm = df.pivot('rank', 'read', 'vals')
 
         hm = hm[hm.columns].astype(float)
+
+        # Make sure the palette is at most as long as top lineages if < top
+        palette = palette[:len(top_lineages)]
 
         p1 = sns.heatmap(
             hm.iloc[:self.top, :self.limit], linewidths=0, cbar=False,
@@ -376,6 +382,8 @@ class SampleEvaluator(Sample):
         df.rename(columns={data: data.capitalize()})
 
         df = df[df['read'] <= self.limit]
+
+        palette = palette[:len(top_lineages)]
 
         p3 = sns.lineplot(
             data=df, x='read', y='shared', hue=data, hue_order=top_lineages,

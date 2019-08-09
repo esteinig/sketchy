@@ -24,7 +24,7 @@ from sketchy.utils import PoreLogger, get_total_reads
     help='MASH sketch file to query; or a template, one of: kleb, mrsa, tb'
 )
 @click.option(
-    '--reads', '-r', default=None, help='Number of reads to type.', type=int
+    '--reads', '-r', default=1000, help='Number of reads to type.', type=int
 )
 @click.option(
     '--tmp', '-t', default=Path().cwd() / 'tmp', type=Path,
@@ -70,6 +70,9 @@ def predict(
 ):
 
     """ Lineage hashing from uncorrected nanopore reads (offline) """
+
+    if reads == 0:
+        reads = None
 
     pl = PoreLogger()
     sketch_path = Path(sketch)

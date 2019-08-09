@@ -78,7 +78,7 @@ if (params.bootstrap) {
 
 fastq = Channel
         .fromPath(params.fastq)
-        .map { file -> tuple(file.baseName, file) }
+        .map { file -> tuple(file.baseName, file.baseName.split('\\.')[0], file) }
 
 
 process Bootstrap {
@@ -93,19 +93,19 @@ process Bootstrap {
     publishDir "${params.outdir}/bootstrap", mode: "copy"
 
     input:
-    set id, file(fq) from fastq
+    set id, sketch, file(fq) from fastq
     each bs from Channel.from(1..params.nboot)
 
     output:
-    file("boot.${bs}.tsv")
-    file("${bs}.png")
-    file("${bs}.bp.tsv")
+    file("${id}.${bs}.boot.tsv")
+    file("${id}.${bs}.bp.tsv")
+    file("${id}.${bs}.png")
 
     """
-    sketchy fq-sample -f $fq -o ${fq}.bs -r -s 1.0
-    sketchy predict -f ${fq}.bs -s $params.sketch -t $task.cpus --top 10 \
-    -o boot.$bs -r $params.reads
-    sketchy plot -d boot.${bs}.tsv -b --stable 100 $params.boot_plot -t 5 -p $bs -f png
+    sketchy fq-sample -f $fq -o ${id}.bs.fq -r -s $params.reads
+    sketchy predict -f ${id}.bs.fq -s $sketch -t $task.cpus --top $params.top \
+    -o ${id}.${bs}.boot -r 0
+    sketchy plot -d ${id}.${bs}.boot.tsv -b --stable $params.stable $params.boot_plot -t 5 -p ${id}.${bs} -f png
     """
 }
 }
@@ -113,9 +113,9 @@ process Bootstrap {
 
 if (params.mixture) {
 
-    fastq = Channel
-        .fromPath(params.fastq)
-        .map { file -> tuple(file.baseName, file) }
+  fastq = Channel
+      .fromPath(params.fastq)
+      .map { file -> tuple(file.baseName, file) }
 
   // Classify and extract S. aureus reads from Zymo Mocks
 

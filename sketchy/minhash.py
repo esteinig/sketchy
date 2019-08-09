@@ -43,9 +43,7 @@ class MashScore(PoreLogger):
 
         PoreLogger.__init__(self)
 
-        # Lachlan suggested keeping a sum od total shared hashes;
-        # this which is the default from Sketchy
-        self.inter = pandas.DataFrame()  #  MASH outputs, updated
+        self.inter = pandas.DataFrame()    # MASH outputs, updated
         self.interim = pandas.DataFrame()  # MASH outputs, updated, with data
 
         self.lineage = Counter()        # Prime lineage counter

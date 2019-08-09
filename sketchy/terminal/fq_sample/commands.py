@@ -26,8 +26,17 @@ def fq_sample(fpath, output, sample, replace):
 
     df, records = query_fastq(fpath, full=True)
 
+    fastq_reads = len(df)
+
     if sample > 1.:
-        df = df.sample(n=sample, replace=replace)
+        if sample > fastq_reads:
+            print(
+                f'Sample size smaller than total reads: {sample} < {len(df)}.'
+                f'Setting sample to: {len(df)}'
+            )
+            df = df.sample(n=int(fastq_reads), replace=replace)
+        else:
+            df = df.sample(n=int(sample), replace=replace)
     else:
         df = df.sample(frac=sample, replace=replace)
 
