@@ -1,4 +1,4 @@
-{% set version = "0.3.a3" %}
+{% set version = "0.3.a4" %}
 
 package:
   name: sketchy
@@ -13,24 +13,35 @@ build:
 
 requirements:
   build:
-      - python=3.7
-      - pip
+      - {{ compiler('cxx') }}
   host:
-      - python=3.7
+      - python >=3.6
       - pip
-  run:
-      - python=3.7
+      - mash
       - tqdm
-      - numpy
       - colorama
       - pandas
       - click
       - pytest
       - seaborn
       - scipy
+      - python-dateutil
+      - numpy
       - pysam
+  run:
+      - python >=3.6
+      - pip
       - mash
-      - dateutil
+      - tqdm
+      - colorama
+      - pandas
+      - click
+      - pytest
+      - seaborn
+      - scipy
+      - python-dateutil
+      - numpy
+      - pysam
 
 test:
   commands:
