@@ -9,15 +9,22 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 ### Overview
 
-**`v0.3-alpha3: public test build`**
+**`v0.3-alpha5: public test build, conda install`**
 
 `Sketchy` is an online lineage matching algorithm for real-time genotyping and susceptibility prediction in bacterial pathogens using nanopore sequencing platforms. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*.
 
 ### Install
 ---
 
-* :snake: `conda install -c bioconda -c conda-forge -c esteinig sketchy`
-* :whale: `docker pull esteinig/sketchy`
+* :snake: `conda install -c bioconda -c esteinig sketchy`
+
+**Pull sketch databases into local storage before first use**:
+
+`sketchy db-pull`
+
+You can view the local sketches with:
+
+`sketchy db-list`
 
 ### Usage
 ---
@@ -34,7 +41,25 @@ Completed sequence read file (`.fastq`) - predict on first 1000 reads (default) 
 
 This produces the data file `test_prediction.tsv` which is the input for `sketchy plot`
 
+---
+
 #### :eyeglasses: `sketchy plot`
 
+Sketchy plot handles the raw output from the prediction and generates a ranked hitmap (by top ranking sum of shared hashes) colored by lineage, and optionally genotype (`-g`) or antimicrobial resistance profiles (`-r`). *K. pneumoniae* does currently not support resistance profiling. Output is a double plot in the file `{prefix}.{format}` such as `sketchy.png`, where a limit to the reads shown on the `x-axis` can be given by `--limit`:
 
-This produces the 
+`sketchy plot -d test_prediction.tsv -p sketchy -f png -g -r --limit 500`
+
+The plot task also generates a plot of the total sum of shared hashes aggregated at each read by lineage, or genotype / resistance profile, which serves as a means of identifying the most frequent value for the trait (ranked in legend), but also serves as comparison tool between the top most common predictions (`--top`) across the window outlined by the hitmap. Colors (`--color`) can be `brewer` palette names such as `PuGn` or a comma delimited list of `brewer` palette names, if for example genotype (`-g`) is activated:
+
+
+`sketchy plot -d test_prediction.tsv -p sketchy -f png -g --top 5 --color Blues_r,Greens_r`
+
+When the breakpoint `-b` option is activated the task attempts to determine a breakpoint on the most frequent trait where the sum of sum of shared hashes (2nd plot) is stable for `--stable` amount of reads. This threshold by default is set to 500, but may need to be adjusted for species like *M. tuberculosis*. This option will also output a file `{prefix}.bp.tsv` which writes the breakpoints for later parsing, for example in the bootstrap Nextflow
+
+`sketchy plot -d test_prediction.tsv -p sketchy -f png -b --stable 500`
+
+---
+
+#### :umbrella: `nextflow sketchy.nf`
+
+Bootstrap workflow in Sketchy. Documentation placeholder.
