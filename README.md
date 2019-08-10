@@ -16,7 +16,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 ### Install
 ---
 
-* :snake: `conda install -c bioconda -c esteinig sketchy`
+:snake: `conda install -c bioconda -c esteinig sketchy`
 
 Pull sketch databases into local storage before first use:
 
