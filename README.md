@@ -16,8 +16,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 ### Install
 ---
 
-* :snake: `conda install -c bioconda -c conda-forge -c esteinig sketchy`
-* :whale: `docker pull esteinig/sketchy`
+* :snake: `conda install -c bioconda -c esteinig sketchy`
 
 ### Usage
 ---
@@ -56,4 +55,4 @@ When the breakpoint `-b` option is activated the task attempts to determine a br
 
 #### :umbrella: `nextflow sketchy.nf`
 
-Bootstrapping workflow in Sketchy.
+Bootstrap workflow in Sketchy. Documentation placeholder.
