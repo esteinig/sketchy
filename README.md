@@ -49,9 +49,10 @@ Sketchy plot handles the raw output from the prediction and generates a ranked h
 
 `sketchy plot -d sketchy.tsv -f png -g --limit 500 --top 5 --color Blues_r,Purples_r`
 
-The task also generates a plot of the total sum of shared hashes aggregated at each read by lineage, or genotype / resistance profile, which serves as a means of identifying the most frequent value for the trait (ranked in legend), but also serves as comparison tool between the top most common predictions (`--top`) across the window outlined by the hitmap. Colors (`--color`) can be `brewer` palette names such as `PuGn` or a comma delimited list of `brewer` palette names if, for example, genotype (`-g`) is activated.
-
 <a href='https://github.com/esteinig'><img src='img/sketchy1.png' align="middle" height="420" /></a>
+
+The task generates a plot of the total sum of shared hashes aggregated at each read by lineage, or genotype / resistance profile (right), which serves as a means of identifying the most frequent value for the trait (ranked in legend), and serves as comparison tool between the top most common predictions (`--top`) across the window outlined by the hitmap. Colors (`--color`) can be `brewer` palette names such as `PuGn` or a comma delimited list of `brewer` palette names if, for example, genotype (`-g`) is activated.
+
 
 When the breakpoint `-b` option is activated the task attempts to determine a breakpoint on the most frequent trait where the sum of sum of shared hashes (2nd plot) is stable for `--stable` amount of reads. This threshold by default is set to 500, but may need to be adjusted for species like *M. tuberculosis*. This option will also output a file `sketchy.bp.tsv` which writes the breakpoints for later parsing, for example in the bootstrap Nextflow
 
