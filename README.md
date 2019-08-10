@@ -31,9 +31,15 @@ Local sketches can be viewed with:
 
 #### :briefcase: `sketchy predict`
 
-Main interface for prediction on uncorrected nanopore reads. Sketches (`-s`) available are: *S. aureus* (`mrsa`), *K. pneumoniae* (`kleb`) and *M. tuberculosis* (`tb`)
+Main interface for prediction on uncorrected nanopore reads. 
 
 `sketchy predict --help`
+
+Sketches (`-s`) available are:
+
+* `mrsa` for *S. aureus*
+* `kleb` for *K. pneumoniae* 
+* `tb` for *M. tuberculosis*
 
 Completed test sequence read file (`test/test.fq`) - predict on first 1000 reads (default) and compute the sum of shared hashes post-hoc, 8 processors, using the *K. pneumoniae* sketch:
 
