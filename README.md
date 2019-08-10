@@ -45,7 +45,11 @@ This produces the data file `sketchy.tsv` which is the input for `sketchy plot`
 
 #### :eyeglasses: `sketchy plot`
 
-Sketchy plot handles the raw output from the prediction and generates a ranked hitmap (by top ranking sum of shared hashes) colored by lineage, and optionally genotype (`-g`) or antimicrobial resistance profiles (`-r`). *K. pneumoniae* does currently not support resistance profiling so this example uses only `--genotype` or `-g`. Output is a plot in the file format (`-f`), such as `sketchy.png`, where a limit to the reads shown on the `x-axis` can be given by `--limit`:
+Sketchy plot handles the raw output from the prediction and generates a ranked hitmap (by top ranking sum of shared hashes) colored by lineage, and optionally genotype (`-g`) or antimicrobial resistance profiles (`-r`). *K. pneumoniae* does currently not support resistance profiling so this example uses only `--genotype` or `-g`.
+
+`sketchy plot --help`
+
+Output is a plot in the file format (`-f`), such as `sketchy.png`, where a limit to the reads shown on the `x-axis` can be given by `--limit`:
 
 `sketchy plot -d sketchy.tsv -f png -g --limit 500 --top 5 --color Blues_r,Purples_r`
 
