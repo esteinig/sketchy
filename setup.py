@@ -15,7 +15,7 @@ setup(
         "pytest",
         "seaborn",
         "scipy",
-        "dateutil",
+        "python-dateutil",
         "numpy",
         "pysam"
     ],
