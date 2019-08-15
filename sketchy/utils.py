@@ -3,13 +3,14 @@ import subprocess
 import sys
 import shlex
 from pathlib import Path
+from typing import Set, TextIO
 import numpy as np
 import scipy.stats
 import pandas
 import re
 import dateutil
 import tqdm
-
+import pysam
 
 class PoreLogger:
 
@@ -109,26 +110,12 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
     return output
 
 
-def filter_fastq(fpath: Path, output: Path, records: list):
-
-    def process(lines=None):
-        ks = ['name', 'sequence', 'optional', 'quality']
-        return {k: v for k, v in zip(ks, lines)}
-
-    n = 4
-    with output.open('w') as outfq:
-        with fpath.open() as fh:
-            lines = []
-            for line in fh:
-                lines.append(line.rstrip())
-                if len(lines) == n:
-                    record = process(lines)
-                    if record['name'] in records:
-                        outfq.write(
-                            f"{record['name']}\n{record['sequence']}\n"
-                            f"{record['optional']}\n{record['quality']}\n"
-                        )
-                    lines = []
+def filter_fastq(
+        fastq_in: pysam.FastxFile, fastq_out: TextIO, records: Set[str]
+) -> None:
+    for record in fastq_in:
+        if record.name in records:
+            print(str(record), file=fastq_out)
 
 
 def construct_fastq(output, headers: list, records: dict):
