@@ -35,11 +35,13 @@ Main interface for prediction on uncorrected nanopore reads.
 
 `sketchy predict --help`
 
-Sketches (`-s`) available are:
+Default sketches (`-s`) available:
 
-* `mrsa` for *S. aureus*
-* `kleb` for *K. pneumoniae* 
-* `tb` for *M. tuberculosis*
+| Pathogen | Genomes | K-mer size | Sketch size | `-s` |
+|  :---   |  :---:  |  :---:  |  :---:  |  :---:  |
+| *Staphylococcus aureus* | 38,948  | 15  |  1000  |  `mrsa` |
+| *Klebsiella pneumoniae* | 12,765  | 15  |  1000  |  `kleb` |
+| *Mycobacterium tuberculosis* | 27,876  | 15  |  1000  | `tb` |
 
 Completed test sequence read file (`test/test.fq`) - predict on first 1000 reads (default) and compute the sum of shared hashes post-hoc, 8 processors, using the *K. pneumoniae* sketch:
 
