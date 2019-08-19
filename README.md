@@ -63,7 +63,7 @@ The plot also shows the total sum of shared hashes aggregated at each read by li
 
 <a href='https://github.com/esteinig'><img src='img/sketchy1.png' align="middle" height="420" /></a>
 
-When the breakpoint `-b` option is activated the task attempts to determine a breakpoint on the most frequent trait where the sum of sum of shared hashes (2nd plot) is stable for `--stable` amount of reads. This threshold by default is set to 500, but may need to be adjusted for species like *M. tuberculosis* or can be set conservatively. The breakpoint option will also output a file `sketchy.bp.tsv` which writes the breakpoints to file.
+When the breakpoint `-b` option is activated the task attempts to determine a breakpoint on the most frequent trait where the sum of sum of shared hashes (2nd plot) is stable for `--stable` amount of reads. This threshold by default is set to 500, but may need to be adjusted for species like *M. tuberculosis* or can be set conservatively to ensure confidence in predictions. The breakpoint option will also output a file `sketchy.bp.tsv`, which writes the breakpoints to file.
 
 `sketchy plot -d test.tsv -b --stable 500`
 
@@ -78,7 +78,16 @@ stable        39          41
 prediction    258         KL106-O2v2
 ```
 
-If the input reads `.fq` are passed to `--time`, the task will attempt to parse timestamps from the `.fq` headers and repalce read breakpoints with time breakpoints.
+If the input reads `.fq` are passed to `--time`, the task will attempt to parse timestamps from the `.fq` headers and replace read breakpoints with time breakpoints. Example from a *S. aureus* reference strain on a low-throughput R9.4 pore architecture from 2016:
+
+```
+> head sketchy.bpt.tsv
+
+              lineage                 genotype                susceptibility
+first         2016-11-27 08:31:55     2016-11-27 08:24:41     2016-11-27 08:23:15
+stable        2016-11-27 08:36:29     2016-11-27 09:20:06     2016-11-27 08:31:54
+prediction    243                     MSSA:PVL-               SSSSSSSSSSSS
+```
 
 ---
 
