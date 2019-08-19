@@ -1,4 +1,4 @@
-{% set version = "0.3.a7" %}
+{% set version = "0.3.a8" %}
 
 package:
   name: sketchy

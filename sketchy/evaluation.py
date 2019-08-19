@@ -4,7 +4,6 @@ import seaborn as sns
 from tqdm import tqdm
 from sketchy.minhash import MashScore
 from pathlib import Path
-from matplotlib import pyplot as plt
 from sketchy.utils import PoreLogger
 
 
@@ -36,8 +35,7 @@ class Sample:
 
         self.reads: int = 0
 
-        self.breakpoint_detection: int or None = None
-        self.breakpoint_stable: int or None = None
+        self.breakpoints = dict()
 
     def _parse_hashes(self) -> pandas.DataFrame:
 
@@ -205,8 +203,10 @@ class SampleEvaluator(Sample):
 
     def sum_of_ssh(self, data):
 
-        self.top_ssh.lineage = self.top_ssh[data].astype(str)
-        self.top_ssh.shared = self.top_ssh.shared.astype(float)
+        top_ssh = self.top_ssh.copy()
+
+        top_ssh.lineage = top_ssh[data].astype(str)
+        top_ssh.shared = top_ssh.shared.astype(float)
 
         # Compute the sum of sum of shared hashes
 
@@ -215,7 +215,7 @@ class SampleEvaluator(Sample):
         )
         top_predictions = []
         i = 0
-        for _, read_group in self.top_ssh.groupby('read'):
+        for _, read_group in top_ssh.groupby('read'):
             data_sums = read_group.groupby(data).sum().reset_index() \
                 .sort_values('shared', ascending=False).reset_index()
             top_predictions.append(
@@ -229,17 +229,19 @@ class SampleEvaluator(Sample):
         return top_predictions[:self.limit]  # make sure
 
     def find_breakpoints(
-            self, top: int = 5, data: str = 'lineage', block_size: int = 500
-    ):
+        self, top: int = 5, data: str = 'lineage', block_size: int = 500
+    ) -> (int, int, str):
 
         breakpoint_stable, breakpoint_detection = None, None
 
         top_predictions = self.sum_of_ssh(data)
 
         top_data = self.top_ssh.groupby(by=data) \
-            .sum().shared.sort_values(ascending=False)[:top]
+            .sum().shared.sort_values(ascending=False)[:top].copy()
 
-        topaz = str(top_data.index.tolist()[0])
+        topaz = str(
+            top_data.index.tolist()[0]
+        )
 
         breakpoint_detection = top_predictions.index(topaz)+1
         self.logger.debug(
@@ -274,6 +276,12 @@ class SampleEvaluator(Sample):
 
         top_value = topaz
 
+        self.breakpoints[data] = {
+            'first': breakpoint_detection,
+            'stable': breakpoint_stable,
+            'value': top_value
+        }
+
         return breakpoint_detection, breakpoint_stable, top_value
 
     def create_hitmap(
@@ -284,23 +292,25 @@ class SampleEvaluator(Sample):
             f'Generate lineage hitmap [ {self.top}, {data} ]'
         )
 
-        self.top_ssh[data] = self.top_ssh[data].astype(str)
-        self.top_ssh.shared = self.top_ssh.shared.astype(float)
+        top_ssh = self.top_ssh.copy()
 
-        unique_values = self.top_ssh[data].unique()
+        top_ssh[data] = top_ssh[data].astype(str)
+        top_ssh.shared = top_ssh.shared.astype(float)
+
+        unique_values = top_ssh[data].unique()
         if len(unique_values) == 1 and unique_values[0] == 'nan':
             self.logger.info(f'No data in database sketch for: {data}')
             return None
 
         palette = sns.color_palette(color, top)
 
-        top_lineages = self.top_ssh.groupby(by=data) \
+        top_lineages = top_ssh.groupby(by=data) \
             .sum().shared.sort_values(ascending=False)[:top]
 
         top_lineages = top_lineages.index.tolist()
         top_lineages = [t for t in top_lineages if t != 'nan']
 
-        df = self.top_ssh.copy().reset_index()
+        df = top_ssh.copy().reset_index()
 
         self.logger.debug(
             f'Sum of shared hashes dataframe contains {len(df)} entries'
@@ -356,16 +366,15 @@ class SampleEvaluator(Sample):
         p1.tick_params(axis='both', which='major', labelsize=6)
         p1.tick_params(length=1, width=0.5)
 
-        if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1, color='black') 
-
         return p1
 
     def create_lineplot(
             self, top: int = 10, data: str = 'lineage', ax=None, color='hls'
     ):
 
-        unique_values = self.top_ssh[data].unique()
+        top_ssh = self.top_ssh.copy()
+
+        unique_values = top_ssh[data].unique()
         if len(unique_values) == 1 and unique_values[0] == 'nan':
             self.logger.info(f'No data in database sketch for: {data}')
             return None
@@ -373,16 +382,18 @@ class SampleEvaluator(Sample):
         palette = sns.color_palette(color, top)
 
         # Changed from mean to sum() here:
-        top_lineages = self.top_ssh.groupby(by=data)\
+        top_lineages = top_ssh.groupby(by=data)\
             .sum().shared.sort_values(ascending=False)[:top].index.tolist()
 
-        df = self.top_ssh[self.top_ssh[data].isin(top_lineages)]
+        df = top_ssh[top_ssh[data].isin(top_lineages)]
 
         df.rename(columns={data: data.capitalize()})
 
         df = df[df['read'] <= self.limit]
 
         palette = palette[:len(top_lineages)]
+
+        self._add_breaklines(data=data, ax=ax)
 
         p3 = sns.lineplot(
             data=df, x='read', y='shared', hue=data, hue_order=top_lineages,
@@ -399,14 +410,20 @@ class SampleEvaluator(Sample):
 
         p3.tick_params(labelsize=6)
 
-        if self.breakpoint_detection:
-            plt.axvline(
-                x=self.breakpoint_detection, linewidth=1,
-                linestyle='--', color='black'
-            )
-
-        if self.breakpoint_stable:
-            plt.axvline(x=self.breakpoint_stable, linewidth=1,
-                        color='black')
-
         return p3
+
+    def _add_breaklines(self, data: str, ax):
+
+        try:
+            bpoints = self.breakpoints[data]
+            if bpoints['first'] is not None:
+                ax.axvline(
+                    x=bpoints['first'], linewidth=1, linestyle='--', color='black'
+                )
+
+            if bpoints['stable'] is not None:
+                ax.axvline(
+                    x=bpoints['stable'], linewidth=1, linestyle='-', color='black'
+                )
+        except KeyError:
+            self.logger.debug(f'Breakpoints for {data} do not exist.')
