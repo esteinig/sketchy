@@ -93,6 +93,8 @@ class SampleEvaluator(Sample):
         if self.reads == 0:
             self.reads = self.limit
 
+        self.include_first: bool = False  # Include first breakpoint line
+
     def _log_info(self):
 
         self.logger.info(
@@ -416,7 +418,7 @@ class SampleEvaluator(Sample):
 
         try:
             bpoints = self.breakpoints[data]
-            if bpoints['first'] is not None:
+            if bpoints['first'] is not None and self.include_first:
                 ax.axvline(
                     x=bpoints['first'], linewidth=1, linestyle='--', color='black'
                 )

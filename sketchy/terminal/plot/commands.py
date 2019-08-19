@@ -53,9 +53,13 @@ from pathlib import Path
     '--time', '-t', default=None, type=Path,
     help='Path to input fastq file to extract read times for breakpoints'
 )
+@click.option(
+    '--include_first', '-i', is_flag=True,
+    help='Include first detection breakpoint line in plots.'
+)
 def plot(
     data, top, genotype, resistance, limit, format, prefix, color, breakpoints,
-    stable, time
+    stable, time, include_first
 ):
     """ Generate evaluation plots from predictions with Sketchy. """
 
@@ -76,12 +80,12 @@ def plot(
     )
 
     se = SampleEvaluator(
-        limit=limit,
-        plot_data=df,
-        top=len(
+        limit=limit, plot_data=df, top=len(
             df['rank'].unique()
-        ),
+        )
     )
+
+    se.include_first = include_first
 
     if limit and limit > nreads:
         se.logger.info(
