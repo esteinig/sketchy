@@ -132,7 +132,7 @@ if (params.mixture) {
       set id, file("$fastq"), file("${id}.out") into kraken_filter
 
       """
-      kraken2 --db ${params.resources}/${params.minikraken} --threads $task.cpus --output "${id}.out" \
+      kraken2 --db ${params.resources}/${params.taxdb} --threads $task.cpus --output "${id}.out" \
       --gzip-compressed --report ${id}.report --use-names ${fastq}
       """
     }
