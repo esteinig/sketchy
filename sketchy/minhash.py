@@ -400,6 +400,15 @@ class MashScore(PoreLogger):
     @staticmethod
     def mash_dist(file, mashdb, ncpu=4, sort_by='shared'):
 
+        """ Compute MASH distance by simply calling MASH
+
+        :param file:
+        :param mashdb:
+        :param ncpu:
+        :param sort_by:
+        :return:
+        """
+
         result = run_cmd(
             f'mash dist -p {ncpu} {mashdb} {file}', shell=True
         )
