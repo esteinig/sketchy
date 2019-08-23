@@ -1,4 +1,4 @@
-{% set version = "0.3.a9" %}
+{% set version = "0.3.a10" %}
 
 package:
   name: sketchy
@@ -28,6 +28,7 @@ requirements:
       - python-dateutil
       - numpy
       - pysam
+      - nextflow
   run:
       - python >=3.7
       - pip
@@ -42,6 +43,7 @@ requirements:
       - python-dateutil
       - numpy
       - pysam
+      - nextflow
 
 test:
   commands:
