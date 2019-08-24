@@ -214,7 +214,7 @@ def compute_breakpoints(se, prefix, top, stable, genotype, resistance, time):
         index=['first', 'stable', 'prediction']
     )
 
-    if time is not None and time.exists():
+    if time and time.exists():
 
         se.logger.info('Extracting start times from input reads...')
         read_idx = query_fastq(fpath=time, full=False)
@@ -240,6 +240,5 @@ def compute_breakpoints(se, prefix, top, stable, genotype, resistance, time):
 
     else:
         se.logger.info(f'Could not find fastq file with read times: {time}')
-        exit(1)
 
     bp.to_csv(f'{prefix}.bp.tsv', sep='\t')
