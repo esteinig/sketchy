@@ -152,7 +152,7 @@ if (params.mixture) {
         """
         zcat $fastq > reads.fq
         cat $kraken | grep "$params.species" > ${id}.species.reads.out
-        sketchy select-fastq -f reads.fq -i ${id}.species.reads.out -o ${id}.species.fq
+        sketchy fq-filter -f reads.fq -i ${id}.species.reads.out -o ${id}.species.fq
         """
       }
 
