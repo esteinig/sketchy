@@ -31,7 +31,7 @@ Local sketches can be viewed with:
 
 #### :briefcase: `sketchy predict`
 
-Main interface for prediction on uncorrected nanopore reads. 
+Main interface for multiprocessing predictions and post-hoc computation of sum of shared hashes from uncorrected nanopore reads of completed runs.
 
 `sketchy predict --help`
 
