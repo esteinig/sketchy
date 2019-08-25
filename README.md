@@ -51,7 +51,7 @@ This produces the data file `sketchy.tsv` which is the input for `sketchy plot`
 
 ---
 
-#### :eyeglasses: `sketchy plot`
+#### :closed_umbrella: `sketchy plot`
 
 `sketchy plot --help`
 
@@ -91,6 +91,10 @@ prediction    243                     MSSA:PVL-               SSSSSSSSSSSS
 
 ---
 
-#### :closed_umbrella: `nextflow sketchy.nf`
+#### :eyeglasses: `sketchy watch`
 
-Bootstrap workflow in Sketchy. Documentation placeholder.
+Online mode for real-time predictions and data interface in Vue. Documentation placeholder.
+
+#### `nextflow sketchy.nf`
+
+Nextflow wrappers for large scale operations with Sketchy. Documentation placeholder.
