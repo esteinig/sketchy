@@ -121,20 +121,22 @@ if (params.mixture) {
 
   process Kraken2 {
 
-      label "kraken2"
+        label "kraken2"
 
-      publishDir "${params.outdir}/kraken", mode: "copy"
+        publishDir "${params.outdir}/kraken/$taxdb", mode: "copy"
 
-      input:
-      set id, file(fastq) from fastq
+        input:
+        set id, file(fastq) from fastq
+        each taxdb from params.taxdb
 
-      output:
-      set id, file("$fastq"), file("${id}.out") into kraken_filter
+        output:
+        set id, file("$fastq"), file("${id}.out") into kraken_filter
+        set id, file("${id}.report") into kraken_plot
 
-      """
-      kraken2 --db ${params.resources}/${params.taxdb} --threads $task.cpus --output "${id}.out" \
-      --gzip-compressed --report ${id}.report --use-names ${fastq}
-      """
+        """
+        kraken2 --db ${params.resources}/$taxdb --threads $task.cpus --output "${id}.out" \
+        --report ${id}.report --use-names ${fastq}
+        """
     }
 
     process KrakenFilter {
@@ -147,13 +149,30 @@ if (params.mixture) {
         set id, file(fastq), file(kraken) from kraken_filter
 
         output:
-        set file("${id}.species.reads.out"), file("${id}.species.fq"), file("$kraken"), file("reads.fq")
+        set file("${id}.species.reads.out"), file("${id}.species.fq")
 
         """
-        zcat $fastq > reads.fq
         cat $kraken | grep "$params.species" > ${id}.species.reads.out
-        sketchy fq-filter -f reads.fq -i ${id}.species.reads.out -o ${id}.species.fq
+        sketchy fq-filter -f $fastq -i ${id}.species.reads.out -o ${id}.species.fq
         """
-      }
+    }
+
+    process KrakenPlot {
+
+        label "sketchy"
+
+        publishDir "${params.outdir}/kraken_plot", mode: "copy"
+
+        input:
+        set id, file(report) from kraken_plot
+
+        output:
+        file("${id}.png")
+
+        """
+        touch ${id}.png
+        """
+    }
+
 
 }

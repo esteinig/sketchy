@@ -17,7 +17,7 @@ setup(
         "scipy",
         "python-dateutil",
         "numpy",
-        "pysam"
+        "pysam",
     ],
     entry_points="""
         [console_scripts]

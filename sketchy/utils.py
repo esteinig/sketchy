@@ -12,6 +12,7 @@ import dateutil
 import tqdm
 import pysam
 
+
 class PoreLogger:
 
     def __init__(self):
@@ -199,3 +200,4 @@ def get_total_reads(fastq: Path) -> int or None:
     except:
         print(f'Could not execute: wc -l on {fastq}')
         exit(1)
+

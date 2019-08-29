@@ -11,6 +11,7 @@ from .db_list import db_list
 from .fq_filter import fq_filter
 from .fq_sample import fq_sample
 from .fq_sort import fq_sort
+from .nf_plot import nf_plot
 
 VERSION = '0.3'
 
@@ -33,3 +34,4 @@ terminal_client.add_command(predict)
 terminal_client.add_command(fq_filter)
 terminal_client.add_command(db_list)
 terminal_client.add_command(db_pull)
+terminal_client.add_command(nf_plot)
