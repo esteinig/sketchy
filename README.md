@@ -16,7 +16,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 ### Install
 ---
 
-:snake: `conda install -c bioconda -c esteinig sketchy`
+:snake: `conda install -c esteinig -c bioconda sketchy`
 
 Pull sketch databases into local storage before first use:
 
@@ -31,7 +31,7 @@ Local sketches can be viewed with:
 
 #### :briefcase: `sketchy predict`
 
-Main interface for prediction on uncorrected nanopore reads. 
+Main interface for multiprocessing predictions and post-hoc computation of sum of shared hashes from uncorrected nanopore reads of completed runs.
 
 `sketchy predict --help`
 
@@ -51,7 +51,7 @@ This produces the data file `sketchy.tsv` which is the input for `sketchy plot`
 
 ---
 
-#### :eyeglasses: `sketchy plot`
+#### :closed_umbrella: `sketchy plot`
 
 `sketchy plot --help`
 
@@ -91,6 +91,10 @@ prediction    243                     MSSA:PVL-               SSSSSSSSSSSS
 
 ---
 
-#### :closed_umbrella: `nextflow sketchy.nf`
+#### :eyeglasses: `sketchy watch`
 
-Bootstrap workflow in Sketchy. Documentation placeholder.
+Online mode for real-time predictions and data interface in Vue. Documentation placeholder.
+
+#### `nextflow sketchy.nf`
+
+Nextflow wrappers for large scale operations with Sketchy. Documentation placeholder.
