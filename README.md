@@ -11,7 +11,12 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 **`v0.3.a11: public test build, conda install`**
 
-`Sketchy` is an online lineage matching algorithm for real-time genotyping and susceptibility prediction in bacterial pathogens using nanopore sequencing platforms. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*.
+`Sketchy` is an online lineage hashing algorithm for real-time genotyping of bacterial pathogens from uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `Sketchy`. In addition to validated alternatives for current genotyping schemes, the following species are planned for the next major release:
+
+* *Burkholderia pseudomallei*
+* *Escherichia coli*
+* *Streptococcus spp.*
+* *Pseudomonas spp.*
 
 ### Install
 ---
