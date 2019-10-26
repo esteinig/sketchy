@@ -130,7 +130,7 @@ if (params.mixture) {
         each taxdb from params.taxdb
 
         output:
-        set id, file("$fastq"), file("${id}.out") into kraken_filter
+        set id, file("$fastq"), file("${id}.out"), val("$taxdb") into kraken_filter
         set id, file("${id}.report") into kraken_plot
 
         """
@@ -143,10 +143,10 @@ if (params.mixture) {
 
         label "sketchy"
 
-        publishDir "${params.outdir}/species", mode: "copy"
+        publishDir "${params.outdir}/species/$taxdb", mode: "copy"
 
         input:
-        set id, file(fastq), file(kraken) from kraken_filter
+        set id, file(fastq), file(kraken), val(taxdb) from kraken_filter
 
         output:
         set file("${id}.species.reads.out"), file("${id}.species.fq")

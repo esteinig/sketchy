@@ -26,8 +26,11 @@ def sk_merge(survey, key, out):
 
     df = s.merge(k, on='id')
 
-    df = df[
-        ['uuid', 'lineage', 'genotype', 'susceptibility']
-    ]
+    to_drop = ['id']
+
+    if 'fasta' in df.columns:
+        to_drop.append('fasta')
+
+    df = df.drop(columns=to_drop)
 
     df.set_index('uuid').to_csv(out, sep='\t')

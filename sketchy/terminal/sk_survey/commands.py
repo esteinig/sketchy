@@ -1,6 +1,6 @@
 import click
 
-# from pathfinder.pipelines.data import SurveyData
+from sketchy.sketchy import SketchySurvey
 from pathlib import Path
 
 
@@ -11,8 +11,8 @@ from pathlib import Path
          ' from pf-core/pf-survey for creating a sketch.'
 )
 @click.option(
-    '--output', '-o', default='sketchy.survey.tsv', type=Path,
-    help='Output CSV file with dataframe for Sketchy.'
+    '--output', '-o', default='survey.tsv', type=Path,
+    help='Output file tab-delimited, genotype data for Sketchy.'
 )
 @click.option(
     '--template', '-t', default=None, type=str,
@@ -27,58 +27,24 @@ from pathlib import Path
 def sk_survey(directory, output, template, config):
     """ Create survey data frame for creating a sketch with MASH """
 
-    pass
+    survey = SketchySurvey(
+        survey_directory=directory
+    )
 
-    # s = SurveyData()
-    # s.read(results=directory)
-    #
-    # if template == "mrsa":
-    #     # Default MRSA config
-    #     cfg = dict(
-    #         lineage=dict(
-    #             mlst="sequence_type"
-    #         ),
-    #         genotype=dict(
-    #             mykrobe_genotype=list()
-    #         ),
-    #         susceptibility=dict(
-    #             mykrobe_phenotype=list()
-    #         ),
-    #     )
-    # elif template == "kleb":
-    #     # Default Kleb config
-    #     cfg = dict(
-    #         lineage=dict(mlst='sequence_type'),
-    #         genotype=dict(
-    #             kleborate=[
-    #                 'K_locus', 'O_locus',
-    #             ]
-    #         )
-    #     )
-    # elif template == "tb":
-    #     # Default Kleb config
-    #     cfg = dict(
-    #         lineage=dict(
-    #             mykrobe_lineage=list()
-    #         ),
-    #         susceptibility=dict(
-    #             mykrobe_phenotype=list()
-    #         ),
-    #         genotype=None,
-    #     )
-    # else:
-    #     # Default MLST config
-    #     cfg = dict(
-    #         lineage=dict(
-    #             mlst="sequence_type"
-    #         )
-    #     )
-    #
-    # if config:
-    #     if Path(config).exists():
-    #         with Path(config).open('r') as json_cfg:
-    #             cfg = json.load(json_cfg)
-    #
-    #
-    # df = s.sketchy(config=cfg)
-    # df.to_csv(output, sep='\t')
+    data = survey.construct(
+        config=dict(
+            kleborate=[
+                'ST', 'virulence_score', 'resistance_score',
+                'Yersiniabactin', 'K_locus', 'O_locus'
+            ]
+        ),
+        binary=dict(
+            Yersiniabactin='-'
+        )
+    )
+
+    # All columns should be lower-case
+    data.columns = [c.lower() for c in data.columns]
+
+    data.to_csv(output, sep='\t', index_label='uuid')
+

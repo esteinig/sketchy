@@ -533,6 +533,7 @@ class MashSketch(PoreLogger):
         return self.data
 
     def create_refdb_sketch(self, refdb: Path, outdir: Path):
+        
         """ Create a minimal data table from a recursive directory tree
         of the NanoPath RefDB module to quickly create a sketch from
         all *.fasta files in the domain directories directory

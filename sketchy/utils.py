@@ -112,7 +112,7 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
 
 
 def filter_fastq(
-        fastq_in: pysam.FastxFile, fastq_out: TextIO, records: Set[str]
+    fastq_in: pysam.FastxFile, fastq_out: TextIO, records: Set[str]
 ) -> None:
     """ Filter fastq file by checking set membership of read name """
     for record in fastq_in:

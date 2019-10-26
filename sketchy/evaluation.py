@@ -249,6 +249,7 @@ class SampleEvaluator(Sample):
         self.logger.debug(
             f'Found detection breakpoint @ {breakpoint_detection} reads.'
         )
+
         self.logger.info('Compute stable detection breakpoint ...')
         for i, p in enumerate(top_predictions):
             if p == topaz:
@@ -371,7 +372,7 @@ class SampleEvaluator(Sample):
         return p1
 
     def create_lineplot(
-            self, top: int = 10, data: str = 'lineage', ax=None, color='hls'
+        self, top: int = 10, data: str = 'lineage', ax=None, color='hls'
     ):
 
         top_ssh = self.top_ssh.copy()

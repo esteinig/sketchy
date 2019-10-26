@@ -12,6 +12,9 @@ from .fq_filter import fq_filter
 from .fq_sample import fq_sample
 from .fq_sort import fq_sort
 from .nf_plot import nf_plot
+from .fq_split import fq_split
+from .test import test
+from .eval import evaluate
 
 VERSION = '0.3'
 
@@ -23,9 +26,12 @@ def terminal_client():
     pass
 
 
+terminal_client.add_command(evaluate)
+terminal_client.add_command(test)
 terminal_client.add_command(plot)
 terminal_client.add_command(fq_sort)
 terminal_client.add_command(fq_sample)
+terminal_client.add_command(fq_split)
 terminal_client.add_command(sk_link)
 terminal_client.add_command(sk_merge)
 terminal_client.add_command(sk_survey)

@@ -60,8 +60,6 @@ def nf_plot(report, prefix, level, top, color, title, sub):
         )
         df.taxonomy = df.taxonomy.str.strip()
 
-        print(i, report, df)
-
         if len(reports) == 1:
             (ax1, ax2, ax3) = axes
         else:
