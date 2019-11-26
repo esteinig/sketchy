@@ -2,6 +2,7 @@
 
 ![](https://img.shields.io/badge/version-alpha-red.svg)
 ![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
+![](https://img.shields.io/badge/powered_by-rust-black.svg)
 ![](https://img.shields.io/badge/docs-github-green.svg)
 ![](https://img.shields.io/badge/BioRxiv-v1-orange.svg)
 
@@ -9,7 +10,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 ### Overview
 
-**`v0.3.a11: public test build, conda install`**
+**`v0.4.a1: public build, rust library`**
 
 `Sketchy` is an online lineage hashing algorithm for real-time genotyping of bacterial pathogens from uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `Sketchy`. In addition to validated alternatives for current genotyping schemes, the following species are planned for the next major release:
 
@@ -30,6 +31,29 @@ Pull sketch databases into local storage before first use:
 Local sketches can be viewed with:
 
 `sketchy db-list`
+
+
+### Rust library
+---
+
+To compile the Rust library to binary file:
+
+```
+git clone https://github.com/esteinig/sketchy
+cd sketchy && cargo build --release
+```
+
+Run the binary:
+
+```
+./targets/release/sketchy --help
+```
+
+Run the library tests:
+
+```
+cargo test
+```
 
 ### Usage
 ---
