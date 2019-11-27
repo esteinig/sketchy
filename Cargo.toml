@@ -1,0 +1,7 @@
+[package]
+name = "sketchy"
+version = "0.1.0"
+authors = ["esteinig <eikejoachim.steinig@my.jcu.edu.au>"]
+
+[dependencies]
+clap = "2.33.0"

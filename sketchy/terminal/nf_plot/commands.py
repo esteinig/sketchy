@@ -34,8 +34,27 @@ import seaborn as sns
     '--sub', '-s', is_flag=True,
     help='Add subplot titles for each column.'
 )
-def nf_plot(report, prefix, level, top, color, title, sub):
-    """ Generate metagenomic report plots from Kraken2 in Sketchy Nextflow """
+def nf_plot(
+    report: str,
+    prefix: str = 'kraken_plot',
+    level: str = 'species',
+    top: int = 10,
+    color: str = 'Blues',
+    title: str = 'Kraken2',
+    sub: bool = False
+):
+
+    """ Generate metagenomic report plots from Kraken2
+
+    :param report: Path or file glob to taxonomy report files from Kraken2
+    :param prefix: Output file prefix [ kraken_plot ]
+    :param level: Taxonomic level to assess: species [ S ]
+    :param top: Top minor species to plot [ 10 ]
+    :param color: Color palette for plots [ Blues ]
+    :param title: Plot title [ Kraken2 ]
+    :param sub: Add subplot titles for each column [ False ]
+
+    """
 
     if "*" in report:
         reports = list(Path().glob(
@@ -64,6 +83,7 @@ def nf_plot(report, prefix, level, top, color, title, sub):
             (ax1, ax2, ax3) = axes
         else:
             (ax1, ax2, ax3) = axes[i, :]
+
         # Plots
 
         human, unclassified, ureads = plot_overview(df=df, ax=ax1, color=color)
@@ -83,6 +103,7 @@ def nf_plot(report, prefix, level, top, color, title, sub):
             ax1.title.set_text(f'Reads ({total})')
             ax2.title.set_text(f'Major Taxa (> 10%)')
             ax3.title.set_text('Minor Taxa (<= 10%)')
+
         # Final output
 
         plt.tight_layout()

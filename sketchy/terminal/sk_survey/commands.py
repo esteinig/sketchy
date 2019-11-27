@@ -3,6 +3,43 @@ import click
 from sketchy.sketchy import SketchySurvey
 from pathlib import Path
 
+DEFAULTS = {
+    'kleb': dict(
+        config=dict(
+            kleborate=[
+                'ST', 'virulence_score', 'resistance_score',
+                'Yersiniabactin', 'K_locus', 'O_locus'
+            ]
+        ),
+        binary=dict(
+            Yersiniabactin='-'
+        )
+    ),
+    'saureus': dict(
+        config=dict(
+            # sccion=[
+            #     'mlst', 'meca', 'pvl', 'spa', 'scc',
+            # ],
+            mykrobe_phenotype=[
+                'Clindamycin',
+                'Rifampicin',
+                'Ciprofloxacin',
+                'Vancomycin',
+                'Tetracycline',
+                'Mupirocin',
+                'Gentamicin',
+                'Trimethoprim',
+                'Penicillin',
+                'Methicillin',
+                'Erythromycin',
+                'FusidicAcid'
+            ]
+        ),
+        binary=dict(
+        )
+    )
+}
+
 
 @click.command()
 @click.option(
@@ -16,7 +53,7 @@ from pathlib import Path
 )
 @click.option(
     '--template', '-t', default=None, type=str,
-    help='Use a preconfigured configuration template: mrsa, kleb'
+    help='Use a configuration template: saureus, kleb'
 )
 @click.option(
     '--config', '-c', default=None, type=Path,
@@ -32,15 +69,8 @@ def sk_survey(directory, output, template, config):
     )
 
     data = survey.construct(
-        config=dict(
-            kleborate=[
-                'ST', 'virulence_score', 'resistance_score',
-                'Yersiniabactin', 'K_locus', 'O_locus'
-            ]
-        ),
-        binary=dict(
-            Yersiniabactin='-'
-        )
+        config=DEFAULTS[template]['config'],
+        binary=DEFAULTS[template]['binary']
     )
 
     # All columns should be lower-case

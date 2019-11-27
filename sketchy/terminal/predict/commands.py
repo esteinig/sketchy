@@ -4,8 +4,8 @@ import pysam
 
 from pathlib import Path
 
-from sketchy.evaluation import SampleEvaluator
-from sketchy.minhash import MashScore
+from sketchy.tests.evaluation import SampleEvaluator
+from sketchy.tests.minhash import MashScore
 from sketchy.utils import PoreLogger, get_total_reads
 
 

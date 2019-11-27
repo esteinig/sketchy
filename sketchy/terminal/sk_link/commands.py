@@ -1,7 +1,7 @@
 import click
 
 from pathlib import Path
-from sketchy.minhash import MashSketch
+from sketchy.tests.minhash import MashSketch
 
 
 @click.command()

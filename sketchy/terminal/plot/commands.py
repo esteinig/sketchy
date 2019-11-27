@@ -2,7 +2,7 @@ import click
 import pandas
 
 from sketchy.utils import query_fastq
-from sketchy.evaluation import SampleEvaluator
+from sketchy.tests.evaluation import SampleEvaluator
 from matplotlib import pyplot as plt
 from pathlib import Path
 

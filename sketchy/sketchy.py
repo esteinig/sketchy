@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from statistics import mode
 
-from pathfinder.pipelines.data import SurveyData
+from sketchy.survey import SurveyData
 from sketchy.utils import PoreLogger, run_cmd
 from pathlib import Path
 
@@ -24,7 +24,9 @@ class Sketchy(PoreLogger):
     def __init__(
         self,
         fastx: Path,
+        sketch: Path,
         reads: int = 10,
+        memory: bool = False,
         tmp: Path = Path.cwd() / '.tmp'
     ):
 
@@ -40,12 +42,16 @@ class Sketchy(PoreLogger):
 
         self.fastx = fastx
         self.reads = reads
+        self.sketch = sketch
+        self.memory = memory
 
         self.tmp = tmp
         self.tmp.mkdir(parents=True, exist_ok=True)
 
         # Interim updates of sum of shared hashes
         self.ssh: pandas.DataFrame or None = None
+
+        self.sketch_size = self.get_sketch_size(sketch=sketch)
 
     def extract_reads(self) -> Path:
 
@@ -61,48 +67,71 @@ class Sketchy(PoreLogger):
         self.logger.info('Extracting reads for prediction ...')
 
         mash_list = self.tmp / 'mash.in'
-        mash_handle = mash_list.open('w')
 
         with pysam.FastxFile(self.fastx) as fin:
-            for i, read in enumerate(fin):
-                fasta = self.tmp / f'{i}.fa'
-                with fasta.open('w') as fout:
-                    fout.write(f">{read.name}\n{read.sequence}")
-                mash_handle.write(
-                    str(fasta.absolute()) + '\n'
-                )
-                if self.reads is not None and i == self.reads:
-                    break
+            with mash_list.open('w') as mash_handle:
+                for i, read in enumerate(fin):
+
+                    fasta = self.tmp / f'{i}.fa'
+                    with fasta.open('w') as fout:
+                        fout.write(f">{read.name}\n{read.sequence}\n")
+
+                    mash_handle.write(
+                        str(fasta.absolute()) + '\n'
+                    )
+                    if self.reads is not None and i == self.reads-1:
+                        break
 
         return mash_list
 
+    @staticmethod
+    def get_sketch_size(sketch: Path) -> int:
+
+        """ Obtain sketch size from MASH """
+
+        info = run_cmd(
+            f'mash info -H {sketch}', callback=lambda x: x.decode('utf-8')
+        )
+
+        try:
+            sketch_size = 0
+            for line in info.split('\n'):
+                line = line.strip()
+                if line.startswith('Sketches'):
+                    sketch_size = line.split()[-1]
+        except IndexError:
+            raise
+
+        try:
+            sketch_size = int(sketch_size)
+        except ValueError:
+            raise
+
+        return sketch_size
+
     def compute_shared_hashes(
         self,
-        reference: Path,
         query: Path,
         threads: int = 4,
-        p_value: float = 1e-06
     ) -> Path:
 
         """ Compute shared hashes with MASH
 
-        :param reference: Path to species-wide reference sketch created with MASH
         :param query: Path to list of extracted reads to process with MASH
         :param threads: Threads used to compute shared hashes with MASH
-        :param p_value: Filter on p-value computed with MASH
 
         :return Path to file containing p-value filtered results from
             computing shared hashes with MASH
 
         """
 
-        self.logger.info('Computing shared hashes with MASH')
+        self.logger.info('Computing min-wise shared hashes in MASH')
 
         result = self.tmp / 'mash.tsv'
+
         run_cmd(
-            f"mash dist -l -v {p_value} -p {threads}"
-            f" {reference} {query} > {result}",
-            shell=True
+            f"mash dist -l -v 1 -p {threads} "
+            f"{self.sketch} {query} > {result}", shell=True
         )
 
         return result
@@ -136,18 +165,22 @@ class Sketchy(PoreLogger):
             4: lambda x: int(x.split('/')[0])
         }
 
-        df = pandas.read_csv(
+        print(self.sketch_size)
+
+        ssh_data = dict()
+        for read, data in enumerate(pandas.read_csv(
             file,
             sep='\t',
             header=None,
             index_col=0,
+            engine='c',
             usecols=[0, 1, 4],
             names=['id', 'read', 'shared'],
-            converters=converters
-        )
+            converters=converters,
+            chunksize=self.sketch_size
+        )):
 
-        ssh_data = dict()
-        for read, data in df.groupby('read'):
+            self.logger.info(f'Evaluating read {read}')
 
             read = int(read)
             data = data.rename(

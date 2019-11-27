@@ -6,8 +6,7 @@ from .sk_merge import sk_merge
 from .sk_sketch import sk_sketch
 from .sk_survey import sk_survey
 from .predict import predict
-from .db_pull import db_pull
-from .db_list import db_list
+from .db import db
 from .fq_filter import fq_filter
 from .fq_sample import fq_sample
 from .fq_sort import fq_sort
@@ -38,6 +37,5 @@ terminal_client.add_command(sk_survey)
 terminal_client.add_command(sk_sketch)
 terminal_client.add_command(predict)
 terminal_client.add_command(fq_filter)
-terminal_client.add_command(db_list)
-terminal_client.add_command(db_pull)
+terminal_client.add_command(db)
 terminal_client.add_command(nf_plot)

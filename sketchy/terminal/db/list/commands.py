@@ -9,8 +9,8 @@ from sketchy.cloud.storage import GoogleCloudSketch
     '--path', '--p', default=Path.home() / '.sketchy', type=Path,
     help='Path to sketchy home directory [ ~/.sketchy ]'
 )
-def db_list(path):
-    """ List currently available database sketches """
+def list(path):
+    """ List currently available database sketches in repository """
 
     gcs = GoogleCloudSketch(sketch_path=path / 'db')
     gcs.list_dbs()

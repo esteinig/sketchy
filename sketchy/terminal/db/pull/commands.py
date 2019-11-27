@@ -10,8 +10,8 @@ from sketchy.cloud.storage import GoogleCloudSketch
     '--path', '--p', default=Path.home() / '.sketchy', type=Path,
     help='Path to sketchy home directory [default: ~/.sketchy ]'
 )
-def db_pull(path):
-    """ Pull sketch databases into local storage. """
+def pull(path):
+    """ Pull sketch databases into local storage [ ~/.sketchy ] """
 
     # Managed on GitHub not GCS; keep distinct
     data_path = path / 'data'
