@@ -102,7 +102,6 @@ fn sum_of_shared_hashes<R: BufRead>(
     index_size: usize,
     ranks: usize,
 ) -> Vec<u32> {
-
     let mut sum_shared_hashes: Vec<u32> = vec![0; index_size];
 
     let mut idx: usize = 0;
@@ -142,7 +141,6 @@ fn sum_of_shared_hashes<R: BufRead>(
     sum_shared_hashes
 }
 
-
 /// Parse shared hashes from input line string
 ///
 /// Arguments
@@ -170,8 +168,6 @@ fn sum_of_shared_hashes<R: BufRead>(
 /// todo: add example code snippet
 ///
 fn get_shared_hashes(input: &str, tail_index: usize) -> String {
-
-
     let mut output = String::new();
     for (i, c) in input.chars().rev().enumerate() {
         if i > tail_index {
