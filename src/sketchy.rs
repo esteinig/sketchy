@@ -75,38 +75,26 @@ pub fn run(sketch: String, reads: String, procs: i32, ranks: usize, index_size: 
     Ok(())
 }
 
-#[test]
-fn test_mash_dist() {
-    
-    /* Test dependency MASH in $PATH  */
-
-    let _stdout = Command::new("mash")  // system call to MASH   
-        .args(&["dist", "-h"])
-        .output()
-        .expect("Failed to run MASH dist command.");
-
-}
-
 fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, ranks: usize) -> Vec<u32> {
-    
-    /* Separated sum of shared hashes function for testing */ 
+
+    /* Separated sum of shared hashes function for testing */
 
     let mut sum_shared_hashes: Vec<u32> = vec![0; index_size];
 
     let mut idx: usize = 0;
     let mut read: u32 = 0;  // max 4b reads
 
-    reader.lines()  
+    reader.lines()
         .filter_map(|line| line.ok())
         .for_each(|line| {
-            
+
             let shared_hashes = get_shared_hashes(&line, tail_index).parse::<u32>().unwrap();
 
             sum_shared_hashes[idx] += shared_hashes;  // update sum of shared hashes
 
             // at sketch index end: output ranked ssh + reset for next read
             if idx == index_size-1 {
-                
+
                 // collect the index of the current sum of shared hashes
                 let mut ssh_index: Vec<(usize, &u32)> = sum_shared_hashes.iter().enumerate().collect();
                 // sort indexed and updated ssh scores
@@ -115,7 +103,7 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
                 let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
 
                 // write ranked ssh block for this read
-                for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
+                for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {
                     println!("{}\t{}\t{}\t{}", ix, ssh, rank, read);  // flush everytime?
                 }
 
@@ -192,31 +180,66 @@ fn get_shared_hashes(input: &str, tail_index: usize) -> String {
     output
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn test_get_shared_hashes() {
+    #[test]
+    fn test_mash_dist() {
 
-    /* Test the get_shared_hashes function to extract shared hashes from line string */
+        /* Test dependency MASH in $PATH  */
 
-    let sketch_size: usize = 1000;
-    let default_tail_index: usize = sketch_size.to_string().len();
+        let _stdout = Command::new("mash")  // system call to MASH
+            .args(&["dist", "-h"])
+            .output()
+            .expect("Failed to run MASH dist command.");
 
-    let line_default = "ThisIs\tATestLine\t3/1000";
-    assert_eq!(get_shared_hashes(line_default, default_tail_index), "3");
+    }
 
-    let line_multiple_numeric_shared_hashes = "ThisIs\tATestLine\t42/1000";
-    assert_eq!(get_shared_hashes(line_multiple_numeric_shared_hashes, default_tail_index), "42"); 
+    #[test]
+    fn test_compute_ssh() {
 
-    let line_numeric_before_sep = "ThisIs\tATestLine0\t3/1000";
-    assert_eq!(get_shared_hashes(line_numeric_before_sep, default_tail_index), "3");
-    
-    let line_without_preceding_sep = "ThisIs\tATestLine3/1000";
-    assert_eq!(get_shared_hashes(line_without_preceding_sep, default_tail_index), "3");
-    
-    let line_with_newline = "ThisIs\tATestLine\t3/1000\n";
-    assert_ne!(get_shared_hashes(line_with_newline, default_tail_index), "3"); 
+        /* Test general functionality of the compute sum of shared hashes function  */
 
-    // wrong <tail_index> terminates at "/"
-    assert_eq!(get_shared_hashes(line_default, 0), "100");
+        let sketch_size: usize = 1000;
+        let default_tail_index: usize = sketch_size.to_string().len();
 
+        let test_data_bytes = include_bytes!("data/test_mash.out");
+
+        // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
+        let test_data_sliced: &[u8] = &test_data_bytes[..];
+
+        let reader = BufReader::new(test_data_sliced); // 2 reads
+
+        let ssh: Vec<u32> = compute_ssh(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
+
+        assert_eq!(ssh, vec![7, 77]);
+
+    }
+
+    #[test]
+    fn test_get_shared_hashes() {
+        /* Test the get_shared_hashes function to extract shared hashes from line string */
+
+        let sketch_size: usize = 1000;
+        let default_tail_index: usize = sketch_size.to_string().len();
+
+        let line_default = "ThisIs\tATestLine\t3/1000";
+        assert_eq!(get_shared_hashes(line_default, default_tail_index), "3");
+
+        let line_multiple_numeric_shared_hashes = "ThisIs\tATestLine\t42/1000";
+        assert_eq!(get_shared_hashes(line_multiple_numeric_shared_hashes, default_tail_index), "42");
+
+        let line_numeric_before_sep = "ThisIs\tATestLine0\t3/1000";
+        assert_eq!(get_shared_hashes(line_numeric_before_sep, default_tail_index), "3");
+
+        let line_without_preceding_sep = "ThisIs\tATestLine3/1000";
+        assert_eq!(get_shared_hashes(line_without_preceding_sep, default_tail_index), "3");
+
+        let line_with_newline = "ThisIs\tATestLine\t3/1000\n";
+        assert_ne!(get_shared_hashes(line_with_newline, default_tail_index), "3");
+
+        // wrong <tail_index> terminates at "/"
+        assert_eq!(get_shared_hashes(line_default, 0), "100");
+    }
 }
