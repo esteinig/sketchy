@@ -215,25 +215,6 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_ssh() {
-        /* Test general functionality of the compute sum of shared hashes function  */
-
-        let sketch_size: usize = 1000;
-        let default_tail_index: usize = sketch_size.to_string().len();
-
-        let test_data_bytes = include_bytes!("data/test_mash.out");
-
-        // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
-        let test_data_sliced: &[u8] = &test_data_bytes[..];
-
-        let reader = BufReader::new(test_data_sliced); // 2 reads
-
-        let ssh: Vec<u32> = sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
-
-        assert_eq!(ssh, vec![7, 77]);
-    }
-
-    #[test]
     fn test_get_shared_hashes() {
         /* Test the get_shared_hashes function to extract shared hashes from line string */
 
