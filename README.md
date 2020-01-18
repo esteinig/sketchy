@@ -28,7 +28,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 ## Install
 
-Sketchy implements a `Rust` command-line interface (`sketchy-rs`) and a `Python` command-line interface (`sketchy`) for generating evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline.
+Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline.
 
 #### `Conda`
 
