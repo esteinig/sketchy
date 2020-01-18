@@ -2,7 +2,7 @@
 
 ![](https://img.shields.io/badge/version-beta-purple.svg)
 ![](https://img.shields.io/badge/core-rust-black.svg)
-![](https://img.shields.io/badge/biorxiv-v1-orange.svg)
+![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
