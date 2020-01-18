@@ -30,15 +30,15 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 Sketchy implements a `Rust` command-line interface (`sketchy-rs`) and a `Python` command-line interface (`sketchy`). It is recommended to use one of the following packaging options to use the complete prediction pipeline.
 
-### `Conda`
+#### `Conda`
 
-`Sketchy` is currently on a private and requires some dependencies from `BioConda`:
+`Sketchy` is currently on a private channel and requires some dependencies from `BioConda`:
 
 ```sh
 conda install -c esteinig -c bioconda sketchy
 ```
 
-### `Docker`
+#### `Docker`
 
 The Docker container is based on the `Alpine` image with internal `Conda` environments:
 
@@ -54,7 +54,7 @@ docker pull esteinig/sketchy-rs
 docker run esteinig/sketchy-rs -h
 ```
 
-### `Singularity`
+#### `Singularity`
 
 You can use the `Docker` containers with `Singularity`:
 
@@ -62,7 +62,7 @@ You can use the `Docker` containers with `Singularity`:
 singularity exec docker://esteinig/sketchy sketchy --help
 ```
 
-### Cargo
+#### `Cargo`
 
 For the bare-bones Rust libraries without evaluation plots:
 
