@@ -1,8 +1,8 @@
 # sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="210" /></a>
 
-![](https://img.shields.io/badge/version-alpha-red.svg)
-![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
+![](https://img.shields.io/badge/version-beta-purple.svg)
 ![](https://img.shields.io/badge/core-rust-black.svg)
+![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
 ![](https://img.shields.io/badge/docs-github-green.svg)
 ![](https://img.shields.io/badge/BioRxiv-v1-orange.svg)
 
