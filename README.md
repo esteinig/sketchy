@@ -2,9 +2,7 @@
 
 ![](https://img.shields.io/badge/version-beta-purple.svg)
 ![](https://img.shields.io/badge/core-rust-black.svg)
-![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
-![](https://img.shields.io/badge/docs-github-green.svg)
-![](https://img.shields.io/badge/BioRxiv-v1-orange.svg)
+![](https://img.shields.io/badge/biorxiv-v1-orange.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
@@ -24,7 +22,8 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
   - [Basic usage](#basic-usage)
 - [How it works](#how-it-works)
 - [Citing](#citing)
-  - [Bibtex](#bibtex)
+  - [BioRxiv](#bioarxiv)
+  - [BibTeX](#bibtex)
 
 ## Install
 
