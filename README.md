@@ -31,15 +31,15 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [Python CLI](#python-client)
   - [Rust CLI](#rust-client)
 - [How it works](#how-it-works)
-- [Sketch construction](#reference-sketches)
-  - [Genome assemblies](#rust-client-tasks)
-  - [Genotype features](#rust-client-tasks)
-  - [Index preparation](#rust-client-tasks)
-  - [Lineage sketches](#rust-client-tasks)
 - [Reference sketches](#reference-sketches)
   - [*Staphylococcus aureus*](#rust-client-tasks)
   - [*Klebsiella pneumoniae*](#rust-client-tasks)
   - [*Mycobacterium tuberculosis*](#rust-client-tasks)
+- [Constructing reference sketches](#reference-sketches)
+  - [Genome assemblies](#rust-client-tasks)
+  - [Genotype features](#rust-client-tasks)
+  - [Index preparation](#rust-client-tasks)
+  - [Lineage sketches](#rust-client-tasks)
 - [Tasks and parameters](#tasks)
   - [Rust CLI](#rust-client-tasks)
     - [`sketchy-rs compute`](#sketchy-rust-compute)
@@ -79,7 +79,7 @@ docker pull esteinig/sketchy
 docker run esteinig/sketchy sketchy --help
 ```
 
-For a lean implementation of the `Rust` libraries in `Alpine`:
+For a lean `Alpine` container with only the `Rust` client:
 
 ```sh
 docker pull esteinig/sketchy-rs
@@ -92,11 +92,12 @@ You can use the `Docker` containers with `Singularity`:
 
 ```sh
 singularity exec docker://esteinig/sketchy sketchy --help
+singularity exec docker://esteinig/sketchy-rs sketchy-rs compute -h
 ```
 
 #### `Cargo`
 
-For the bare-bones `Rust` libraries without evaluation plots:
+For the `Rust` client directly from `Cargo`:
 
 ```sh
 cargo install sketchy-rs
@@ -104,11 +105,11 @@ cargo install sketchy-rs
 
 ## Setup
 
-Pull default species sketches into local storage:
+Pull default species sketches into local storage before first use:
 
 `sketchy database pull`
 
-Local sketches can be viewed with:
+Local sketches and template names can be viewed with:
 
 `sketchy database list`
 
