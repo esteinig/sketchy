@@ -12,7 +12,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 **`v0.4.0: public build, rust core`**
 
-`Sketchy` is an online lineage calling and genotyping algorithm for bacterial pathogens using uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `Sketchy`.
+`Sketchy` is an online lineage calling and genotyping algorithm for bacterial pathogens using uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `sketchy`.
 
 - [Install](#install)
   - [`conda`](#conda)
@@ -27,12 +27,10 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
   - [Bibtex](#bibtex)
 
 ## Install
----
 
 Sketchy implements a `Rust` CLI (`sketchy-rs`) and a `Python` CLI (`sketchy`). It is recommended to use one of the following packaging options to use both clients in the prediction pipeline.
 
-### Conda
-***
+### `Conda`
 
 `Sketchy` is currently on a private and requires some dependencies from `BioConda`:
 
@@ -40,25 +38,23 @@ Sketchy implements a `Rust` CLI (`sketchy-rs`) and a `Python` CLI (`sketchy`). I
 conda install -c esteinig -c bioconda sketchy
 ```
 
-#### Docker
-***
+### `Docker`
 
-The Docker container is based on `Alpine` linux image with internal `Conda` environments, wrapping dependencies such as `Mash` and the `Python` interface to `Sketchy`.
+The Docker container is based on the `Alpine` image with internal `Conda` environments:
 
 ```sh
 docker pull esteinig/sketchy
 docker run esteinig/sketchy sketchy --help
 ```
 
-For a lean `Alpine` container containing only the `Rust` implementation of `Sketchy` use:
+For a lean `Alpine` container containing only the `Rust` implementation of `sketchy` use:
 
 ```sh
 docker pull esteinig/sketchy-rs
 docker run esteinig/sketchy-rs -h
 ```
 
-#### Singularity
-***
+### `Singularity`
 
 You can use the `Docker` containers with `Singularity`:
 
@@ -66,8 +62,7 @@ You can use the `Docker` containers with `Singularity`:
 singularity exec docker://esteinig/sketchy sketchy --help
 ```
 
-#### Cargo
-***
+### Cargo
 
 For the bare-bones Rust libraries without evaluation plots:
 
@@ -75,8 +70,7 @@ For the bare-bones Rust libraries without evaluation plots:
 cargo install sketchy-rs
 ```
 
-### Setup
----
+## Setup
 
 Pull default species sketches into local storage:
 
@@ -86,12 +80,8 @@ Local sketches can be viewed with:
 
 `sketchy database list`
 
+## Usage
 
-### Usage
----
+### Basic usage
 
-#### Basic usage
-
-
-#### How it works
-
+### How it works
