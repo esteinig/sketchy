@@ -74,7 +74,7 @@ For a lean `Rust` implementation of `Sketchy` based on `Alpine` use:
 
 ```sh
 docker pull esteinig/sketchy-rs
-docker run esteinig/sketchy-rs sketchy compute -h
+docker run esteinig/sketchy-rs sketchy-rs compute -h
 ```
 
 #### `Singularity`
