@@ -79,7 +79,7 @@ docker pull esteinig/sketchy
 docker run esteinig/sketchy sketchy --help
 ```
 
-For a lean `Rust` implementation of `Sketchy` based on `Alpine` use:
+For a lean implementation of the `Rust` libraries in `Alpine`:
 
 ```sh
 docker pull esteinig/sketchy-rs
