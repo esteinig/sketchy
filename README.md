@@ -34,7 +34,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Sketch construction](#reference-sketches)
   - [Genome assemblies](#rust-client-tasks)
   - [Genotype features](#rust-client-tasks)
-  - [Preparation](#rust-client-tasks)
+  - [Index preparation](#rust-client-tasks)
   - [Lineage sketches](#rust-client-tasks)
 - [Reference sketches](#reference-sketches)
   - [*Staphylococcus aureus*](#rust-client-tasks)
