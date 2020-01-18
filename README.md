@@ -1,16 +1,17 @@
 # sketchy <a href='https://github.com/esteinig'><img src='img/logo.png' align="right" height="210" /></a>
 
-![](https://img.shields.io/badge/version-beta-purple.svg)
-![](https://img.shields.io/badge/core-rust-black.svg)
+
+![](https://img.shields.io/badge/lang-rust-black.svg)
+![](https://img.shields.io/badge/version-0.4.0-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 ## Overview
 
-**`v0.4.0: public build, rust core`**
+**`v0.4.0: beta, rust core libs`**
 
-`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Brinda and colleagues (2019)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes, for example multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate).
+`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2019)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes, for example multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate).
 
 Currently supported species are:
 
@@ -27,8 +28,23 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [`cargo`](#cargo)
 - [Setup](#setup)
 - [Usage](#usage)
-  - [Basic usage](#basic-usage)
+  - [Python CLI](#python-client)
+  - [Rust CLI](#rust-client)
 - [How it works](#how-it-works)
+- [Tasks and parameters](#tasks)
+  - [Rust CLI](#rust-client-tasks)
+    - [`sketchy-rs compute`](#sketchy-rust-compute)
+    - [`sketchy-rs evaluate`](#sketchy-rust-evaluate)
+  - [Python CLI](#python-client-tasks)
+    - [`sketchy run`](#sketchy-run)
+    - [`sketchy plot`](#sketchy-plot)
+    - [`sketchy utils`](#sketchy-utils)
+    - [`sketchy feature`](#sketchy-feature)
+    - [`sketchy database`](#sketchy-database)
+- [Nextflow subworkflows](#nextflow)
+  - [`parallel sketchy`](#nextflow-sketchy)
+  - [`parallel sketch`](#nextflow-sketch)
+  - [`metagenome`](#nextflow-metagenome)
 - [Citing](#citing)
   - [BioRxiv](#bioarxiv)
   - [BibTeX](#bibtex)
