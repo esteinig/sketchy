@@ -54,11 +54,11 @@ docker pull esteinig/sketchy
 docker run esteinig/sketchy sketchy --help
 ```
 
-For a lean `Alpine` container containing only the `Rust` implementation of `sketchy` use:
+For a lean `Rust` implementation of `Sketchy` based on `Alpine` use:
 
 ```sh
 docker pull esteinig/sketchy-rs
-docker run esteinig/sketchy-rs -h
+docker run esteinig/sketchy-rs sketchy compute -h
 ```
 
 #### `Singularity`
