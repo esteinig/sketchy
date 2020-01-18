@@ -11,7 +11,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 **`v0.4.0: beta, rust core libs`**
 
-`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2019)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes, for example multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate).
+`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2019)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes for example multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate). A list of precomputed genotype features can be found in the corresponding pathogen descriptions.
 
 Currently supported species are:
 
@@ -63,7 +63,7 @@ conda install -c esteinig -c bioconda sketchy
 
 #### `Docker`
 
-The Docker container is based on the `Alpine` image with internal `Conda` environments:
+The `Docker` container is based on the `Alpine` image with internal `Conda` environments:
 
 ```sh
 docker pull esteinig/sketchy
@@ -87,7 +87,7 @@ singularity exec docker://esteinig/sketchy sketchy --help
 
 #### `Cargo`
 
-For the bare-bones Rust libraries without evaluation plots:
+For the bare-bones `Rust` libraries without evaluation plots:
 
 ```sh
 cargo install sketchy-rs
