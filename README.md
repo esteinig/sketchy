@@ -18,7 +18,7 @@ Currently supported species are:
 * *Klebsiella pneumoniae* 
 * *Mycobacterium tuberculosis*
 
-Please see our preprint for guidance on the limiations of `Sketchy`.
+Please see our preprint for guidance on the limitations of `Sketchy`.
 
 - [Install](#install)
   - [`conda`](#conda)
