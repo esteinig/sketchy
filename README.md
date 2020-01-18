@@ -2,128 +2,96 @@
 
 ![](https://img.shields.io/badge/version-alpha-red.svg)
 ![](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
-![](https://img.shields.io/badge/powered_by-rust-black.svg)
+![](https://img.shields.io/badge/core-rust-black.svg)
 ![](https://img.shields.io/badge/docs-github-green.svg)
 ![](https://img.shields.io/badge/BioRxiv-v1-orange.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
-### Overview
+## Overview
 
-**`v0.4.a1: public build, rust library`**
+**`v0.4.0: public build, rust core`**
 
-`Sketchy` is an online lineage hashing algorithm for real-time genotyping of bacterial pathogens from uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `Sketchy`. In addition to validated alternatives for current genotyping schemes, the following species are planned for the next major release:
+`Sketchy` is an online lineage calling and genotyping algorithm for bacterial pathogens using uncorrected nanopore reads. Currently supported species are *Staphylococcus aureus*,  *Klebsiella pneumoniae* and *Mycobacterium tuberculosis*. Please see the preprint for guidance on the limitations of `Sketchy`.
 
-* *Burkholderia pseudomallei*
-* *Escherichia coli*
-* *Streptococcus spp.*
-* *Pseudomonas spp.*
+- [Install](#install)
+  - [`conda`](#conda)
+  - [`docker`](#docker)
+  - [`singularity`](#singularity)
+  - [`cargo`](#cargo)
+- [Setup](#setup)
+- [Usage](#usage)
+  - [Basic usage](#basic-usage)
+- [How it works](#how-it-works)
+- [Citing](#citing)
+  - [Bibtex](#bibtex)
 
-### Install
+## Install
 ---
 
-:snake: `conda install -c esteinig -c bioconda sketchy`
+Sketchy implements a `Rust` CLI (`sketchy-rs`) and a `Python` CLI (`sketchy`). It is recommended to use one of the following packaging options to use both clients in the prediction pipeline.
 
-Pull sketch databases into local storage before first use:
+### Conda
+***
 
-`sketchy db-pull`
+`Sketchy` is currently on a private and requires some dependencies from `BioConda`:
+
+```sh
+conda install -c esteinig -c bioconda sketchy
+```
+
+#### Docker
+***
+
+The Docker container is based on `Alpine` linux image with internal `Conda` environments, wrapping dependencies such as `Mash` and the `Python` interface to `Sketchy`.
+
+```sh
+docker pull esteinig/sketchy
+docker run esteinig/sketchy sketchy --help
+```
+
+For a lean `Alpine` container containing only the `Rust` implementation of `Sketchy` use:
+
+```sh
+docker pull esteinig/sketchy-rs
+docker run esteinig/sketchy-rs -h
+```
+
+#### Singularity
+***
+
+You can use the `Docker` containers with `Singularity`:
+
+```sh
+singularity exec docker://esteinig/sketchy sketchy --help
+```
+
+#### Cargo
+***
+
+For the bare-bones Rust libraries without evaluation plots:
+
+```sh
+cargo install sketchy-rs
+```
+
+### Setup
+---
+
+Pull default species sketches into local storage:
+
+`sketchy database pull`
 
 Local sketches can be viewed with:
 
-`sketchy db-list`
+`sketchy database list`
 
-
-### Rust library
----
-
-To compile the Rust library to binary file:
-
-```
-git clone https://github.com/esteinig/sketchy
-cd sketchy && cargo build --release
-```
-
-Run the binary:
-
-```
-./targets/release/sketchy --help
-```
-
-Run the library tests:
-
-```
-cargo test
-```
 
 ### Usage
 ---
 
-#### :briefcase: `sketchy predict`
+#### Basic usage
 
-Main interface for multiprocessing predictions and post-hoc computation of sum of shared hashes from uncorrected nanopore reads of completed runs.
 
-`sketchy predict --help`
+#### How it works
 
-Default sketches (`-s`) available:
-
-| Pathogen | Genomes | K-mer size | Sketch size | `-s` |
-|  :---   |  :---:  |  :---:  |  :---:  |  :---:  |
-| *Staphylococcus aureus* | 38,948  | 15  |  1000  |  `mrsa` |
-| *Klebsiella pneumoniae* | 12,765  | 15  |  1000  |  `kleb` |
-| *Mycobacterium tuberculosis* | 27,876  | 15  |  1000  | `tb` |
-
-Completed test sequence read file (`test/test.fq`) - predict on first 1000 reads (default) and compute the sum of shared hashes post-hoc, 8 processors, using the *K. pneumoniae* sketch:
-
-`sketchy predict -f test/test.fq -s kleb -t 8`
-
-This produces the data file `sketchy.tsv` which is the input for `sketchy plot`
-
----
-
-#### :closed_umbrella: `sketchy plot`
-
-`sketchy plot --help`
-
-Sketchy plot handles the raw output from the prediction and generates a ranked hitmap (by top ranking sum of shared hashes) colored by lineage, genotype (`-g`), antimicrobial resistance profiles (`-r`). *K. pneumoniae* does currently not support resistance profiling so this example uses only `--genotype`. Output is a plot in the format (`-f`) such as `sketchy.png` where a limit to the reads shown on the `x-axis` can be pased with `--limit`. 
-
-The plot also shows the total sum of shared hashes aggregated at each read by lineage, or genotype / resistance profile (right), which serves as a means of identifying the most frequent value for the trait (ranked in legend). Colors (`--color`) can be `brewer` palette names such as `PuGn` or a comma delimited list of `brewer` palette names if, for example, genotype (`-g`) is activated.
-
-`sketchy plot -d sketchy.tsv -f png -g --limit 500 --color Blues_r,Purples_r`
-
-<a href='https://github.com/esteinig'><img src='img/sketchy1.png' align="middle" height="420" /></a>
-
-When the breakpoint `-b` option is activated the task attempts to determine a breakpoint on the most frequent trait where the sum of sum of shared hashes (2nd plot) is stable for `--stable` amount of reads. This threshold by default is set to 500, but may need to be adjusted for species like *M. tuberculosis* or can be set conservatively to ensure confidence in predictions. The breakpoint option will also output a file `sketchy.bp.tsv`, which writes the breakpoints to file.
-
-`sketchy plot -d test.tsv -b --stable 500`
-
-This would generate the output file indicating the stable breakpoints in reads and the predicted traits:
-
-```
-> head sketchy.bp.tsv
-
-              lineage     genotype       
-first         7           1
-stable        39          41
-prediction    258         KL106-O2v2
-```
-
-If the input reads `.fq` are passed to `--time`, the task will attempt to parse timestamps from the `.fq` headers and replace read breakpoints with time breakpoints. Example from a *S. aureus* reference strain on a low-throughput R9.4 pore architecture from 2016:
-
-```
-> head sketchy.bpt.tsv
-
-              lineage                 genotype                susceptibility
-first         2016-11-27 08:31:55     2016-11-27 08:24:41     2016-11-27 08:23:15
-stable        2016-11-27 08:36:29     2016-11-27 09:20:06     2016-11-27 08:31:54
-prediction    243                     MSSA:PVL-               SSSSSSSSSSSS
-```
-
----
-
-#### :eyeglasses: `sketchy watch`
-
-Online mode for real-time predictions and data interface in Vue. Documentation placeholder.
-
-#### `nextflow sketchy.nf`
-
-Nextflow wrappers for large scale operations with Sketchy. Documentation placeholder.
