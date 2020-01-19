@@ -145,13 +145,13 @@ ref.tsv   # index
 ref.json  # key 
 ```
 
-Non-template collections can be called b reference to the file name in the `--sketch` option:
+Non-template collections can be used with reference to the file name in the `--sketch` option:
 
 ```bash
 sketchy run \
-  --fastx     test.fq \
-  --reads     5000 \
-  --sketch    ref
+  --fastx   test.fq \
+  --reads   5000 \
+  --sketch  ref
 ```
 
 ### Rust CLI
