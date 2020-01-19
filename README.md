@@ -79,25 +79,17 @@ docker pull esteinig/sketchy
 docker run esteinig/sketchy sketchy --help
 ```
 
-For a lean `Alpine` container with only the `Rust` client:
-
-```sh
-docker pull esteinig/sketchy-rs
-docker run esteinig/sketchy-rs sketchy-rs compute -h
-```
-
 #### `Singularity`
 
 You can use the `Docker` containers with `Singularity`:
 
 ```sh
 singularity exec docker://esteinig/sketchy sketchy --help
-singularity exec docker://esteinig/sketchy-rs sketchy-rs compute -h
 ```
 
 #### `Cargo`
 
-For the `Rust` client directly from `Cargo`:
+For the pure `Rust` client, where the `compute` subtask requires `Mash` in `$PATH`:
 
 ```sh
 cargo install sketchy-rs
