@@ -147,7 +147,7 @@ sketchy run \
   --sketch    saureus \
   --prefix    path/to/prefix \
   --stable    1000 \
-  --palette   YnBuGn 
+  --palette   YnGnBu
 ```
 
 **Custom sketches**
@@ -225,7 +225,7 @@ sketchy plot \
     --index $SKPATH/saureus.tsv \
     --key $SKPATH/saureus.json \
     --stable 1000 \
-    --palette YnBuGn \
+    --palette YnGnBu \
     --prefix test \
     --format png
 ```
@@ -236,10 +236,10 @@ sketchy plot \
 
 ### Android mobile phones
 
-To set up the `Rust` CLI on Android mobile phones, the following should be pretty straight forward:
+To set up the `Rust` CLI on Android mobile phones, the following can be done in a couple of minutes:
 
 1. Install the [`UserLAnd`](https://github.com/CypherpunkArmory/UserLAnd) app 
-2. Setup a `Ubuntu` image
+2. Setup an `Ubuntu` image
 3. Run the following script
 
 ```bash
@@ -249,6 +249,6 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
 ```
 
-Python CLI has not been tested yet.
+Python CLI has not been tested.
 
 ## How it works
