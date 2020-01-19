@@ -143,6 +143,7 @@ When using a template, execution looks like this:
 sketchy run \
   --fastx     test.fq \
   --reads     5000 \
+  --ranks     20 \
   --sketch    saureus \
   --prefix    path/to/prefix \
   --stable    1000 \
@@ -176,12 +177,78 @@ sketchy run \
 
 ### Rust CLI
 
+The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy database pull` deposited the default sketches to `~/.sketchy/sketches` so we can set an environmental variable for convenience:
+ 
+```bash
+SKPATH=~/.sketchy/sketches
+```
+ 
+`Compute` internally calls `Mash` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
+ 
+ ```bash
+ cat test.fq | head -20000 | \
+ sketchy-rs compute \
+    --sketch $SKPATH/saureus.msh \
+    --ranks 20 \
+ > test.ssh.tsv
+ ```
+ 
+`Evaluate` then computes the sum of ranked sums of shared hashes, and other summaries for plotting:
+
+```bash
+cat test.ssh.tsv | \
+sketchy-rs evaluate \
+    --index $SKPATH/saureus.tsv \
+    --stable 1000 \
+> test.sssh.tsv
+```
+
+The `Rust` pipeline can therefore be executed as:
+
+```bash
+cat test.fq | head -20000 \
+| sketchy-rs compute \
+    --sketch $SKPATH/saureus.msh \
+    --ranks 20 \
+| sketchy-rs evaluate \
+    --index $SKPATH/saureus.tsv \
+    --stable 1000 \
+> test.sssh.tsv
+```
+
+Plotting and evaluation summaries are handled in the `Python` CLI and accessed via the `sketchy plot` task:
+
+```
+sketchy plot \
+    --sssh test.sssh.tsv \
+    --ssh test.ssh.tsv \
+    --index $SKPATH/saureus.tsv \
+    --key $SKPATH/saureus.json \
+    --stable 1000 \
+    --palette YnBuGn \
+    --prefix test \
+    --format png
+```
+ 
 ### Sketchy evaluation outputs
 
 ### Online sequencing run
 
 ### Android mobile phones
 
+To set up the `Rust` CLI on Android mobile phones, the following should be pretty straight forward:
 
+1. Install the [`UserLAnd`](https://github.com/CypherpunkArmory/UserLAnd) app 
+2. Setup a `Ubuntu` image
+3. Run the following script
+
+```bash
+sudo apt-get update
+sudo apt-get install curl mash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+cargo install sketchy-rs
+```
+
+Python CLI has not been tested yet.
 
 ## How it works
