@@ -30,8 +30,9 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Usage](#usage)
   - [Python CLI](#python-client)
   - [Rust CLI](#rust-client)
-  - [Outputs](#rust-client)
-  - [Online](#rust-client)
+  - [Evaluation outputs](#rust-client)
+  - [Online sequencing run](#rust-client)
+  - [Android mobile phones](#rust-client)
 - [How it works](#how-it-works)
 - [Reference sketches](#reference-sketches)
   - [*Staphylococcus aureus*](#rust-client-tasks)
@@ -78,12 +79,12 @@ The `Docker` container is based on the `Alpine` image with internal `Conda` envi
 
 ```sh
 docker pull esteinig/sketchy
-docker run esteinig/sketchy sketchy --help
+docker run esteinig/sketchy --help
 ```
 
 #### `Singularity`
 
-You can use the `Docker` containers with `Singularity`:
+`Docker` containers work with `Singularity`:
 
 ```sh
 singularity exec docker://esteinig/sketchy sketchy --help
@@ -93,9 +94,16 @@ singularity exec docker://esteinig/sketchy sketchy --help
 
 For the pure `Rust` client, where the `compute` subtask requires `Mash` in `$PATH`:
 
-```sh
+```bash
 cargo install sketchy-rs
 ```
+
+On `Linux` systems one should be able to install `Mash` conveniently e.g.
+
+```bash
+sudo apt-get install mash
+```
+
 
 ## Setup
 
@@ -167,6 +175,12 @@ sketchy run \
 ```
 
 ### Rust CLI
+
+### Sketchy evaluation outputs
+
+### Online sequencing run
+
+### Android mobile phones
 
 
 
