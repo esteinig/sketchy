@@ -113,7 +113,7 @@ See the `Tasks and Parameters` section for details on all tasks and settings ava
 
 ### Python CLI
 
-`Sketchy` can be run through a wrapper in the Python CLI. It is suitable for completed read files rather than read streams, which should be served with the `Rust` CLI.
+`Sketchy` can be run through a wrapper in the Python CLI which is suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust` CLI.
 
 ```bash
 sketchy run --help
@@ -125,7 +125,7 @@ Species-wide sketch templates are available for:
 * *Klebsiella pneumoniae*: `kpneumoniae`
 * *Mycobacterium tuberculosis*: `mtuberculosis`
 
-When using a template with the template `--sketch`, execution looks like this:
+When using a template, execution looks like this:
 
 ```bash
 sketchy run \
@@ -137,7 +137,15 @@ sketchy run \
   --palette   YnBuGn 
 ```
 
-Non-template reference sketch collections can be generated with the `sketchy feature prepare` task, and must include a reference sketch, numeric genotype index and genotype key file with the same file names and the following extensions, such that:
+**Non-template sketches**
+
+Non-template reference sketch collections can be generated with the `sketchy feature prepare` task, and must include a:
+
+* reference sketch
+* numeric genotype index
+* genotype key file 
+
+with the same file names and the following extensions, such that:
 
 ```bash
 ref.msh   # sketch
@@ -145,13 +153,13 @@ ref.tsv   # index
 ref.json  # key 
 ```
 
-Non-template collections can be used with reference to the file name in the `--sketch` option:
+Non-template collections can be used with reference to the path and file name in the `--sketch` option:
 
 ```bash
 sketchy run \
   --fastx   test.fq \
   --reads   5000 \
-  --sketch  ref
+  --sketch  path/to/ref
 ```
 
 ### Rust CLI
