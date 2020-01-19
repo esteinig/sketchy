@@ -101,11 +101,15 @@ cargo install sketchy-rs
 
 Pull default species sketches into local storage before first use:
 
-`sketchy database pull`
+```
+sketchy database pull
+```
 
 Local sketches and template names can be viewed with:
 
-`sketchy database list`
+```
+sketchy database list
+```
 
 ## Usage
 
@@ -132,14 +136,14 @@ sketchy run \
   --fastx     test.fq \
   --reads     5000 \
   --sketch    saureus \
-  --prefix    test \
+  --prefix    path/to/prefix \
   --stable    1000 \
   --palette   YnBuGn 
 ```
 
-**Non-template sketches**
+**Custom sketches**
 
-Non-template reference sketch collections can be generated with the `sketchy feature prepare` task, and must include a:
+Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task, and must include a:
 
 * reference sketch
 * numeric genotype index
@@ -153,7 +157,7 @@ ref.tsv   # index
 ref.json  # key 
 ```
 
-Non-template collections can be used with reference to the path and file name in the `--sketch` option:
+Custom collections can be used with reference to the path and file name in the `--sketch` option:
 
 ```bash
 sketchy run \
