@@ -151,7 +151,7 @@ sketchy run \
 
 **Custom sketches**
 
-Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task, and must include a:
+Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task as described in the [`Constructing reference sketches`](#constructing-reference-sketches) section, and must include a:
 
 * reference sketch
 * numeric genotype index
@@ -254,13 +254,13 @@ Python CLI has not been tested.
 
 ## Constructing reference sketches
 
-Reference sketches can be easily constructed and prepared for use with Sketchy. This is useful if you want to predict on different species, genotype features or local genome feature collections, such as from surveillance programs or healthcare providers. Ultimately, the representation of genomes and features are the most important parts, as they define the genomic neighbors that can be typed with `Sketchy`. You will need a set of high-quality reference assemblies and their associated genotype features.
+Reference sketches can be rapidly constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage specific sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly available. All that is needed is a set of high-quality reference assemblies and their associated genotype features. Ultimately, genome and feature representation are the most important components to consider, as they define the genomic neighbors that can be typed with `Sketchy`. 
 
 ### Genome assemblies and sketch construction
 
 Assemblies should be of sufficient quality for genotyping and can produced e.g. with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or as part of large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
 
-Suppose you have a set of high-quality assemblies in the current directory:
+Given a set of high-quality assemblies in the current directory:
 
 ```
 DRR083589.fasta
@@ -271,7 +271,7 @@ DRR128207.fasta
 DRR128208.fasta
 ```
 
-You can use `Mash` directly to construct the sketch with the following default parameters:
+`Mash` can be used directly to construct the sketch with the following default parameters:
 
 ```
 mash sketch -s 1000 -k 15 *.fasta
