@@ -39,10 +39,9 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [*Klebsiella pneumoniae*](#rust-client-tasks)
   - [*Mycobacterium tuberculosis*](#rust-client-tasks)
 - [Constructing reference sketches](#reference-sketches)
-  - [Genome assemblies](#rust-client-tasks)
-  - [Genotype features](#rust-client-tasks)
-  - [Index preparation](#rust-client-tasks)
-  - [Lineage sketches](#rust-client-tasks)
+  - [Genome assemblies and sketch construction](#rust-client-tasks)
+  - [Genotype features and index preparation](#rust-client-tasks)
+  - [Lineage and local sketches](#rust-client-tasks)
 - [Tasks and parameters](#tasks)
   - [Rust CLI](#rust-client-tasks)
     - [`sketchy-rs compute`](#sketchy-rust-compute)
@@ -252,3 +251,38 @@ cargo install sketchy-rs
 Python CLI has not been tested.
 
 ## How it works
+
+## Constructing reference sketches
+
+Reference sketches can be easily constructed and prepared for use with Sketchy. This is useful if you want to predict on different species, genotype features or local genome feature collections, such as from surveillance programs or healthcare providers. Ultimately, the representation of genomes and features are the most important parts, as they define the genomic neighbors that can be typed with `Sketchy`. You will need a set of high-quality reference assemblies and their associated genotype features.
+
+### Genome assemblies and sketch construction
+
+Assemblies should be of sufficient quality for genotyping and can produced e.g. with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or as part of large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
+
+Suppose you have a set of high-quality assemblies in the current directory:
+
+```
+DRR083589.fasta
+DRR083590.fasta
+DRR119226.fasta
+DRR119227.fasta
+DRR128207.fasta
+DRR128208.fasta
+```
+
+You can use `Mash` directly to construct the sketch with the following default parameters:
+
+```
+mash sketch -s 1000 -k 15 *.fasta
+```
+
+When constructing sketches from thousands of genomes, it might be more convenient to use the `Nextflow` pipeline, which parallelizes the sketch construction using `mash sketch` executions and `mash paste`:
+
+```
+nextflow run esteinig/sketchy --build true --fasta "*.fasta" --sketch_size 1000 --kmer_size 15 
+```
+
+See the [`Nextflow`](#nextflow) section for additional setting and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
+
+### Genotype features and index preparation
