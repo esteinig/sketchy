@@ -28,8 +28,8 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [:rocket: `cargo`](#cargo)
 - [Setup](#setup)
 - [Usage](#usage)
-  - [Python CLI](#python-client)
-  - [Rust CLI](#rust-client)
+  - [Python command line](#python-client)
+  - [Rust command line](#rust-client)
   - [Evaluation outputs](#rust-client)
   - [Online sequencing run](#rust-client)
   - [Android mobile phones](#rust-client)
@@ -83,7 +83,7 @@ docker run esteinig/sketchy --help
 
 #### `Singularity`
 
-`Docker` containers work with `Singularity`:
+`Docker` containers can be adopted in `Singularity`:
 
 ```sh
 singularity exec docker://esteinig/sketchy sketchy --help
@@ -91,7 +91,7 @@ singularity exec docker://esteinig/sketchy sketchy --help
 
 #### `Cargo`
 
-For the pure `Rust` client, where the `compute` subtask requires `Mash` in `$PATH`:
+`Rust` client only, where the `compute` subtask requires `Mash` in the system's `$PATH`:
 
 ```bash
 cargo install sketchy-rs
@@ -124,7 +124,7 @@ See the `Tasks and Parameters` section for details on all tasks and settings ava
 
 ### Python CLI
 
-`Sketchy` can be run through a wrapper in the Python CLI which is suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust` CLI.
+`Sketchy` can be run through a wrapper in the `Python CLI` which is suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI`.
 
 ```bash
 sketchy run --help
@@ -202,7 +202,7 @@ sketchy-rs evaluate \
 > test.sssh.tsv
 ```
 
-The `Rust` pipeline can therefore be executed as:
+The `Rust` pipeline can be executed in one step, such as:
 
 ```bash
 cat test.fq | head -20000 \
@@ -215,7 +215,7 @@ cat test.fq | head -20000 \
 > test.sssh.tsv
 ```
 
-Plotting and evaluation summaries are handled in the `Python` CLI and accessed via the `sketchy plot` task:
+Plotting and evaluation summaries are handled in the `Python CLI` and accessed via the `sketchy plot` task:
 
 ```
 sketchy plot \
@@ -235,7 +235,7 @@ sketchy plot \
 
 ### Android mobile phones
 
-To set up the `Rust` CLI on Android mobile phones, the following can be done in a couple of minutes:
+To set up the `Rust CLI` on Android mobile phones, the following can be done in a couple of minutes:
 
 1. Install the [`UserLAnd`](https://github.com/CypherpunkArmory/UserLAnd) app 
 2. Setup an `Ubuntu` image
@@ -254,11 +254,11 @@ Python CLI has not been tested.
 
 ## Constructing reference sketches
 
-Reference sketches can be rapidly constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage specific sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly available. All that is needed is a set of high-quality reference assemblies and their associated genotype features. Ultimately, genome and feature representation are the most important components to consider, as they define the genomic neighbors that can be typed with `Sketchy`. 
+Reference sketches can be rapidly constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly available. All that is needed is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
 
 ### Genome assemblies and sketch construction
 
-Assemblies should be of sufficient quality for genotyping and can produced e.g. with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or as part of large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
+Assemblies should be of sufficient quality for genotyping and can produced e.g. with classic tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or from large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
 
 Given a set of high-quality assemblies in the current directory:
 
@@ -277,12 +277,6 @@ DRR128208.fasta
 mash sketch -s 1000 -k 15 *.fasta
 ```
 
-When constructing sketches from thousands of genomes, it might be more convenient to use the `Nextflow` pipeline, which parallelizes the sketch construction using `mash sketch` executions and `mash paste`:
-
-```
-nextflow run esteinig/sketchy --build true --fasta "*.fasta" --sketch_size 1000 --kmer_size 15 
-```
-
-See the [`Nextflow`](#nextflow) section for additional setting and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
+See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
 
 ### Genotype features and index preparation
