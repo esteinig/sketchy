@@ -139,14 +139,13 @@ Species-wide sketch templates are available for:
 When using a template, execution looks like this:
 
 ```bash
-sketchy run \
-  --fastx     test.fq \
-  --reads     5000 \
-  --ranks     20 \
-  --sketch    saureus \
-  --prefix    path/to/prefix \
-  --stable    1000 \
-  --palette   YnGnBu
+sketchy run --fastx test.fq --sketch saureus --ranks 20
+```
+
+More options can be viewed with
+
+```bash
+sketchy run --help
 ```
 
 **Custom sketches**
@@ -168,10 +167,7 @@ ref.json  # key
 Custom collections can be used with reference to the path and file name in the `--sketch` option:
 
 ```bash
-sketchy run \
-  --fastx   test.fq \
-  --reads   5000 \
-  --sketch  path/to/ref
+sketchy run --fastx test.fq --sketch path/to/ref
 ```
 
 ### Rust CLI
@@ -179,7 +175,7 @@ sketchy run \
 The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy database pull` deposited the default sketches to `~/.sketchy/sketches` so we can set an environmental variable for convenience:
  
 ```bash
-SKPATH=~/.sketchy/sketches
+SKPATH=~/.sketchy/default
 ```
  
 `Compute` internally calls `Mash` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
@@ -242,15 +238,18 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 3. Run the following script
 
 ```bash
-sudo apt-get update
-sudo apt-get install curl mash
+sudo apt-get update && sudo apt-get install curl mash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
+wget https://storage.googleapis.com/np-core-sketchy/default.tar.gz \
+  -O default_collection.tar.gz && tar xvzf default_collection.tar.gz
 ```
 
-Python CLI has not been tested.
+Reference sketch collection can then be found in the `default_collection` directory. Python CLI has not been tested.
 
 ## How it works
+
+...
 
 ## Constructing reference sketches
 
@@ -280,3 +279,15 @@ mash sketch -s 1000 -k 15 *.fasta
 See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
 
 ### Genotype features and index preparation
+
+Genotypes associated with each genome in the reference sketch should be in ta tab-delmited table with a column containing the file name identifiers used in the construction of the reference sketch (for example `uuid`) and it's asosciated genotypes with headers:
+
+```
+uuid        st      sccmec  pvl 
+DRR083589   st772   v       +
+DRR083590   st93    iv      +
+DRR119226   st59    v       +
+DRR119227   st80    iv      +
+DRR128207   st772   -       +
+DRR128208   st90    iv      +
+```
