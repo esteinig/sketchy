@@ -22,9 +22,9 @@ Currently supported species are:
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
 - [Install](#install)
-  - [:snake: `conda`](#conda)
-  - [:whale: `docker`](#docker)
   - [:new_moon: `singularity`](#singularity)
+  - [:whale: `docker`](#docker)
+  - [:snake: `conda`](#conda)
   - [:rocket: `cargo`](#cargo)
 - [Setup](#setup)
 - [Usage](#usage)
