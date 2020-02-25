@@ -60,7 +60,7 @@ Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computatio
 I prefer `Singularity` for integrated access to host sytem files:
 
 ```sh
-singularity pull docker://esteinig/sketchy
+singularity pull docker://esteinig/sketchy:latest
 ./sketchy_latest.sif --help
 ```
 
