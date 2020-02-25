@@ -176,7 +176,7 @@ SKPATH=~/.sketchy/saureus
     --sketch $SKPATH/saureus.msh \
     --ranks 20 \
     --progress 1 \
-    --treads 4 \
+    --threads 4 \
  > test.ssh.tsv
  ```
  
@@ -198,7 +198,7 @@ cat test.fq | head -20000 \
     --sketch $SKPATH/saureus.msh \
     --ranks 20 \
     --progress 1 \
-    --treads 4 \
+    --threads 4 \
 | sketchy-rs evaluate \
     --features $SKPATH/saureus.tsv \
     --stable 1000 \
