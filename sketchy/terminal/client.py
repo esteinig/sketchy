@@ -1,21 +1,15 @@
 import click
 
+from .utils import utils
+from .list import list
+from .pull import pull
+from .feature import feature
+from .online import online
+from .survey import survey
+from .run import run
 from .plot import plot
-from .sk_link import sk_link
-from .sk_merge import sk_merge
-from .sk_sketch import sk_sketch
-from .sk_survey import sk_survey
-from .predict import predict
-from .db import db
-from .fq_filter import fq_filter
-from .fq_sample import fq_sample
-from .fq_sort import fq_sort
-from .nf_plot import nf_plot
-from .fq_split import fq_split
-from .test import test
-from .eval import evaluate
 
-VERSION = '0.3'
+VERSION = '0.4.0'
 
 
 @click.group()
@@ -25,17 +19,11 @@ def terminal_client():
     pass
 
 
-terminal_client.add_command(evaluate)
-terminal_client.add_command(test)
+terminal_client.add_command(run)
 terminal_client.add_command(plot)
-terminal_client.add_command(fq_sort)
-terminal_client.add_command(fq_sample)
-terminal_client.add_command(fq_split)
-terminal_client.add_command(sk_link)
-terminal_client.add_command(sk_merge)
-terminal_client.add_command(sk_survey)
-terminal_client.add_command(sk_sketch)
-terminal_client.add_command(predict)
-terminal_client.add_command(fq_filter)
-terminal_client.add_command(db)
-terminal_client.add_command(nf_plot)
+terminal_client.add_command(survey)
+terminal_client.add_command(pull)
+terminal_client.add_command(list)
+terminal_client.add_command(online)
+terminal_client.add_command(utils)
+terminal_client.add_command(feature)

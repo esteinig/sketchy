@@ -1,58 +1,176 @@
-import logging
-import subprocess
 import sys
 import shlex
-from pathlib import Path
-from typing import Set, TextIO
-import numpy as np
-import scipy.stats
 import pandas
-import re
-import dateutil
-import tqdm
-import pysam
+import pyfastx
+import logging
+import subprocess
+
+from dateutil import parser
+from pathlib import Path
+from pysam import FastxFile
+from click import Option, UsageError
+
+
+from pathfinder.pipelines.survey import SurveyData
 
 
 class PoreLogger:
 
-    def __init__(self):
+    def __init__(self, level=logging.ERROR, file: Path = None):
 
         logging.basicConfig(
-            level=logging.INFO,
+            level=level,
             format="[%(asctime)s] [%(name)-7s]     %(message)s",
             datefmt='%H:%M:%S',
-            filename=None
+            filename=file
         )
 
         self.logger = logging.getLogger('Sketchy')
 
 
-BREWER = {
-  'blue': [
-      "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0",
-      "#225ea8", "#253494", "#081d58"
-  ],
-  'green': [
-      "#f7fcb9", "#d9f0a3",	"#addd8e",	"#78c679", "#41ab5d",
-      "#238443", "#006837",	"#004529"
-  ],
-  'red': [
-      "#e7e1ef", "#d4b9da", "#c994c7",	"#df65b0", "#e7298a",
-      "#ce1256", "#980043", "#67001f"
-  ],
-  'orange': [
-      "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a",
-      "#e31a1c", "#bd0026",	"#800026"
-  ]
-}
+class SketchySurvey(PoreLogger):
+
+    """ Build sketch-associated genotype files from Pathfinder Surveys """
+
+    def __init__(self, survey_directory: Path):
+
+        PoreLogger.__init__(self)
+
+        self.survey_data = SurveyData()
+
+        self.logger.info(
+            f'Parse survey directory: {survey_directory}'
+        )
+
+        self.missing = '-'
+
+        self.survey_data.read(survey_directory)
+
+    def construct(self, config: dict, binary: dict, merge: dict = None):
+
+        """ Wrapper for constructing sketchy data from surveys """
+
+        return self.construct_sketchy_data(
+            config=config, binary=binary, merge=merge
+        )
+
+    def construct_sketchy_data(
+        self, config: dict, binary: dict = None, merge: dict = None
+    ) -> pandas.DataFrame:
+
+        """ Construct genotype meta data for species-sketches in Sketchy
+
+        :param config: dictionary in data: [columns] format to construct
+            a dataframe with index: iids, columns: genotypes
+
+        :param binary: dictionary of columns to treat as binary data
+            where keys are columns and values are character to treat
+            as missing data
+
+        :raises: ValueError if genotype column not in selected data
+
+        :return: dataframe of genotypes with genotype indices
+
+        """
+
+        genotypes = dict()
+        genotype_index = None  # filled with last common index of genotypes parsed
+        for attr, columns in config.items():
+            data = getattr(self.survey_data, attr)
+            if merge:
+                for new_column, to_merge in merge[attr].items():
+                    if len(to_merge) < 2:
+                        raise ValueError('Merge data must contain two or more entries.')
+                    try:
+                        data[new_column] = data[to_merge].apply(
+                            lambda x: self.missing if all(
+                                # All are missing, assign missing so binary does not get confused
+                                [True if y == self.missing else False for y in x]
+                            ) else ';'.join(x), axis=1
+                        )
+                    except KeyError:
+                        raise ValueError(f'Could not detect {to_merge} in data frame')
+
+                    # Make sure name not same:
+                    merge_drop = [c for c in to_merge if c != new_column]
+                    data.drop(columns=merge_drop, inplace=True)
+
+            for genotype in columns:
+                if genotype not in data.columns.values:
+                    raise ValueError(
+                        f'Could not find {genotype} in {attr} data.'
+                    )
+                else:
+                    genotype_data = data[genotype].tolist()
+                    genotype_index = data.index
+
+                    if genotype in binary[attr]:
+                        try:
+                            genotype_data = [
+                                1 if g != self.missing else 0 for g in genotype_data
+                            ]
+                        except KeyError:
+                            pass  # TODO: catch error?
+
+                    genotypes[genotype] = genotype_data
+
+        if genotype_index is None:
+            raise ValueError('No genotypes could be parsed.')
+
+        return pandas.DataFrame(genotypes, genotype_index)
 
 
-def mean_confidence_interval(data, confidence=0.95):
-    a = 1.0 * np.array([v for v in data if v is not None])
-    n = len(a)
-    m, se = np.mean(a), scipy.stats.sem(a)
-    h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
-    return m, m-h, m+h
+class SketchySimulator:
+
+    """ Simulator utility to run a live read simulation / rerun for Sketchy """
+
+    def __init__(
+        self,
+        fastx: Path,
+        fastx_index: Path = None,
+        reads_per_file: int = 500,
+        barcodes: list = None,
+    ):
+        self.fastx = fastx
+        self.fai, self.build_read = create_fastx_index(fastx)
+
+        # TODO: Remove when comments are fixed in Pyfastx: since v0.6
+
+        if fastx_index:
+            self.fastx_index = pandas.read_csv(fastx_index, sep='\t')
+        else:
+            self.fastx_index = None
+
+        self.reads_per_file = reads_per_file
+        self.barcodes = barcodes
+
+    def get_run_index(self, fout: bool = False, sort_by: str = 'start_time'):
+
+        self.fastx_index = pandas.DataFrame(
+            [extract_read_data(read) for read in FastxFile(self.fastx)]
+        )
+
+        if sort_by:
+            self.fastx_index = self.fastx_index.sort_values(sort_by)
+
+        if fout:
+            self.fastx_index.to_csv(
+                fout, sep='\t', index=False
+            )
+
+        return self.fastx_index
+
+    @staticmethod
+    def create_header_comment(row):
+
+        """ Recreate the header comment from an index row """
+
+        comment = ''
+        for name in row.index.values:
+            if name != 'name' and row[name] is not None:
+                comment += f'{name}={row[name]} '
+
+        return comment
 
 
 def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
@@ -78,32 +196,28 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
         )
 
     output = None
-    try:
-        if shell:
-            proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        else:
-            proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
+    if shell:
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    else:
+        proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
 
-        if background:
-            # Let task run in background and return pmid for monitoring:
-            return proc.pid, proc
+    if background:
+        # Let task run in background and return pmid for monitoring:
+        return proc.pid, proc
 
-        if watch:
-            while proc.poll() is None:
-                line = proc.stdout.readline()
-                if line != "":
-                    callback(line)
+    if watch:
+        while proc.poll() is None:
+            line = proc.stdout.readline()
+            if line != "":
+                callback(line)
 
-            # Sometimes the process exits before we have all of the output, so
-            # we need to gather the remainder of the output.
-            remainder = proc.communicate()[0]
-            if remainder:
-                callback(remainder)
-        else:
-            output = proc.communicate()[0]
-    except:
-        err = str(sys.exc_info()[1]) + "\n"
-        output = err
+        # Sometimes the process exits before we have all of the output, so
+        # we need to gather the remainder of the output.
+        remainder = proc.communicate()[0]
+        if remainder:
+            callback(remainder)
+    else:
+        output = proc.communicate()[0]
 
     if callback and output is not None:
         return callback(output)
@@ -111,93 +225,141 @@ def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
     return output
 
 
-def filter_fastq(
-    fastq_in: pysam.FastxFile, fastq_out: TextIO, records: Set[str]
-) -> None:
-    """ Filter fastq file by checking set membership of read name """
-    for record in fastq_in:
-        if record.name in records:
-            print(str(record), file=fastq_out)
+def get_output_handle(fpath: str, fastx: bool = False, out: bool = True):
 
-
-def construct_fastq(output, headers: list, records: dict):
-
-    with output.open('w') as outfq:
-        for header in tqdm.tqdm(headers):
-            outfq.write(
-                f"{header}\n{records[header]['sequence']}\n"
-                f"{records[header]['optional']}\n{records[header]['quality']}\n"
+    if fpath == "-":
+        if out:
+            handle = sys.stdout
+        else:
+            handle = sys.stdin
+    else:
+        p = Path(fpath)
+        if not p.parent.is_dir():
+            raise NotADirectoryError(
+                "Directory specified for output file does not exist: {}".format(
+                    p.parent
+                )
             )
 
+        if fastx:
+            handle = FastxFile(p)
+        else:
+            handle = p.open("w")
 
-def query_fastq(fpath: Path, regex: str = 'start_time=(.*)Z', full: bool = False):
+    return handle
 
-    def process(lines=None):
-        ks = ['name', 'sequence', 'optional', 'quality']
-        return {k: v for k, v in zip(ks, lines)}
 
-    dates = []
-    lengths = []
-    headers = []
+def create_fastx_index(fastx):
 
-    records = dict()
-
-    n = 4
-    with fpath.open() as fh:
-        lines = []
-        for line in fh:
-            lines.append(line.rstrip())
-            if len(lines) == n:
-                record = process(lines)
-
-                try:
-                    # Extract start time
-                    timestr = re.search(regex, record['name'])
-                    time = timestr.group(1).strip().replace('start_time=', '')
-                    dtime = dateutil.parser.parse(time)
-                except AttributeError:
-                    dtime = None
-
-                dates.append(dtime)
-                headers.append(
-                    record['name']
-                )
-                lengths.append(
-                    len(record['sequence'])
-                )
-
-                if full:
-                    key = record.pop('name')
-                    records[key] = record
-
-                lines = []
-
-    df = pandas.DataFrame(
-        data={
-            'date': dates,
-            'header': headers,
-            'length': lengths
-        }
-    ).sort_values(by='date')
-
-    if full:
-        return df, records
+    if is_fasta(fastx):
+        return pyfastx.Fasta(
+            str(fastx), build_index=True
+        ), build_read_fasta
+    elif is_fastq(fastx):
+        return pyfastx.Fastq(
+            str(fastx), build_index=True
+        ), build_read_fastq
     else:
-        return df
+        raise ValueError(
+            f'Could not determine input file format: {fastx}'
+        )
 
 
-def get_default_sketch(index) -> (Path, Path):
-    """ Return the default database and index for Sketchy """
-    return (Path(__file__).parent / 'sketch' / f'{index}.default.msh',
-        Path(__file__).parent / 'sketch' / f'{index}.data.tsv')
+def build_read_fasta(read, comment: str = None):
+
+    """ Build fasta string from pyfastx read """
+
+    return f">{read.name}{' '+comment if comment else ''}\n{read.seq}"
 
 
-def get_total_reads(fastq: Path) -> int or None:
+def build_read_fastq(read, comment: str = None):
 
-    try:
-        out = run_cmd(f'wc -l {fastq}', shell=True)
-        return int(out.decode("utf-8").strip('\n').split()[0]) // 4
-    except:
-        print(f'Could not execute: wc -l on {fastq}')
-        exit(1)
+    """ Build fastq read string from pyfastx read """
 
+    return f"@{read.name}{' '+comment if comment else ''}" \
+        f"\n{read.seq}\n+\n{read.qual}"
+
+
+def is_fasta(fastx: Path):
+    with fastx.open() as fin:
+        return fin.readline().startswith('>')
+
+
+def is_fastq(fastx: Path):
+    with fastx.open() as fin:
+        return fin.readline().startswith('@')
+
+
+def get_files(path: Path, patterns: list, names: list = None) -> list:
+
+    """ Search a path for a list of patterns and return file paths """
+
+    fnames = []
+    for pattern in patterns:
+        for file in path.glob(pattern=pattern):
+            fname = file.name.replace(
+                pattern.replace('*', ''), ''
+            )
+            if names:
+                if fname in names:
+                    fnames.append(fname)
+                    print(file)
+            else:
+                fnames.append(fname)
+                print(file)
+
+    return fnames
+
+def extract_read_data(read) -> dict:
+
+    """ Extract header fields from pysam.Read """
+
+    read_data = read.comment.split(' ')
+
+    data = dict(
+        runid=None,
+        sampleid=None,
+        start_time=None,
+        barcode=None,
+        ch=None,
+        read=None
+    )
+
+    for d in read_data:
+        for key in data.keys():
+            if key in d:
+                data[key] = d.replace(f'{key}=', '')
+
+    if data['start_time'] is not None:
+        data['start_time'] = parser.parse(
+            data['start_time']
+        ).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    data['name'] = read.name
+
+    return data
+
+
+class MutuallyExclusiveOption(Option):
+    def __init__(self, *args, **kwargs):
+        self.mutually_exclusive = set(
+            kwargs.pop('mutually_exclusive', [])
+        )
+        if self.mutually_exclusive:
+            kwargs['help'] = kwargs.get('help', '') + (
+                ' NOTE: This argument is mutually exclusive with '
+                ' arguments: [' + ', '.join(self.mutually_exclusive) + '].'
+            )
+        super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        if self.mutually_exclusive.intersection(opts) and self.name in opts:
+            raise UsageError(
+                "Illegal usage: `{}` is mutually exclusive with "
+                "arguments `{}`.".format(
+                    self.name, ', '.join(self.mutually_exclusive)
+                )
+            )
+
+        return super(MutuallyExclusiveOption, self) \
+            .handle_parse_result(ctx, opts, args)

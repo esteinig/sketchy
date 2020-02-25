@@ -1,35 +1,55 @@
+extern crate cute;
 extern crate clap;
+extern crate indicatif;
 
 mod sketchy;
 
 use std::io::Error;
-use clap::App;
+use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
 
-    let matches = App::new("\nsketchy")
-                          .version("0.4")
-                          .about("\nNanopore lineage calling and genotyping of bacterial pathogens\n")
-                          .args_from_usage(
-                              "-i, --input=[FILE]  'Sets the input read list for Mash'
-                               -s, --sketch=[FILE] 'Sets the sketch database to query'
-                               -r, --ranks=[INT] 'Sets the ranked ssh scores to extract
-                               -p, --procs=[INT] 'Sets the number of processors for Mash'")
-                          .get_matches();
-    
-    let sketch: String = matches.value_of("sketch").unwrap().to_string();
-    let reads: String = matches.value_of("input").unwrap().to_string();
-    
-    let procs: i32 = matches.value_of("procs").unwrap().parse::<i32>().unwrap();
-    let ranks: usize = matches.value_of("ranks").unwrap().parse::<usize>().unwrap();
-    
+    let matches = App::new("sketchy")
+        .version("0.4.0")
+        .about("\nNanopore lineage calling and genotyping of bacterial pathogens\n")
+        .subcommand(SubCommand::with_name("compute")
+            .about("\ncompute sum of shared hashes from fasta/q on stdin")
+            .version("0.4.0")
+            .arg(Arg::from_usage("-r, --ranks=[INT] 'max ranks per read'"))
+            .arg(Arg::from_usage("-s, --sketch=[FILE] 'reference sketch'"))
+            .arg(Arg::from_usage("-p, --progress=[INT] 'progress switch > 0'"))
+            .arg(Arg::from_usage("-t, --threads=[INT] 'max threads for mash'"))
+        )
+        .subcommand(SubCommand::with_name("evaluate")
+            .about("\nevaluate sum of shared hashes from sketchy compute on stdin")
+            .version("0.4.0")
+            .arg(Arg::from_usage("-f, --features=[FILE] 'genotype feature index'"))
+            .arg(Arg::from_usage("-s, --stable=[INT] 'reads to stable breakpoint'"))
+        )
+        .get_matches();
+        
+    if let Some(compute) = matches.subcommand_matches("compute") {
+        
+        let sketch: String = compute.value_of("sketch").unwrap().to_string();
+        let ranks: usize = compute.value_of("ranks").unwrap().parse::<usize>().unwrap();
+        let progress: usize = compute.value_of("progress").unwrap().parse::<usize>().unwrap();
+        let threads: i32 = compute.value_of("threads").unwrap().parse::<i32>().unwrap();
+        
+        let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
+        
+        sketchy::run(sketch, threads, ranks, sketch_index, sketch_size, progress);
 
-    // Get sketch_size and sketch_index length from Mash
+    }
 
-    
-    let sketch_size: usize = 1000;
-    let sketch_index: usize = 38981;
+    if let Some(evaluate) = matches.subcommand_matches("evaluate") {
+        
+        let features: String = evaluate.value_of("features").unwrap().to_string();
+        let stable: usize = evaluate.value_of("stable").unwrap().parse::<usize>().unwrap();
 
-    sketchy::run(sketch, reads, procs, ranks, sketch_index, sketch_size)
+        sketchy::evaluate(features, stable);
+
+    }
+
+    Ok(())
 
 }

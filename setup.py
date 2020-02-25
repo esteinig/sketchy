@@ -7,24 +7,8 @@ setup(
     author_email="eikejoachim.steinig@my.jcu.edu.au",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        "tqdm",
-        "colorama",
-        "pandas",
-        "click",
-        "pytest",
-        "seaborn",
-        "scipy",
-        "python-dateutil",
-        "numpy",
-        "pysam",
-    ],
-    entry_points="""
-        [console_scripts]
-        sketchy=sketchy.terminal.client:terminal_client
-    """,
-    version="0.3",
+    version="0.4.0",
     license="MIT",
-    description="Real-time lineage hashing and genotyping of bacterial"
-                "pathogens from uncorrected nanopore reads.",
+    description="Real-time lineage calling and genotyping of bacterial"
+                "pathogens from uncorrected nanopore reads using MinHash",
 )

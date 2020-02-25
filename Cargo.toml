@@ -1,7 +1,9 @@
 [package]
 name = "sketchy"
-version = "0.1.0"
+version = "0.4.0"
 authors = ["esteinig <eikejoachim.steinig@my.jcu.edu.au>"]
 
 [dependencies]
 clap = "2.33.0"
+cute = "0.3.0"
+indicatif = "0.14.0"

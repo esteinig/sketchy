@@ -5,7 +5,6 @@ from pathlib import Path
 from dataclasses import dataclass
 import copy
 import shutil
-import random
 from tqdm import tqdm
 
 
@@ -247,13 +246,10 @@ class ResultData:
 
         fdir = self._check_dir(fdir)
 
-        # Can we predict read length distribution from a smear
-        # of gel run of HMW DNA
-
         for fasta in tqdm(
-                self.fasta.fasta,
-                disable=not progbar,
-                total=len(self.fasta)
+            self.fasta.fasta,
+            disable=not progbar,
+            total=len(self.fasta)
         ):
             if index:
                 try:
@@ -380,92 +376,3 @@ class ResultData:
                     df.at[iid, attr] = False
 
         return df
-
-
-class SurveyData(ResultData):
-
-    def __init__(self):
-
-        self.mlst = pandas.DataFrame()
-        self.kraken = pandas.DataFrame()
-        self.mash = pandas.DataFrame()
-        self.kleborate = pandas.DataFrame()
-        self.sccion = pandas.DataFrame()
-
-        self.abricate_resistance = pandas.DataFrame()
-        self.abricate_virulence = pandas.DataFrame()
-        self.abricate_plasmid = pandas.DataFrame()
-
-        self.mykrobe_phenotype = pandas.DataFrame()
-        self.mykrobe_genotype = pandas.DataFrame()
-        self.mykrobe_lineage = pandas.DataFrame()
-
-    def __copy__(self):
-
-        sd = SurveyData()
-        for attr, data in self:
-            setattr(sd, attr, data)
-        return sd
-
-    @property
-    def empty(self):
-
-        check = [data.empty for attr, data in self]
-
-        if all(check):
-            return True
-        else:
-            return False
-
-    def construct_sketchy_data(
-        self, config: dict, binary: dict or None = None,
-    ) -> pandas.DataFrame:
-
-        """ Construct genotype meta data for species-sketches in Sketchy
-
-        :param config: dictionary in data: [columns] format to construct
-            a dataframe with index: iids, columns: genotypes
-
-        :param binary:
-
-        :raises: ValuerError if genotype column not in selected data
-
-        :return:
-
-        """
-
-        genotypes = dict()
-        genotype_index = None  # filled with last common index of genotypes parsed
-        for attr, columns in config.items():
-            data = getattr(self, attr)
-
-            for genotype in columns:
-                if genotype not in data.columns.values:
-                    raise ValueError(
-                        f'Could not find {genotype} in {attr} data.'
-                    )
-                else:
-                    genotype_data = data[genotype].tolist()
-                    genotype_index = data.index  # TODO make that a minimum set of all indices parsed
-
-                    if binary:
-                        try:
-                            genotype_data = [
-                                1 if g != binary[genotype] else 0 for g in genotype_data
-                            ]
-                        except KeyError:
-                            pass  # TODO: catch error
-
-                    genotypes[genotype] = genotype_data
-
-        if genotype_index is None:
-            raise ValueError('No genotypes could be parsed.')
-
-        return pandas.DataFrame(genotypes, genotype_index)
-
-
-
-
-
-
-

@@ -1,349 +1,244 @@
-"""
-Rewrite of the Sketchy prediction module - cleaner, faster, more robust!
-"""
+__version__ = '0.4.0'
 
+import logging
 import pandas
-import pysam
+import json
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from statistics import mode
-
-from sketchy.survey import SurveyData
-from sketchy.utils import PoreLogger, run_cmd
-from pathlib import Path
-
+from numpy import nan
 from numpy import reshape
+from pathlib import Path
+from sketchy.utils import run_cmd, is_fastq, PoreLogger
+from collections import OrderedDict
+from colorama import Fore
+
+RE = Fore.RESET
+C = Fore.CYAN
+G = Fore.GREEN
+Y = Fore.YELLOW
+R = Fore.RED
 
 
-class Sketchy(PoreLogger):
+class SketchyWrapper(PoreLogger):
 
-    """ Sketchy prediction API """
+    """ Python wrapper for the Rust pipeline """
 
     def __init__(
         self,
         fastx: Path,
         sketch: Path,
-        reads: int = 10,
-        memory: bool = False,
-        tmp: Path = Path.cwd() / '.tmp'
+        prefix: str = 'sketchy',
+        outdir: Path = Path('sketchy_out'),
+        verbose: bool = False,
     ):
 
-        """ Sketchy prediction API
-
-        :param fastx: Path to (compressed) input read file Fast{a,q}
-        :param reads: Number of reads to extract for prediction
-        :param tmp: Path to temporary directory for processing output
-
-        """
-
-        PoreLogger.__init__(self)
+        PoreLogger.__init__(
+            self, level=logging.INFO if verbose else logging.ERROR
+        )
 
         self.fastx = fastx
-        self.reads = reads
         self.sketch = sketch
-        self.memory = memory
+        self.prefix = prefix
+        self.outdir = outdir
+        self.verbose = verbose
 
-        self.tmp = tmp
-        self.tmp.mkdir(parents=True, exist_ok=True)
+        self.logger.info(f'Sketchy wrapper v{__version__}')
+        self.logger.info(f'Prefix: {prefix}')
+        self.logger.info(f'Fastq file: {fastx.absolute()}')
+        self.logger.info(f'Sketch database: {sketch}')
+        self.logger.info(f'Output directory: {outdir.absolute()}')
 
-        # Interim updates of sum of shared hashes
-        self.ssh: pandas.DataFrame or None = None
+        self.outdir.mkdir(exist_ok=True, parents=True)
 
-        self.sketch_size = self.get_sketch_size(sketch=sketch)
-
-    def extract_reads(self) -> Path:
-
-        """ Extract reads for prediction with Sketchy
-
-        Reads are extracted into temporary directory as single enumerated
-        Fasta files. Creates a list of the output files for input to MASH.
-
-        :return Path to list of output read files `mash.in` for input to MASH
-
-        """
-
-        self.logger.info('Extracting reads for prediction ...')
-
-        mash_list = self.tmp / 'mash.in'
-
-        with pysam.FastxFile(self.fastx) as fin:
-            with mash_list.open('w') as mash_handle:
-                for i, read in enumerate(fin):
-
-                    fasta = self.tmp / f'{i}.fa'
-                    with fasta.open('w') as fout:
-                        fout.write(f">{read.name}\n{read.sequence}\n")
-
-                    mash_handle.write(
-                        str(fasta.absolute()) + '\n'
-                    )
-                    if self.reads is not None and i == self.reads-1:
-                        break
-
-        return mash_list
-
-    @staticmethod
-    def get_sketch_size(sketch: Path) -> int:
-
-        """ Obtain sketch size from MASH """
-
-        info = run_cmd(
-            f'mash info -H {sketch}', callback=lambda x: x.decode('utf-8')
-        )
-
-        try:
-            sketch_size = 0
-            for line in info.split('\n'):
-                line = line.strip()
-                if line.startswith('Sketches'):
-                    sketch_size = line.split()[-1]
-        except IndexError:
-            raise
-
-        try:
-            sketch_size = int(sketch_size)
-        except ValueError:
-            raise
-
-        return sketch_size
-
-    def compute_shared_hashes(
+    def run(
         self,
-        query: Path,
+        ranks: int = 10,
+        limit: int = None,
+        stable: int = 1000,
         threads: int = 4,
-    ) -> Path:
+        palette: str = 'YlGnBu'
+    ) -> None:
 
-        """ Compute shared hashes with MASH
+        sketch, features, keys = self.get_sketch_files()
 
-        :param query: Path to list of extracted reads to process with MASH
-        :param threads: Threads used to compute shared hashes with MASH
+        if limit is not None:
+            limit_pipe = f'| head -{limit* 4 if is_fastq(self.fastx) else 2}'
+        else:
+            limit_pipe = ''
 
-        :return Path to file containing p-value filtered results from
-            computing shared hashes with MASH
+        self.logger.info(f'Ranked sum of shares hashes: {ranks}')
+        self.logger.info(f'Predict on reads: {"all" if limit is None else limit}')
+        self.logger.info(f'Stability breakpoint: {stable}')
+        self.logger.info(f'Threads for Mash: {threads}')
 
-        """
+        command_ssh = f'cat {self.fastx} {limit_pipe}' \
+            f' | sketchy-rs compute -r {ranks} -s {sketch} -t {threads}' \
+            f' -p {1 if self.verbose else 0}' \
+            f' > {self.outdir / self.prefix}.ssh.tsv'
 
-        self.logger.info('Computing min-wise shared hashes in MASH')
+        command_sssh = f'cat {self.outdir / self.prefix}.ssh.tsv' \
+            f' | sketchy-rs evaluate -f {features} -s {stable}' \
+            f' > {self.outdir / self.prefix}.sssh.tsv'
 
-        result = self.tmp / 'mash.tsv'
+        self.logger.info('Computing sum of shared hashes...')
+        run_cmd(command_ssh, shell=True)
 
-        run_cmd(
-            f"mash dist -l -v 1 -p {threads} "
-            f"{self.sketch} {query} > {result}", shell=True
+        self.logger.info('Evaluating sum of shared hashes...')
+        run_cmd(command_sssh, shell=True)
+
+        eve = Evaluation(
+            sssh=Path(f"{self.outdir / self.prefix}.sssh.tsv"),
+            ssh=Path(f'{self.outdir / self.prefix}.ssh.tsv'),
+            index=features,
+            key=keys,
+            stable=stable,
+            verbose=self.verbose
         )
 
-        return result
-
-    def compute_ssh(
-        self,
-        file: Path,
-        ranks: int = 10
-    ) -> pandas.DataFrame:
-
-        """ Compute the sum of shared hashes from output of MASH
-
-        Ranked extractions are essential at this stage to reduce the size
-        of the sum of shared hashes tables at each read for large species
-        sketches such as for Staphyloccocus aureus.
-
-        :param file: Path to output file containing shared hashes from MASH
-
-        :param ranks: Extract the highest ranking sum of shared hashes for
-            evaluation on the ranked sums of sum of shared hashes
-
-        :return Ranked sum of shared hashes against the sketch at each read
-
-        """
-
-        self.logger.info('Computing sum of shared hashes with Sketchy')
-
-        converters = {
-            0: lambda x: str(Path(x).name),
-            1: lambda x: int(Path(x).stem),
-            4: lambda x: int(x.split('/')[0])
-        }
-
-        print(self.sketch_size)
-
-        ssh_data = dict()
-        for read, data in enumerate(pandas.read_csv(
-            file,
-            sep='\t',
-            header=None,
-            index_col=0,
-            engine='c',
-            usecols=[0, 1, 4],
-            names=['id', 'read', 'shared'],
-            converters=converters,
-            chunksize=self.sketch_size
-        )):
-
-            self.logger.info(f'Evaluating read {read}')
-
-            read = int(read)
-            data = data.rename(
-                columns={'shared': 'ssh'}
-            )
-            data = data.drop('read', axis=1)
-
-            if self.ssh is None:
-                self.ssh = data
-            else:
-                # Sum of shared hashes, updates SSH:
-                self.ssh = self.ssh.add(data, fill_value=0)
-
-            # Sort the current SSH scores:
-            self.ssh = self.ssh.sort_values('ssh', ascending=False)
-
-            # Select the top ranking genomes by sum of shared hashes
-            top_ssh = self.ssh[:ranks]
-
-            # Add columns for evaluation plots
-            top_ssh = top_ssh.assign(
-                read=[read for _ in top_ssh.ssh],
-                rank=[i for i in range(ranks)]
-            )
-
-            ssh_data[read] = top_ssh
-
-        # Check if dictionary is empty, this should not be the case
-        if not bool(ssh_data):
-            raise ValueError(
-                'No reads were classified [Sketchy Error 1]'
-            )
-
-        # First check that the first read was classified:
-        if 0 not in ssh_data.keys():
-            self.logger.debug(
-                'First read not classified, substituting null values '
-                'for initiation of sum of shared hashes summary'
-            )
-            # If not, take the first classified read
-            # and set the top of sum of shared hashes to 0:
-            ssh_data[0] = self._init_ssh(ssh_data)
-
-        # Continuity clause, if read classification is missing due to
-        # filter step on p-value or failed classification, duplicate
-        # previous top sum of shared hashes to emulate null values:
-
-        ssh = list()
-        current = ssh_data[0]
-        for r in range(self.reads):
-            if r in ssh_data.keys():
-                current = ssh_data[r]
-            else:
-                current = current.assign(
-                    read=[r for _ in current.ssh]
-                )
-            ssh.append(current)
-
-        return pandas.concat(ssh).sort_values(['read', 'rank'])
-
-    @staticmethod
-    def _init_ssh(ssh_data: dict) -> pandas.DataFrame:
-
-        """ Helper method to initiate data entry
-
-        Ranked null value sum of shared hashes if the first read did not contain
-        any matches with the sketch; essential for continuity clause
-        in computation of sum of shared hashes.
-
-        :param ssh_data: Dictionary of read: ranked sum of shared hashes data
-            frames to extract first classified entry and replace shared hashes
-
-        :return First classified data frame with read and shared hashes replaced
-            with 0 (for first read, and for null values on unclassified read)
-
-        """
-
-        first_classified = sorted(ssh_data.keys())[0]
-        init_ssh = ssh_data[first_classified]
-
-        init_ssh = init_ssh.assign(
-            shared=[0 for _ in init_ssh.shared],
-            read=[0 for _ in init_ssh.shared]
+        eve.plot_feature_evaluations(
+            plot_file=Path(f'{self.outdir / self.prefix}.png'),
+            break_file=Path(f'{self.outdir / self.prefix}.data.tsv'),
+            color=palette, break_point=True, stable_point=False
         )
 
-        return init_ssh
+    def get_sketch_files(self):
+
+        """ Find prefixed sketch collection or use local cache """
+
+        if str(self.sketch).endswith('.msh'):
+            sketch = self.sketch.parent / self.sketch.stem
+        else:
+            sketch = self.sketch
+
+        mash = Path(str(sketch) + '.msh')
+        feature = Path(str(sketch) + '.tsv')
+        key = Path(str(sketch) + '.json')
+
+        for f in (mash, feature, key):
+            if not f.exists():
+                raise ValueError(f'Could not detect sketch file: {f}')
+
+        return mash, feature, key
+
+    def check_rust_dependencies(self):
+
+        """ Check dependency versions for Rust pipeline """
+
+        try:
+            output = run_cmd('rustc --version')
+            rustc_version = output.decode('utf-8').split()[1].strip()
+            self.logger.info(f'Rustc version: {rustc_version}')
+        except FileNotFoundError:
+            self.logger.info('Failed to run Sketchy: no `rustc` in $PATH.')
+            exit(1)
+        except KeyError:
+            self.logger.info('Failed to parse version of: rustc')
+            exit(1)
+
+        try:
+            output = run_cmd('mash --version')
+            mash_version = output.decode('utf-8').strip()
+            self.logger.info(f'Mash version: {mash_version}')
+        except FileNotFoundError:
+            self.logger.info('Failed to run Sketchy: no `mash` in $PATH.')
+            exit(1)
+        except KeyError:
+            self.logger.info('Failed to parse version of: mash')
+            exit(1)
+
+        try:
+            output = run_cmd('sketchy-rs --version')
+            sketchyrs_version = output.decode('utf-8').split()[1].strip()
+            self.logger.info(f'Sketchy Rust version: {sketchyrs_version}')
+        except FileNotFoundError:
+            self.logger.info('Failed to run Sketchy: no `sketchy-rs` in $PATH.')
+            exit(1)
+        except KeyError:
+            self.logger.info('Failed to parse version of: sketchy-rs')
+            exit(1)
 
 
-class SketchyEvaluation(PoreLogger):
+class Evaluation(PoreLogger):
+
+    """ Evaluations and plotting from Rust libraries """
 
     def __init__(
         self,
-        ssh_data: Path,
-        feature_data: Path,
-        top: int = 5,
-        limit: int or None = 1000
+        sssh: Path,
+        index: Path,
+        key: Path,
+        stable: int = None,
+        ssh: Path = None,
+        verbose: bool = False
     ):
 
         PoreLogger.__init__(self)
 
-        self.ssh_data: pandas.DataFrame = pandas.read_csv(
-            ssh_data, sep='\t', index_col=0, header=0, dtype={
-                'id': str, 'ssh': float, 'read': int, 'rank': int,
-            }
-        )
+        if verbose:
+            self.logger.setLevel(level=logging.INFO)
 
-        self.feature_data: pandas.DataFrame = pandas.read_csv(
-            feature_data, sep='\t', index_col=0, header=0, dtype=str
-        )
+        self.top_feature_values = 5
+        self.read_limit = 1000
+        self.preference_threshold = 0.6
+        self.na_color = 'darkgray'
 
-        # Make sure the index is named correctly:
-        self.feature_data.index.names = ['id']
+        self.stable = stable
 
-        # Merge sum of shared hashes and feature data:
-        self.ssh_features = self.ssh_data \
-            .join(self.feature_data, how='inner') \
-            .sort_values(['read', 'rank'])
+        self.logger.info(f"Loading data for evaluations from Sketchy Rust")
+        self.logger.info(f"Ranked sum of shared hashes: {sssh}")
+        self.logger.info(f"Sum of shared hashes: {ssh}")
+        self.logger.info(f"Genotype feature index: {index}")
+        self.logger.info(f"Genotype feature key: {key}")
 
-        # Settings
-        self.top = top
-        self.limit = limit
-        self.breakpoints: dict = dict()
+        self.feature_key = self.read_feature_key(file=key)  # key to headers and categories
+        self.feature_index, self.feature_data = self.read_feature_index(file=index)
 
-        self.ranks = sorted(
-            self.ssh_features['rank'].unique().tolist()
-        )[-1]+1
+        self.ssh = self.read_ssh(file=ssh)
+        self.sssh = self.read_sssh(file=sssh)
 
-        self.reads: int = self.ssh_features.read.tolist()[-1]+1
+        self.features = self.feature_index.columns.tolist()
 
-        if self.limit is None:
-            self.limit = self.reads
+        if self.ssh is not None:
+            # Merge ssh and feature index for heatmap
+            self.ssh_features = self.ssh \
+                .join(self.feature_data, how='inner') \
+                .sort_values(['read', 'rank'])
 
-        # Other
-        self.first_breakline: bool = False  # plot first detection breakpoint
-        self.na_color: str = "#d9d9d9"      # background color heatmap
+            self.reads = len(
+                self.ssh_features['read'].unique()
+            )
 
-    def evaluate(
+            self.ranks = len(
+                self.ssh_features['rank'].unique()
+            )
+
+    def plot_feature_evaluations(
         self,
-        features: list or None = None,
-        stable: int = 500,
-        color: str = 'YlGnBu',
-        fout: Path = Path.cwd() / 'sketchy.png',
+        plot_file: Path,
+        break_file: Path,
+        color: str = "YlGnBu",
+        stable_point: bool = False,
+        break_point: bool = False
     ):
+
+        self.logger.info(f"Plot feature evaluations")
+        self.logger.info(f"Plot stable point: {stable_point}")
+        self.logger.info(f"Plot break point: {break_point}")
+        self.logger.info(f"Color palette: {color}")
+        self.logger.info(f"Output plot to file: {plot_file}")
+        self.logger.info(f"Output predictions to file: {break_file}")
 
         # Something odd with colors, need reverse palettes:
         if not color.endswith('_r'):
             color += '_r'
 
-        # Feature selection for evaluation and plotting
-        if features is None:
-            features: list = self.feature_data.columns.values
-        else:
-            # Check presence of user selected features:
-            for f in features:
-                if f not in self.feature_data.columns.values:
-                    self.logger.info(f'Ignore feature not present in data: {f}')
-
-        # Setup plots:
-        number_features = len(features)
-
+        number_features = len(self.features)
+        number_plots = 3 if self.ssh is not None else 2
         fig, axes = plt.subplots(
-            nrows=number_features, ncols=2, figsize=(
-                14.0, number_features * 4.5
+            nrows=number_features, ncols=number_plots, figsize=(
+                number_plots * 7, number_features * 4.5
             )
         )
 
@@ -354,217 +249,284 @@ class SketchyEvaluation(PoreLogger):
 
         fig.subplots_adjust(hspace=0.8)
 
-        # Feature evaluation and plot loop:
-        for i, feature in enumerate(features):
-            sssh, top_features = self.compute_sssh(feature=feature)
+        data = {}
+        for (i, (feature, feature_data)) in enumerate(
+            self.sssh.groupby('feature')
+        ):
 
-            self.breakpoints[feature] = self.define_breakpoints(
-                feature=feature, top_features=top_features, stable_size=stable
+            feature_data, feature_name = self.translate_feature_data(
+                df=feature_data, feature=str(feature)
             )
 
-            self.plot_heatmap(
-                feature=feature, color=color, ax=axes[i, 0]
+            top_prediction, top_values = self.get_top_feature_data(
+                feature_data=feature_data
             )
+
+            stability_points = self.compute_breakpoint(feature_data)
+
+            data[feature_name] = {
+                'stable': stability_points[0],
+                'break': stability_points[1],
+                'prediction': top_prediction
+            }
+
+            if self.ssh is not None:
+                self.plot_heatmap(
+                    feature_name=feature_name,
+                    top_values=top_values,
+                    color=color,
+                    ax=axes[i, 0]
+                )
 
             self.plot_sssh(
-                feature=feature, color=color, ax=axes[i, 1]
+                feature_name=feature_name,
+                feature_data=feature_data,
+                top_feature_values=top_values,
+                stability_points=stability_points,
+                color=color,
+                stable_point=stable_point,
+                break_point=break_point,
+                ax=axes[i, 0 if self.ssh is None else 1]
             )
+
+            single_score_data = feature_data[
+                feature_data['feature_rank'] == 0
+            ].reset_index()
+
+            self.plot_preference_score(
+                feature_data=single_score_data,
+                ax=axes[i, 1 if self.ssh is None else 2]
+            )
+
+            self.logger.info(f"Constructed plots for feature: {feature_name}")
+
+        break_data = pandas.DataFrame(data)
+
+        break_data.to_csv(break_file, sep='\t', index=True)
 
         plt.tight_layout()
-        fig.savefig(fout)
+        fig.savefig(plot_file)
 
-    def compute_sssh(self, feature: str) -> (pandas.DataFrame, list):
+        self.logger.info(f'Saved evaluation plot to: {plot_file}')
+        self.logger.info(f'Saved predictions to: {break_file}')
 
-        """ Compute the sum of sums of shared hashes for a feature
+    def get_top_feature_data(self, feature_data: pandas.DataFrame):
 
-        Sum of sums of shared hashes per feature, where the feature is
-        the a genotype column in the species sketch associated data file.
+        sorted_values = feature_data.groupby('feature_value') \
+            .sum().sort_values(by='sssh', ascending=False)
 
-        :param feature: column name in sketch genotype file
+        top_feature_prediction = sorted_values.iloc[0, :].name
+        top_feature_values = sorted_values[:self.top_feature_values].index.tolist()
 
-        :return a dataframe with sum of sums of shared hashes per read for
-            the given feature and the top
+        return top_feature_prediction, top_feature_values
 
-        """
+    @staticmethod
+    def read_feature_key(file: Path):
 
-        self.logger.debug(
-            f'Compute sum of sums of shared hashes for feature: {feature}'
+        with file.open('r') as key_file:
+            return json.load(key_file)
+
+    def read_feature_index(self, file: Path):
+
+        df = pandas.read_csv(
+            file,
+            sep='\t',
+            header=None,
+            index_col=False,  # ordered by sequential idx
+            dtype='Int64'
         )
 
-        top_features = []
-        sssh_per_read = []
-        for read, read_group in self.ssh_features.groupby('read'):
-            read = int(read)
+        feature_index = df.copy()
 
-            # For each read sum the grouped feature's sums of shared hashes
-            sssh = read_group.groupby(feature).sum().reset_index() \
-                .sort_values('ssh', ascending=False).reset_index()
+        column_names = []
+        for name, column in df.iteritems():
 
-            sssh = sssh.rename(
-                columns={'ssh': 'sssh'}
-            )
-            sssh = sssh.assign(
-                rank=[i for i, _ in enumerate(sssh.sssh)],
-                read=[read for _ in sssh.sssh]
-            )
+            try:
+                column_name = self.feature_key[str(name)]['name']
+            except KeyError:
+                raise KeyError(f'Could not get column name from feature {name}')
 
-            top_features.append(str(
-                sssh.loc[0, feature]
-            ))
-            sssh_per_read.append(sssh)
+            column = column.astype('category')
 
-            if read == self.limit:
-                break  # speedup
-
-        df = pandas.concat(sssh_per_read)
-        df = df.reset_index(drop=True).drop(df.columns[0], axis=1)
-
-        return df, top_features
-
-    def define_breakpoints(
-        self, feature: str, top_features: list, stable_size: int = 500
-    ) -> (int or None, int or None):
-
-        """ Detect breakpoints of first and stable detection
-
-        Breakpoints are computed for the most frequent feature value
-        across the highest ranking sum of sums of shared hashes per read.
-
-        :param feature: feature to evaluate breakpoint on (explicit)
-
-        :param top_features: top ranking feature values per read
-            by highest ranking sum of sums of shared hashes
-
-        :param stable_size: number of reads for which the top
-            ranking feature must be stable (continuous)
-
-        :return: first and stable detection breakpoints
-
-        """
-
-        top_feature = mode(top_features)
-
-        try:
-            first = top_features.index(top_feature)+1
-        except ValueError:
-            first = None
-
-        stable = None
-        for i, p in enumerate(top_features):
-            if p == top_feature:
-                if i+stable_size > len(top_features):
-                    stable = None
+            try:
+                if -1 in column.cat.categories:
+                    column.cat.categories = ['-1'] + self.feature_key[str(name)]['values']
                 else:
-                    uniform = set(
-                        top_features[i:i+stable_size]
-                    )
-                    if len(uniform) == 1 and list(uniform)[0] == top_feature:
-                        stable = i+1
-                        break
+                    column.cat.categories = self.feature_key[str(name)]['values']
+            except KeyError:
+                raise KeyError(
+                    f'Could not find {name} or associated values in feature index key.'
+                )
 
-        self.logger.info(
-            f'{feature.capitalize()} >> {top_feature} << breakpoints: '
-            f'{first} (first) / {stable} (stable)'
+            df[name] = column
+            column_names.append(column_name)
+
+        df.index.name, feature_data = 'idx', df.copy()
+
+        feature_data.columns = column_names
+        feature_index.columns = column_names
+
+        return feature_index, feature_data
+
+    def compute_breakpoint(self, feature_data: pandas.DataFrame):
+
+        top_predictions = feature_data[feature_data['feature_rank'] == 0]
+        reverse_stability = top_predictions.stability.values[::-1]
+
+        last_stable_block_length = 0
+        for stable in reverse_stability:
+            if stable == 0:
+                break
+            else:
+                last_stable_block_length += 1
+
+        stable_point = len(reverse_stability) - last_stable_block_length
+
+        break_point = None
+        if self.stable:
+            break_point = stable_point - self.stable
+            if break_point < 0:
+                break_point = 0
+
+        return stable_point, break_point
+
+    @staticmethod
+    def read_ssh(file: Path = None):
+
+        if file is None:
+            return None
+        else:
+            df = pandas.read_csv(
+                file, sep='\t', index_col=False, header=None,
+                names=['idx', 'ssh', 'rank', 'read'], dtype={
+                    'idx': int, 'ssh': int, 'rank': int, 'read': int
+                }
+            )
+
+            return df.set_index('idx')
+
+    @staticmethod
+    def read_sssh(file: Path):
+
+        return pandas.read_csv(
+            file,
+            sep='\t',
+            header=None,
+            index_col=False,  # reads as first column rather than index
+            names=[
+                'read',
+                'feature',
+                'feature_value',
+                'feature_rank',
+                'sssh',
+                'stability',
+                'score',
+            ],
+            dtype={
+                'read': int,
+                'feature': int,
+                'feature_value': int,
+                'feature_rank': int,
+                'sssh': int,
+                'stability': int,
+                'score': float
+            }
         )
 
-        return first, stable
+    def plot_preference_score(
+        self,
+        feature_data: pandas.DataFrame,
+        ax: plt.axes = None
+    ) -> None:
+
+        p3 = sns.lineplot(
+            data=feature_data, x='read', y='score',
+            ax=ax, color='#333333', ci=None, estimator=None
+        )
+
+        ax.axhline(
+            y=self.preference_threshold, linewidth=1, linestyle='--', color='black'
+        )
+
+        # Legend and labels
+        p3.tick_params(labelsize=6)
+        p3.set_xlabel('\nReads', fontsize=9)
+        p3.set_ylabel('Preference score\n', fontsize=9)
 
     def plot_sssh(
         self,
-        feature: str,
+        feature_name: str,
+        feature_data: pandas.DataFrame,
+        top_feature_values: list,
+        stability_points: tuple = None,
         ax: plt.axes = None,
-        color: str = 'YlGnBu'
-    ):
+        color: str = 'YlGnBu',
+        stable_point: bool = False,
+        break_point: bool = False,
+    ) -> None:
 
-        """ Plot sum of sums of shared hashes by read for feature values
-
-        Computation of sum of sums of shared hashes is included in the
-        plotting operation using the `sum` estimator to aggregate the
-        sum of sums of shared hashes for each feature value.
-
-        :param feature:
-        :param ax:
-        :param color:
-        :return:
-        """
-
-        palette = sns.color_palette(color, self.top)
-
-        # Get top feature value strings by total sum of shared hashes to plot
-        top_features_values = self._get_top_feature_values(feature)
-
-        # Make sure the feature is a string for subsetting
-        self.ssh_features[feature] = self.ssh_features[feature].astype(str)
-
-        # Plot only top features
-        df = self.ssh_features[
-            self.ssh_features[feature].isin(top_features_values)
+        feature_data = feature_data.loc[
+            feature_data['feature_value'].isin(top_feature_values), :
         ]
 
-        # Setup plot values
-        df.rename(
-            columns={feature: feature.capitalize()}
+        feature_data = feature_data.assign(
+            feature_value=feature_data['feature_value'].astype(str)
         )
-        df = df[df['read'] <= self.limit]
-        palette = palette[:len(top_features_values)]
 
-        # Plot breaklines and sum of sums of shard hashes plot
-
-        self._add_breaklines(feature=feature, ax=ax)
+        feature_values = feature_data.feature_value.unique()
+        palette = sns.color_palette(
+            color, n_colors=self.top_feature_values
+        )[:len(feature_values)]
 
         p2 = sns.lineplot(
-            data=df, x='read', y='ssh', hue=feature, hue_order=top_features_values,
-            ci=None, estimator='sum', ax=ax, palette=palette
+            data=feature_data, x='read', y='sssh', hue='feature_value',
+            ax=ax, ci=None, estimator=None, palette=palette,
+            hue_order=[str(v) for v in top_feature_values]
         )
-
-        # Legend and label settings
+        if stability_points is not None and stable_point:
+            ax.axvline(
+                x=stability_points[0], linewidth=1, linestyle='--', color='black'
+            )
+        if stability_points is not None and break_point:
+            if stability_points[1] is not None:
+                ax.axvline(
+                    x=stability_points[1], linewidth=1, linestyle='-', color='black'
+                )
 
         legend = ax.legend()
-        legend.texts[0].set_text(
-            feature.capitalize()
-        )
+        legend.texts[0].set_text(feature_name)
 
-        p2.set_ylabel(
-            'Sum of ranked sums of shared hashes\n', fontsize=9
-        )
-        p2.set_xlabel('\nReads', fontsize=9)
-
+        # Legend and labels
         p2.tick_params(labelsize=6)
-
-        return p2
+        p2.set_xlabel('\nReads', fontsize=9)
+        p2.set_ylabel('Sum of ranked sum of shared hashes\n', fontsize=9)
 
     def plot_heatmap(
         self,
-        feature: str,
-        top: int = 5,
+        feature_name: str,
+        top_values: list,
         ax: plt.axes = None,
         color: str = 'YlGnBu'
     ):
 
-        palette = sns.color_palette(color, top)
-
-        top_features = self._get_top_feature_values(feature)
+        palette = sns.color_palette(
+            color, self.top_feature_values
+        )[:len(top_values)]
 
         df = self.ssh_features.copy().reset_index()
+        df = df[['rank', 'read', feature_name]]
 
-        self.logger.debug(
-            f'Sum of shared hashes dataframe contains {len(df)} entries'
+        # Replace numeric for top features
+        df = self._replace_heatmap_column(
+            df=df, feature_name=feature_name, top_values=top_values
         )
 
-        lineage_keys = {l: i for i, l in enumerate(top_features)}
+        hm = df.pivot('rank', 'read', feature_name)
 
-        df = df.assign(
-            vals=[lineage_keys.get(l, None) for l in df[feature]]
-        )
-
-        hm = df.pivot('rank', 'read', 'vals')
         hm = hm[hm.columns].astype(float)
 
-        palette = palette[:len(top_features)]
-
         p1 = sns.heatmap(
-            hm.iloc[:self.ranks, :self.limit], linewidths=0, cbar=False,
-            ax=ax, cmap=palette
+            hm.iloc[:, :], linewidths=0, cbar=False, ax=ax, cmap=palette
         )
 
         p1.set_facecolor(self.na_color)
@@ -584,6 +546,23 @@ class SketchyEvaluation(PoreLogger):
         p1.tick_params(length=1, width=0.5)
 
         return p1
+
+    @staticmethod
+    def _replace_heatmap_column(
+        df: pandas.DataFrame,
+        feature_name: str,
+        top_values: list
+    ):
+
+        values = df[feature_name].unique()
+
+        to_replace = {
+            f: (top_values.index(f) if f in top_values else nan) for f in values
+        }
+
+        df[feature_name].replace(to_replace=to_replace, inplace=True)
+
+        return df
 
     def _get_ticks(self):
 
@@ -607,77 +586,206 @@ class SketchyEvaluation(PoreLogger):
 
         return xticks, yticks
 
-    def _add_breaklines(self, feature: str, ax) -> None:
-
-        try:
-            bpoints = self.breakpoints[feature]
-            if bpoints[0] is not None and self.first_breakline:
-                ax.axvline(
-                    x=bpoints[0], linewidth=1, linestyle='--', color='black'
-                )
-
-            if bpoints[1] is not None:
-                ax.axvline(
-                    x=bpoints[1], linewidth=1, linestyle='-', color='black'
-                )
-        except KeyError:
-            self.logger.debug(f'Breakpoints for {feature} do not exist.')
-
-    def _get_top_feature_values(self, feature: str) -> [str]:
-
-        return self.ssh_features.groupby(by=feature).sum().ssh \
-                 .sort_values(ascending=False)[:self.top] \
-                 .index.tolist()  # TODO: check to remove NA
-
-    @staticmethod
-    def compute_preference_scores(
-        sssh: pandas.DataFrame, feature: str
-    ) -> None:
-
-        """ Compute a preference score of sums of sums of shared hashes
-
-        Analogous to Brinda et al. (2019) lineage score:
-
-            LS = 2f/(f+t)-1
-
-        where f and t denote weights of best matches, here these are the
-        two feature values with the highest ranking total sums of
-        sums of shared hashes or sum of shared hashes
-        across the prediction data.
-
-        :param sssh: dataframe for sssh preference scores
-        :param feature: feature to compute the preference score for
-
-        """
-
-        feature = sssh.columns.values[0]
+    def translate_feature(self, feature_name, feature_data):
 
         pass
 
+    def translate_feature_data(
+        self, df: pandas.DataFrame, feature: str
+    ):
 
-class SketchySurvey(PoreLogger):
+        """ Category replacement should be fast """
 
-    """ Build sketch-associated genotype files from Pathfinder Surveys """
+        try:
+            feature_dict = self.feature_key[feature]
+        except KeyError:
+            raise KeyError(
+                f'Could not find translation data for feature {feature}'
+            )
 
-    def __init__(self, survey_directory: Path):
+        try:
+            feature_name = feature_dict['name']
+            feature_values = {
+                i: val for i, val in enumerate(
+                    feature_dict['values']
+                )
+            }
+        except KeyError:
+            raise KeyError(
+                f"Could not find name or value keys for feature: {feature}"
+            )
 
-        PoreLogger.__init__(self)
-
-        self.survey = SurveyData()
-
-        self.logger.info(
-            f'Parse survey directory: {survey_directory}'
+        # Feature column
+        df = df.assign(
+            feature=df.feature.astype('category')
         )
-        self.survey.read(survey_directory)
+        df.feature.cat.categories = [feature_name]
 
-    def construct(self, config: dict, binary: dict):
+        # Feature value column
+        df = df.assign(
+            feature_value=df.feature_value.astype('category')
+        )
+        df.feature_value.cat.categories = [
+            feature_values[cat] for cat in df.feature_value.cat.categories
+        ]
 
-        return self.survey.construct_sketchy_data(
-            config=config, binary=binary
+        return df, feature_name
+
+
+class LineageIndex(PoreLogger):
+
+    def __init__(
+        self,
+        index_file: Path = None,
+        lineage_column: str = 'mlst',
+        verbose: bool = False
+    ):
+
+        PoreLogger.__init__(
+            self, level=logging.INFO if verbose else logging.ERROR
         )
 
+        if index_file:
+            self.index = pandas.read_csv(
+                index_file, sep='\t', header=0, index_col=0
+            )
+        else:
+            self.index = None
 
+        self.lineage_column = lineage_column
 
+    def write(self, file: Path, idx: bool = True, header: bool = True):
 
+        self.index.sort_values('idx', ascending=True).to_csv(
+            file, sep='\t', header=header, index=idx,
+        )
 
+    def has_lineage(self, lineage: str) -> bool:
 
+        return lineage in self.index[self.lineage_column].values
+
+    def get_lineage(self, lineage: str) -> pandas.DataFrame:
+
+        """" Get a subset of the genotype index for the given lineage """
+
+        if self.has_lineage(lineage):
+            return self.index[self.index[self.lineage_column] == lineage]
+        else:
+            raise ValueError(f'Could not detect lineage in index: {lineage}')
+
+    def get_key_index(
+        self, lineage: str, key_file: Path = None,
+    ) -> pandas.DataFrame:
+
+        """ Access lineage data by legacy key index file from Pathfinder Survey """
+
+        df = self.get_lineage(lineage=lineage)
+
+        key = pandas.read_csv(
+            key_file, sep="\t", usecols=['uuid', 'id'],
+            header=0, index_col=None
+        )
+
+        keyed = df.merge(key, how='inner', on='uuid')
+        keyed.index = df.index
+
+        return keyed
+
+    def drop_columns(self, columns: list = None):
+
+        if columns is None:
+            columns = ['uuid', 'id']
+
+        for column in columns:
+            try:
+                self.index.drop(columns=column, inplace=True)
+            except KeyError:
+                print(f'Could not find column: {column} - skipping')
+
+        return self.index
+
+    def prepare_columns(self, integers: bool = True):
+
+        """ Transform into categorical numeric data for evaluation in Rust """
+
+        dtypes = ['category', 'bool', 'object']
+        if integers:
+            dtypes += ['int64']
+
+        transform = self.index.select_dtypes(dtypes).columns
+
+        self.index.drop(columns=[
+            c for c in self.index.columns if c not in transform
+        ], inplace=True)
+
+        feature_keys = OrderedDict()
+        for (i, (name, column_data)) in enumerate(
+            self.index.iteritems()
+        ):
+            feature_keys[i] = {
+                'name': name,
+                'values': column_data.astype('category').cat.categories.tolist()
+            }
+
+        self.index[transform] = self.index[transform].apply(
+            lambda x: x.astype('category').cat.codes
+        )
+
+        return self.index, feature_keys
+
+    def get_summary(self, lineage: str) -> pandas.DataFrame or None:
+
+        """ Generate a genotype summary for the given lineage """
+
+        ignore_columns = ['uuid', 'idx', 'id', 'plasmid', 'resistance']  # TODO check these
+
+        if self.has_lineage(lineage):
+
+            # Get frequency summary of feature values
+
+            df = self.get_lineage(lineage)
+
+            feature_data = []
+            for column in df.columns:
+                if column not in ignore_columns:
+                    feature_counts = df[column].value_counts()
+                    feature_str, feature_df = self._build_summary_str(feature_counts)
+                    feature_data.append(feature_df)
+                    print(feature_str)
+
+            return pandas.concat(feature_data)
+
+        else:
+            raise ValueError(f'Could not detect lineage in index: {lineage}')
+
+    @staticmethod
+    def _build_summary_str(feature_counts: pandas.Series):
+
+        """ Build a summary string from value counts of a feature """
+
+        feature_str = f"\n{G}{feature_counts.name.upper()}{RE}\n\n"
+
+        total = sum(feature_counts)
+        summary_data = []
+        for idx, count in feature_counts.items():
+            idx = idx.strip()
+
+            percent = round(
+                (count/total)*100, ndigits=2
+            )
+
+            if len(idx) >= 16:
+                _idx = idx[:12] + "..."
+            else:
+                _idx = idx
+
+            feature_str += f"{_idx:<16}{count:<8}{percent:8}%\n"
+            summary_data.append(
+                [feature_counts.name, idx, count, percent]
+            )
+
+        df = pandas.DataFrame(
+            summary_data, columns=['feature', 'genotype', 'count', 'percent']
+        )
+
+        return feature_str, df
