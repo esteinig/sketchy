@@ -107,14 +107,9 @@ class SketchyWrapper(PoreLogger):
 
         """ Find prefixed sketch collection or use local cache """
 
-        if str(self.sketch).endswith('.msh'):
-            sketch = self.sketch.parent / self.sketch.stem
-        else:
-            sketch = self.sketch
-
-        mash = Path(str(sketch) + '.msh')
-        feature = Path(str(sketch) + '.tsv')
-        key = Path(str(sketch) + '.json')
+        mash = Path(str(self.sketch) + '.msh')
+        feature = Path(str(self.sketch) + '.tsv')
+        key = Path(str(self.sketch) + '.json')
 
         for f in (mash, feature, key):
             if not f.exists():

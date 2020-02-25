@@ -10,11 +10,11 @@ from sketchy.utils import run_cmd, PoreLogger
 @click.command()
 @click.option(
     '--sketch', '-s', type=Path, required=True,
-    help='Path to sketch file to parse indices from [required]'
+    help='Path to sketch file to parse indices from '
 )
 @click.option(
     '--features', '-f', type=Path, required=True,
-    help='Path to genotype feature file to merge indices with sketch [required]'
+    help='Path to genotype feature file to merge indices with sketch'
 )
 @click.option(
     '--key', '-k', type=Path, required=False,
@@ -25,6 +25,10 @@ from sketchy.utils import run_cmd, PoreLogger
     help='Feature index column to merge indices on [idx]'
 )
 @click.option(
+    '--mash_column', '-m', type=str, default='ids',
+    help='Mash index column to merge indices on [ids]'
+)
+@click.option(
     '--prefix', '-p', type=str, default='sketchy.info',
     help='Prefix for output file: {prefix}.tsv [sketchy]'
 )
@@ -32,7 +36,7 @@ from sketchy.utils import run_cmd, PoreLogger
     '--verbose', '-v', is_flag=True,
     help='Enable verbose output for merge operations'
 )
-def merge(sketch, features, key, prefix, index_column, verbose):
+def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
 
     """ Merge sketch and feature data by common indices """
 
@@ -70,9 +74,16 @@ def merge(sketch, features, key, prefix, index_column, verbose):
     print(d)
 
     mash_info = d.merge(
-        mash_info, left_on=index_column, right_on='idx', how='inner'
+        mash_info, left_on=index_column, right_on=mash_column, how='inner'
     )
     pl.info('Merged data and sketch information')
+    if 'idx_y' in mash_info.columns:
+        mash_info = mash_info.drop(columns="idx_x")
+        mash_info = mash_info.rename(columns={'idx_y': 'idx'})
+
+    mash_info = mash_info.sort_values('idx')
+    mash_info.index = mash_info['idx']
+    mash_info = mash_info.drop(columns='idx')
 
     if key is not None:
         key_table = pandas.read_csv(
@@ -90,7 +101,7 @@ def merge(sketch, features, key, prefix, index_column, verbose):
         f'{prefix}.tsv',
         sep='\t',
         header=True,
-        index=False,
+        index=True,
     )
 
     pl.info(f'Merged sketch data ({nsketch}) and feature data ({ndata})')

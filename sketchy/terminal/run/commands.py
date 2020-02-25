@@ -108,18 +108,15 @@ def run(
     except KeyError:
         sketchy_path = home
 
-    if str(sketch.stem) in TEMPLATES:
-        sketch_file = sketchy_path / Path(f'{sketch}/{sketch}' + "_15_1000.msh")
-    else:
-        try:
-            sk = str(sketch.stem)
-            temp = sk.split('_')[0]
-            if temp in TEMPLATES:
-                sketch_file = sketchy_path / Path(f'{temp}/{sk}.msh')
-            else:
-                sketch_file = sketch
-        except IndexError:
+    try:
+        sk = str(sketch.name)
+        temp = sk.split('_')[0]
+        if temp in TEMPLATES:
+            sketch_file = sketchy_path / Path(f'{temp}/{sk}_15_1000')
+        else:
             sketch_file = sketch
+    except IndexError:
+        sketch_file = sketch
 
     sw = SketchyWrapper(
         fastx=fastq,
@@ -128,8 +125,6 @@ def run(
         outdir=outdir,
         verbose=not quiet
     )
-
-    # sw.check_rust_dependencies() # problem with singularity $PATH ?
 
     sw.run(
         ranks=ranks,
