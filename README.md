@@ -61,12 +61,12 @@ I prefer `Singularity` for integrated access to host sytem files:
 
 ```sh
 singularity pull docker://esteinig/sketchy
-singularity run esteinig/sketchy --help
+./sketchy_latest.sif --help
 ```
 
 #### `Docker`
 
-`Docker` is ok too
+`Docker` is ok too:
 
 ```sh
 docker pull esteinig/sketchy:latest
