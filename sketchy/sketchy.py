@@ -260,7 +260,6 @@ class Evaluation(PoreLogger):
             stability_points = self.compute_breakpoint(feature_data)
 
             data[feature_name] = {
-                'stable': stability_points[0],
                 'break': stability_points[1],
                 'prediction': top_prediction
             }
