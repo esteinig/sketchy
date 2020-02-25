@@ -11,7 +11,7 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 **`v0.4.0: beta, rust core libs`**
 
-`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2019)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate). A list of precomputed genotype features can be found in the corresponding pathogen reference  sections.
+`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate). A list of precomputed genotype features can be found in the corresponding pathogen reference  sections.
 
 Currently supported species are:
 
@@ -66,7 +66,7 @@ Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computatio
 
 #### `Conda`
 
-`Sketchy` is currently on a private channel and requires some dependencies from `BioConda`:
+NOT AVAILABLE YET - `Sketchy` is currently on a private channel and requires some dependencies from `BioConda`:
 
 ```sh
 conda install -c esteinig -c bioconda sketchy
@@ -74,7 +74,7 @@ conda install -c esteinig -c bioconda sketchy
 
 #### `Docker`
 
-The `Docker` container is based on the `Alpine` image with internal `Conda` environments:
+NOT ON DOCKERHUB YET - The `Docker` container is based on the `Alpine` image with internal `Conda` environments:
 
 ```sh
 docker pull esteinig/sketchy
@@ -83,7 +83,7 @@ docker run esteinig/sketchy --help
 
 #### `Singularity`
 
-`Docker` containers can be adopted in `Singularity`:
+NOT ON DOCKERHUB YET - `Docker` containers can be adopted in `Singularity`:
 
 ```sh
 singularity exec docker://esteinig/sketchy sketchy --help
@@ -91,7 +91,7 @@ singularity exec docker://esteinig/sketchy sketchy --help
 
 #### `Cargo`
 
-`Rust` client only, where the `compute` subtask requires `Mash` in the system's `$PATH`:
+NOT AVAILABLE YET - `Rust` client only, where the `compute` subtask requires `Mash` in the system's `$PATH`:
 
 ```bash
 cargo install sketchy-rs
@@ -109,13 +109,13 @@ sudo apt-get install mash
 Pull default species sketches into local storage before first use:
 
 ```
-sketchy database pull
+sketchy pull
 ```
 
 Local sketches and template names can be viewed with:
 
 ```
-sketchy database list
+sketchy list
 ```
 
 ## Usage
@@ -139,7 +139,7 @@ Species-wide sketch templates are available for:
 When using a template, execution looks like this:
 
 ```bash
-sketchy run --fastx test.fq --sketch saureus --ranks 20
+sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 5000
 ```
 
 More options can be viewed with
@@ -167,7 +167,7 @@ ref.json  # key
 Custom collections can be used with reference to the path and file name in the `--sketch` option:
 
 ```bash
-sketchy run --fastx test.fq --sketch path/to/ref
+sketchy run --fastq test.fq --sketch ref
 ```
 
 ### Rust CLI
