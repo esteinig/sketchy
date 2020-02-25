@@ -1,3 +1,4 @@
+import os
 import tarfile
 import logging
 
@@ -55,7 +56,7 @@ class GoogleCloudSketch:
 
         """ List cached or remote reference sketch collection paths """
 
-        print(f'{"collection":<20}{"k-mer":<10}{"size":<10}{"alias":<30}{"run":<30}')
+        print(f'{"collection":<20}{"k-mer":<10}{"size":<10}{"run":<30}')
         for name in self.sketches:
             dir_path = self.sketch_path / f'{name}'
 
@@ -63,12 +64,15 @@ class GoogleCloudSketch:
                 dir_path = Path(f'gs://{self.bucket_name}/{name}.tar.gz')
 
             for f in Path(dir_path).glob("*.msh"):
-                name, kmer_size, sketch_size = f.name.strip(".msh").split("_")
-                alias = f.name.strip('.msh')
-                run = f"sketchy run -s {alias}"
+                file_name = os.path.basename(
+                    str(f).strip(".msh")
+                )
+                # Weird bug: f.name and f.stem strip the s from /saureus
+                name, kmer_size, sketch_size = file_name.split("_")
+                run = f"sketchy run -s {file_name}"
                 print(
                     f"{G}{name:<20}{RE}{C}{kmer_size:<10}"
-                    f"{sketch_size:<10}{RE}{Y}{alias:<30}{RE}{B}{run:<30}{RE}"
+                    f"{sketch_size:<10}{RE}{B}{run:<30}{RE}"
                 )
 
     def download_sketch_archive(self, archive_name: str):
