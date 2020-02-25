@@ -78,7 +78,7 @@ But to share files between container and the host system you need to set bindmou
 ```sh
 docker run -it \
   -v $(pwd):/data \
-  --user $(id -u):$(id -g) \
+  -u $(id -u):$(id -g) \
   esteinig/sketchy run \
   --fastq /data/test.fq
   --output /data/test
