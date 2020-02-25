@@ -54,29 +54,43 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline.
 
+
+#### `Singularity`
+
+I prefer `Singularity` for integrated access to host sytem files:
+
+```sh
+singularity pull docker://esteinig/sketchy
+singularity run esteinig/sketchy --help
+```
+
+#### `Docker`
+
+`Docker` is ok too
+
+```sh
+docker pull esteinig/sketchy:latest
+docker run -it esteinig/sketchy --help
+```
+
+But to share files between container and the host system you need to set bindmounts, e.g. the link current directory with a hypothetical `test.fq` file to the preconfigured working directory `/data` inside the container using the current user permissions:
+
+```sh
+docker run -it \
+  -v $(pwd):/data \
+  --user $(id -u):$(id -g) \
+  esteinig/sketchy run \
+  --fastq /data/test.fq
+  --output /data/test
+```
+
+
 #### `Conda`
 
 NOT AVAILABLE YET - `Sketchy` is currently on a private channel and requires some dependencies from `BioConda`:
 
 ```sh
 conda install -c esteinig -c bioconda sketchy
-```
-
-#### `Docker`
-
-NOT ON DOCKERHUB YET - The `Docker` container is based on the `Alpine` image with internal `Conda` environments:
-
-```sh
-docker pull esteinig/sketchy
-docker run esteinig/sketchy --help
-```
-
-#### `Singularity`
-
-NOT ON DOCKERHUB YET - `Docker` containers can be adopted in `Singularity`:
-
-```sh
-singularity exec docker://esteinig/sketchy sketchy --help
 ```
 
 #### `Cargo`
