@@ -80,7 +80,7 @@ docker run -it \
   -v $(pwd):/data \
   -u $(id -u):$(id -g) \
   esteinig/sketchy run \
-  --fastq /data/test.fq
+  --fastq /data/test.fq \
   --output /data/test
 ```
 
