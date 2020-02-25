@@ -23,9 +23,9 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 - [Install](#install)
   - [:new_moon: `singularity`](#singularity)
+  - [:rocket: `cargo`](#cargo)
   - [:whale: `docker`](#docker)
   - [:snake: `conda`](#conda)
-  - [:rocket: `cargo`](#cargo)
 - [Setup](#setup)
 - [Usage](#usage)
   - [Python command line](#python-client)
@@ -64,6 +64,20 @@ singularity pull docker://esteinig/sketchy:latest
 ./sketchy_latest.sif --help
 ```
 
+#### `Cargo`
+
+NOT AVAILABLE YET - `Rust` client only, where the `compute` subtask requires `Mash` in host `$PATH`:
+
+```bash
+cargo install sketchy-rs
+```
+
+On Linux systems one should be able to install `Mash` conveniently e.g.
+
+```bash
+sudo apt-get install mash
+```
+
 #### `Docker`
 
 `Docker` is ok too:
@@ -91,20 +105,6 @@ NOT AVAILABLE YET - `Sketchy` is currently on a private channel and requires som
 
 ```sh
 conda install -c esteinig -c bioconda sketchy
-```
-
-#### `Cargo`
-
-NOT AVAILABLE YET - `Rust` client only, where the `compute` subtask requires `Mash` in the system's `$PATH`:
-
-```bash
-cargo install sketchy-rs
-```
-
-On `Linux` systems one should be able to install `Mash` conveniently e.g.
-
-```bash
-sudo apt-get install mash
 ```
 
 
