@@ -31,7 +31,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [Python command line](#python-client)
   - [Rust command line](#rust-client)
   - [Evaluation outputs](#rust-client)
-  - [Online sequencing run](#rust-client)
+  - [Streaming analysis](#rust-client)
   - [Android mobile phones](#rust-client)
 - [How it works](#how-it-works)
 - [Reference sketches](#reference-sketches)
@@ -235,7 +235,31 @@ sketchy plot \
  
 ### Sketchy evaluation outputs
 
-### Online sequencing run
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the determined stability breakpoints (`0` indicates that breakpoint could not be called) and final prediction for each genomic feature:
+
+```
+                mlst    meca    pvl     scc     clindamycin
+prediction      ST93    MSSA    PVL+    -       S
+break           5       0       10      0       7
+```
+
+The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highes-ranking i.e most likely predictions
+
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="210" /></a>
+
+In the heatmap in the left plot, the highest-ranking (descending) raw sum of shared hashes queries aginst the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prdiction as the scores are updated.
+
+In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `x` reads (default 1000) - see also the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as  homogenous color in the heatmap.
+
+In the plot on the right, the preference score from RASE is computed on the sum of ranked sums of shaed hashes (`sssh`) scores from the middle plot, and the threshold of `0.6` indicates when a prediction can be trusted and alarms the user when it should not. Note that the preference is always computed on the feature value with the highest score over the feature value with the second highest score, regardless of whether it is the right prediction. In fact, the score is susceptible to 'switches' in predictions, especially using lower resolution sketches, where a prediction is updated and flips to another as more evidence is gathered. 
+
+In this example, the same data is run on the lower esolution `saureus_15_1000` instead of `saureus_15_10000`. ST12 is called for about 300 reads before making a switch to the correct sequence type ST93, which is also reflected in the heatmap by distinct color blocks. In the higher resolution sketch, sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the initial reference sketch queries.
+
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="210" /></a>
+
+### Streaming analysis
+
+In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`:
 
 ### Android mobile phones
 
@@ -249,7 +273,7 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 sudo apt-get update && sudo apt-get install curl mash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
-wget https://storage.googleapis.com/np-core-sketchy/saureus.tar.gz \
+wget https://storage.googleapis.com/sketchy-sketch/saureus.tar.gz \
   -O saureus.tar.gz && tar xvzf saureus.tar.gz
 ```
 
@@ -257,7 +281,7 @@ Reference sketch collection can then be found in the `default_collection` direct
 
 ## How it works
 
-...
+TBC
 
 ## Constructing reference sketches
 
@@ -299,3 +323,5 @@ DRR119227   st80    iv      +
 DRR128207   st772   -       +
 DRR128208   st90    iv      +
 ```
+
+TBC
