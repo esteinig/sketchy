@@ -110,7 +110,7 @@ sudo apt-get install mash
 
 ## Setup
 
-Pull default species sketches into local storage before first use:
+Pull default species sketches into local storage before first use. ~ 2 GB for multiple species and sketch sizes:
 
 ```
 sketchy pull
