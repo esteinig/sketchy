@@ -162,10 +162,10 @@ sketchy run --fastq test.fq --sketch ref
 
 ### Rust CLI
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy database pull` deposited the default sketches to `~/.sketchy/sketches` so we can set an environmental variable for convenience:
+The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set an environmental variable for convenience:
  
 ```bash
-SKPATH=~/.sketchy/default
+SKPATH=~/.sketchy/saureus
 ```
  
 `Compute` internally calls `Mash` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
@@ -175,6 +175,8 @@ SKPATH=~/.sketchy/default
  sketchy-rs compute \
     --sketch $SKPATH/saureus.msh \
     --ranks 20 \
+    --progress 1 \
+    --treads 4 \
  > test.ssh.tsv
  ```
  
@@ -183,7 +185,7 @@ SKPATH=~/.sketchy/default
 ```bash
 cat test.ssh.tsv | \
 sketchy-rs evaluate \
-    --index $SKPATH/saureus.tsv \
+    --features $SKPATH/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -195,8 +197,10 @@ cat test.fq | head -20000 \
 | sketchy-rs compute \
     --sketch $SKPATH/saureus.msh \
     --ranks 20 \
+    --progress 1 \
+    --treads 4 \
 | sketchy-rs evaluate \
-    --index $SKPATH/saureus.tsv \
+    --features $SKPATH/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -231,8 +235,8 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 sudo apt-get update && sudo apt-get install curl mash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
-wget https://storage.googleapis.com/np-core-sketchy/default.tar.gz \
-  -O default_collection.tar.gz && tar xvzf default_collection.tar.gz
+wget https://storage.googleapis.com/np-core-sketchy/saureus.tar.gz \
+  -O saureus.tar.gz && tar xvzf saureus.tar.gz
 ```
 
 Reference sketch collection can then be found in the `default_collection` directory. Python CLI has not been tested.
