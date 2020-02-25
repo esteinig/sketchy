@@ -87,7 +87,7 @@ docker pull esteinig/sketchy:latest
 docker run -it esteinig/sketchy --help
 ```
 
-But to share files between container and the host system you need to set bindmounts, e.g. link the current directory with a hypothetical `test.fq` file to the preconfigured working directory `/data` inside the container using the current user permissions:
+But to share files between container and the host system you need to set bindmounts, e.g. link the current directory (with a hypothetical `test.fq`) to the preconfigured working directory `/data` inside the container using the current user permissions:
 
 ```sh
 docker run -it \
