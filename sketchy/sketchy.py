@@ -632,7 +632,7 @@ class LineageIndex(PoreLogger):
         self,
         index_file: Path = None,
         lineage_column: str = 'mlst',
-        verbose: bool = False
+        verbose: bool = True
     ):
 
         PoreLogger.__init__(
@@ -641,8 +641,17 @@ class LineageIndex(PoreLogger):
 
         if index_file:
             self.index = pandas.read_csv(
-                index_file, sep='\t', header=0, index_col=0
+                index_file, sep='\t', header=0
             )
+            if 'idx' not in self.index.columns:
+                self.logger.info('Adding Mash index column "idx" to genotype index')
+                self.index.index = [i for i in range(
+                    len(self.index)
+                )]
+                self.index.index.name = 'idx'
+            else:
+                self.logger.info('Using column "idx" as Mash index column in genotype index')
+                self.index.index = self.index.set_index('idx')
         else:
             self.index = None
 

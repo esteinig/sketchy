@@ -10,8 +10,7 @@ from pathlib import Path
 from pysam import FastxFile
 from click import Option, UsageError
 
-
-from pathfinder.pipelines.survey import SurveyData
+from sketchy.survey import ResultData
 
 
 class PoreLogger:
@@ -26,6 +25,41 @@ class PoreLogger:
         )
 
         self.logger = logging.getLogger('Sketchy')
+
+
+class SurveyData(ResultData):
+
+    def __init__(self):
+
+        self.mlst = pandas.DataFrame()
+        self.kraken = pandas.DataFrame()
+        self.mash = pandas.DataFrame()
+        self.kleborate = pandas.DataFrame()
+
+        self.abricate_resistance = pandas.DataFrame()
+        self.abricate_virulence = pandas.DataFrame()
+        self.abricate_plasmid = pandas.DataFrame()
+
+        self.mykrobe_phenotype = pandas.DataFrame()
+        self.mykrobe_genotype = pandas.DataFrame()
+        self.mykrobe_lineage = pandas.DataFrame()
+
+    def __copy__(self):
+
+        sd = SurveyData()
+        for attr, data in self:
+            setattr(sd, attr, data)
+        return sd
+
+    @property
+    def empty(self):
+
+        check = [data.empty for attr, data in self]
+
+        if all(check):
+            return True
+        else:
+            return False
 
 
 class SketchySurvey(PoreLogger):
@@ -103,14 +137,18 @@ class SketchySurvey(PoreLogger):
                 else:
                     genotype_data = data[genotype].tolist()
                     genotype_index = data.index
-
-                    if genotype in binary[attr]:
+                    try:
+                        _ = binary[attr]
                         try:
                             genotype_data = [
                                 1 if g != self.missing else 0 for g in genotype_data
                             ]
                         except KeyError:
                             pass  # TODO: catch error?
+                    except KeyError:
+                        pass
+
+                    print(genotype, len(genotype_data), len(genotype_index))
 
                     genotypes[genotype] = genotype_data
 

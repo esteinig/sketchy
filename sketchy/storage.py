@@ -25,7 +25,10 @@ SPECIES = dict(
 class GoogleCloudSketch:
 
     def __init__(
-        self, sketch_path=Path.home() / '.sketchy', verbose: bool = True
+        self,
+        sketch_path=Path.home() / '.sketchy',
+        full_sketch: bool = False,
+        verbose: bool = True
     ):
 
         ########################################
@@ -35,6 +38,7 @@ class GoogleCloudSketch:
         self.bucket_name = 'sketchy-sketch'
 
         self.sketches = ['kpneumoniae', 'saureus', 'mtuberculosis']
+        self.full_sketch = full_sketch
 
         self.pl = PoreLogger(logging.INFO if verbose else logging.ERROR)
         self.sketch_path = sketch_path
@@ -80,7 +84,8 @@ class GoogleCloudSketch:
 
         (self.sketch_path / archive_name).mkdir(parents=True, exist_ok=True)
 
-        archive_file = archive_name+'.tar.gz'
+        archive_file = archive_name+'.tar.gz' if self.full_sketch else '.min.tar.gz'
+
         archive_file = self.sketch_path / archive_name / archive_file
 
         try:
