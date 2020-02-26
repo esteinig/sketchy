@@ -182,7 +182,7 @@ sketchy run --fastq test.fq --sketch ref
 
 ### How it works
 
-In brief, `Sketchy` computes two simple scores: the first is the sum of shared hashes, where Sketchy essentially keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes most of the compute in the `Mash` queries, and `Sketchy` kind of sits on top of that like a parasite and siphons off the output, which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`).
+`Sketchy` computes two simple scores: the first is the sum of shared hashes, where Sketchy essentially keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes most of the compute in the `Mash` queries, and `Sketchy` kind of sits on top of that like a parasite and siphons off the output, which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`).
 
 In the second stage, an evaluation score is computed by aggregating the sum of ranked sum of shared hashes (`sssh`) for each genotype feature in the associated genotype index that a prediction is made on (e.g. SCC*mec* type or susceptibility to an antibiotic). Final predictions are made on the highest total `sssh` scores, which corresponds to the dominant feature value in the `sssh` scores of each feature. 
 
