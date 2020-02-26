@@ -260,7 +260,7 @@ sketchy plot \
 
 ### Online streaming analysis
 
-In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`. the watcher waits for the `fastq` file o be completed before piping the filename to `/dev/stdout` adn then to the `Rust CLI:
+In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and the reads into the `Rust CLI:
 
 ```
 sketchy online watch -d /path/to/live/fastq | \
