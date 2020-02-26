@@ -359,6 +359,11 @@ Genotype features from assemblies with `SCCion`:
 * 8149 genomes from the European Nucleotide Archive
 * 626 sequence types
 
+Default collection:
+
+* `kpneumoniae_15_1000` (default)
+* `kpneumoniae_15_10000` (full)
+
 Genotype features from assemblies with `Kleborate`:
 
 * MLST
