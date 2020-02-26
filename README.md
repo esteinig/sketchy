@@ -17,7 +17,6 @@ Currently supported species are:
 
 * *Staphylococcus aureus*
 * *Klebsiella pneumoniae* 
-* *Mycobacterium tuberculosis*
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
@@ -37,7 +36,6 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Reference sketches](#reference-sketches)
   - [*Staphylococcus aureus*](#rust-client-tasks)
   - [*Klebsiella pneumoniae*](#rust-client-tasks)
-  - [*Mycobacterium tuberculosis*](#rust-client-tasks)
 - [Constructing reference sketches](#reference-sketches)
   - [Genome assemblies and sketch construction](#rust-client-tasks)
   - [Genotype features and index preparation](#rust-client-tasks)
