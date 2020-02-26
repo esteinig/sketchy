@@ -31,7 +31,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [Python command line](#python-client)
   - [Evaluation outputs](#rust-client)
   - [Rust command line](#rust-client)
-  - [Streaming analysis](#rust-client)
+  - [Online streaming analysis](#rust-client)
   - [Android mobile phones](#rust-client)
 - [How it works](#how-it-works)
 - [Reference sketches](#reference-sketches)
@@ -258,9 +258,23 @@ sketchy plot \
 ```
  
 
-### Streaming analysis
+### Online streaming analysis
 
-In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`:
+In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`. the watcher waits for the `fastq` file o be completed before piping the filename to `/dev/stdout` adn then to the `Rust CLI:
+
+```
+sketchy online watch -d /path/to/live/fastq | \
+cat - | head -20000 \
+| sketchy-rs compute \
+    --sketch $SKPATH/saureus.msh \
+    --ranks 20 \
+    --progress 1 \
+    --threads 4 \
+| sketchy-rs evaluate \
+    --features $SKPATH/saureus.tsv \
+    --stable 1000 \
+> test.sssh.tsv
+```
 
 ### Android mobile phones
 
