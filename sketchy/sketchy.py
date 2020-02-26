@@ -68,7 +68,7 @@ class SketchyWrapper(PoreLogger):
         else:
             limit_pipe = ''
 
-        self.logger.info(f'Ranked sum of shares hashes: {ranks}')
+        self.logger.info(f'Ranked sum of shared hashes: {ranks}')
         self.logger.info(f'Predict on reads: {"all" if limit is None else limit}')
         self.logger.info(f'Stability breakpoint: {stable}')
         self.logger.info(f'Threads for Mash: {threads}')

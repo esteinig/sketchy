@@ -1,13 +1,12 @@
 import pandas
-from pandas.core.groupby import DataFrameGroupBy
-
-from functools import reduce
-from pathlib import Path
-from dataclasses import dataclass
 import copy
 import shutil
-from tqdm import tqdm
 
+from tqdm import tqdm
+from pathlib import Path
+from dataclasses import dataclass
+from pandas.core.groupby import DataFrameGroupBy
+from sketchy.utils import PoreLogger
 
 #################################
 # Data containers for Nextflows #
@@ -77,9 +76,7 @@ class ResultData:
 
     def intersection(self):
 
-        data = [df for attr, df in self if not df.empty]
         indices = [set(df.index) for attr, df in self if not df.empty]
-
         intersect = set.intersection(*indices)
 
         for attr, df in self:
@@ -93,6 +90,7 @@ class ResultData:
         for process, df in self:
 
             # TODO: Patched, needs proper thought.
+
             try:
                 remove_dict[process]
             except KeyError:
@@ -229,8 +227,9 @@ class ResultData:
             groups = df.groupby(by=column, **kwargs)
             yield groups, attr
 
-    def select(self, attr, column, min_count=None,
-               sample=None, values=None):
+    def select(
+        self, attr, column, min_count=None, sample=None, values=None
+    ):
 
         data = getattr(self, attr)
 
@@ -399,3 +398,135 @@ class ResultData:
                     df.at[iid, attr] = False
 
         return df
+
+
+class SurveyData(ResultData):
+
+    def __init__(self):
+
+        self.mlst = pandas.DataFrame()
+        self.kraken = pandas.DataFrame()
+        self.mash = pandas.DataFrame()
+        self.kleborate = pandas.DataFrame()
+
+        self.abricate_resistance = pandas.DataFrame()
+        self.abricate_virulence = pandas.DataFrame()
+        self.abricate_plasmid = pandas.DataFrame()
+
+        self.mykrobe_phenotype = pandas.DataFrame()
+        self.mykrobe_genotype = pandas.DataFrame()
+        self.mykrobe_lineage = pandas.DataFrame()
+
+    def __copy__(self):
+
+        sd = SurveyData()
+        for attr, data in self:
+            setattr(sd, attr, data)
+        return sd
+
+    @property
+    def empty(self):
+
+        check = [data.empty for attr, data in self]
+
+        if all(check):
+            return True
+        else:
+            return False
+
+
+class SketchySurvey(PoreLogger):
+
+    """ Build sketch-associated genotype files from Pathfinder Surveys """
+
+    def __init__(self, survey_directory: Path):
+
+        PoreLogger.__init__(self)
+
+        self.survey_data = SurveyData()
+
+        self.logger.info(
+            f'Parse survey directory: {survey_directory}'
+        )
+
+        self.missing = '-'
+
+        self.survey_data.read(survey_directory)
+
+    def construct(self, config: dict, binary: dict, merge: dict = None):
+
+        """ Wrapper for constructing sketchy data from surveys """
+
+        return self.construct_sketchy_data(
+            config=config, binary=binary, merge=merge
+        )
+
+    def construct_sketchy_data(
+        self, config: dict, binary: dict = None, merge: dict = None
+    ) -> pandas.DataFrame:
+
+        """ Construct genotype meta data for species-sketches in Sketchy
+
+        :param config: dictionary in data: [columns] format to construct
+            a dataframe with index: iids, columns: genotypes
+
+        :param binary: dictionary of columns to treat as binary data
+            where keys are columns and values are character to treat
+            as missing data
+
+        :raises: ValueError if genotype column not in selected data
+
+        :return: dataframe of genotypes with genotype indices
+
+        """
+
+        genotypes = dict()
+        genotype_index = None  # filled with last common index of genotypes parsed
+        for attr, columns in config.items():
+            data = getattr(self.survey_data, attr)
+            if merge:
+                for new_column, to_merge in merge[attr].items():
+                    if len(to_merge) < 2:
+                        raise ValueError('Merge data must contain two or more entries.')
+                    try:
+                        data[new_column] = data[to_merge].apply(
+                            lambda x: self.missing if all(
+                                # All are missing, assign missing so binary does not get confused
+                                [True if y == self.missing else False for y in x]
+                            ) else ';'.join(x), axis=1
+                        )
+                    except KeyError:
+                        raise ValueError(f'Could not detect {to_merge} in data frame')
+
+                    # Make sure name not same:
+                    merge_drop = [c for c in to_merge if c != new_column]
+                    data.drop(columns=merge_drop, inplace=True)
+
+            for genotype in columns:
+                if genotype not in data.columns.values:
+                    raise ValueError(
+                        f'Could not find {genotype} in {attr} data.'
+                    )
+                else:
+                    genotype_data = data[genotype].tolist()
+                    genotype_index = data.index
+                    try:
+                        _ = binary[attr]
+                        try:
+                            genotype_data = [
+                                1 if g != self.missing else 0 for g in genotype_data
+                            ]
+                        except KeyError:
+                            pass  # TODO: catch error?
+                    except KeyError:
+                        pass
+
+                    print(genotype, len(genotype_data), len(genotype_index))
+
+                    genotypes[genotype] = genotype_data
+
+        if genotype_index is None:
+            raise ValueError('No genotypes could be parsed.')
+
+        return pandas.DataFrame(genotypes, genotype_index)
+

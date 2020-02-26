@@ -1,6 +1,6 @@
 import click
 
-from sketchy.utils import SketchySurvey
+from sketchy.survey import SketchySurvey
 from pathlib import Path
 
 DEFAULTS = {

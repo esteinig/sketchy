@@ -32,8 +32,7 @@ setup(
         'networkx',
         'pyfastx',
         'watchdog',
-        'psutil',
-        'google-cloud-storage'
+        'psutil'
     ],
     description="Real-time lineage calling and genotyping of bacterial"
                 "pathogens from uncorrected nanopore reads using "

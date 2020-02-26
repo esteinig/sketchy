@@ -17,4 +17,3 @@ networkx
 pyfastx
 watchdog
 psutil
-google-cloud-storage

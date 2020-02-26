@@ -5,6 +5,7 @@ import dendropy
 import networkx as nx
 
 from pathlib import Path
+
 from sketchy.sketchy import LineageIndex
 from sketchy.utils import MutuallyExclusiveOption
 

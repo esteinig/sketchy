@@ -18,8 +18,8 @@ From: continuumio/miniconda3
 
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-    /opt/conda/bin/conda install -c conda-forge -c bioconda -c esteinig --yes \
-        pysam mash=2.2 psutil pf-core \
+    /opt/conda/bin/conda install -c conda-forge -c bioconda --yes \
+        pysam mash=2.2 psutil \
         && /opt/conda/bin/conda clean -a \
         && find /opt/conda/ -follow -type f -name '*.a' -delete \
         && find /opt/conda/ -follow -type f -name '*.pyc' -delete

@@ -111,8 +111,10 @@ def run(
     try:
         sk = str(sketch.name)
         temp = sk.split('_')[0]
-        if temp in TEMPLATES:
+        if sk in TEMPLATES:
             sketch_file = sketchy_path / Path(f'{temp}/{sk}_15_1000')
+        elif temp in TEMPLATES:
+            sketch_file = sketchy_path / Path(f'{temp}/{sk}')
         else:
             sketch_file = sketch
     except IndexError:

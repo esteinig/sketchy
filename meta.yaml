@@ -23,7 +23,6 @@ requirements:
       - rust>=1.39
       - mash=2.2
       - wget
-      - pysam
       - nextflow
       - tqdm
       - colorama
@@ -39,11 +38,9 @@ requirements:
       - matplotlib
       - deprecation
       - braceexpand
-      - pf-core
       - networkx
       - pyfastx
       - watchdog
-      - google-cloud-storage
 test:
   imports:
     - sketchy

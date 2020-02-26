@@ -13,8 +13,8 @@ ENV PATH=/opt/conda/bin:/rust/.cargo/bin:$PATH
 ENV CARGO_HOME=/rust/.cargo
 ENV RUSTUP_HOME=/rust/.rustup
 
-RUN conda install -c conda-forge -c bioconda -c esteinig --yes \
-    pysam mash=$MASH_VERSION psutil pf-core \
+RUN conda install -c conda-forge -c bioconda --yes \
+    pysam mash=$MASH_VERSION psutil \
     && conda clean -a \
     && find $CONDA_DIR -follow -type f -name '*.a' -delete \
     && find $CONDA_DIR -follow -type f -name '*.pyc' -delete
