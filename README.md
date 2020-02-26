@@ -204,7 +204,7 @@ In the plot on the right, the preference score from [Brinda and colleagues](http
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="600" /></a>
 
-In this example, the same data is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST93. This is reflected in the heatmap by distinct color blocks. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
+In this example, the same data is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST772. This is reflected in the heatmap by distinct color blocks. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
 
 ### Rust CLI
 
