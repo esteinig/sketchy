@@ -2,6 +2,20 @@
 name = "sketchy-rs"
 version = "0.4.0"
 authors = ["esteinig <eikejoachim.steinig@my.jcu.edu.au>"]
+description = "Rust core command line client for Sketchy"
+documentation = "https://github.com/esteinig/sketchy"
+homepage = "https://github.com/esteinig/sketchy"
+repository = "https://github.com/esteinig/sketchy"
+readme = "README.md"
+keywords = ["sketchy", "nanopore", "metagenomics", "genotyping"]
+categories = ["science"]
+license = "MIT"
+edition = "2018"
+include = [
+    "**/*.rs",
+    "src/data/*"
+    "Cargo.toml",
+]
 
 [dependencies]
 clap = "2.33.0"

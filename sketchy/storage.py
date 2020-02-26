@@ -25,7 +25,7 @@ class GoogleCloudSketch:
     def __init__(
         self,
         sketch_path=Path.home() / '.sketchy',
-        full_sketch: bool = False,
+        full: bool = False,
         verbose: bool = True
     ):
 
@@ -36,7 +36,7 @@ class GoogleCloudSketch:
         self.bucket_name = 'sketchy-sketch'
 
         self.sketches = ['kpneumoniae', 'saureus', 'mtuberculosis']
-        self.full_sketch = full_sketch
+        self.full = full
 
         self.pl = PoreLogger(logging.INFO if verbose else logging.ERROR)
         self.sketch_path = sketch_path
@@ -82,7 +82,7 @@ class GoogleCloudSketch:
 
         (self.sketch_path / archive_name).mkdir(parents=True, exist_ok=True)
 
-        ext = '.tar.gz' if self.full_sketch else '.min.tar.gz'
+        ext = '.tar.gz' if self.full else '.min.tar.gz'
         archive_file = archive_name+ext
 
         archive_file = self.sketch_path / archive_name / archive_file

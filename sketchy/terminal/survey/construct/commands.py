@@ -65,7 +65,6 @@ DEFAULTS = {
                 'mlst',
                 'meca',
                 'pvl',
-                'spa',
                 'scc'
             ],
             mykrobe_phenotype=[
