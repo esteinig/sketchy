@@ -1,6 +1,7 @@
 import pandas
 from pandas.core.groupby import DataFrameGroupBy
 
+from functools import reduce
 from pathlib import Path
 from dataclasses import dataclass
 import copy
@@ -54,16 +55,38 @@ class ResultData:
 
         return self.iid[iid]
 
+    def isolate(self, *attrs):
+
+        for attr, df in self:
+            if attr not in attrs:
+                setattr(self, attr, pandas.DataFrame())
+
     def update_iid(self, iids=None):
 
         """ Update list of unique IIDs in current data container """
 
         if not iids:
             iids = pandas.Series(
-                [iid for attr, df in self for iid in df.index.unique().tolist()]
+                [
+                    iid for attr, df in self
+                    for iid in df.index.unique().tolist()
+                ]
             ).unique()
 
         self.iid = pandas.DataFrame(data={'iid': iids}, index=iids)
+
+    def intersection(self):
+
+        data = [df for attr, df in self if not df.empty]
+        indices = [set(df.index) for attr, df in self if not df.empty]
+
+        intersect = set.intersection(*indices)
+
+        for attr, df in self:
+            if not df.empty:
+                df = df[~df.index.duplicated()]
+                df = df[df.index.isin(intersect)]
+                setattr(self, attr, df)
 
     def remove(self, remove_dict: dict, retain: bool = False):
 

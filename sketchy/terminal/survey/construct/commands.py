@@ -89,18 +89,17 @@ DEFAULTS = {
     'mtuberculosis': dict(
         config=dict(
             mykrobe_phenotype=[
-                'Clindamycin',
-                'Rifampicin',
+                'Ofloxacin',
+                'Moxifloxacin',
+                'Isoniazid',
+                'Kanamycin',
+                'Ethambutol',
+                'Streptomycin',
                 'Ciprofloxacin',
-                'Vancomycin',
-                'Tetracycline',
-                'Mupirocin',
-                'Gentamicin',
-                'Trimethoprim',
-                'Penicillin',
-                'Methicillin',
-                'Erythromycin',
-                'FusidicAcid'
+                'Pyrazinamide',
+                'Rifampicin',
+                'Amikacin',
+                'Capreomycin'
             ],
             mykrobe_lineage=[
                 'lineage'
@@ -129,7 +128,11 @@ DEFAULTS = {
     '--missing', '-m', default='-', type=str,
     help='Set a missing character [-]'
 )
-def construct(directory, output, template, missing):
+@click.option(
+    '--intersect', '-i', is_flag=True,
+    help='Take minimum intersection of all specified column values'
+)
+def construct(directory, output, template, intersect, missing):
 
     """ Construct genotype feature data from Pathfinder Survey """
 
@@ -138,6 +141,13 @@ def construct(directory, output, template, missing):
     )
 
     survey.missing = missing
+
+    if intersect:
+        subset = list(
+            DEFAULTS[template]['config'].keys()
+        )
+        survey.survey_data.isolate(*subset)
+        survey.survey_data.intersection()
 
     data = survey.construct(
         config=DEFAULTS[template]['config'],
