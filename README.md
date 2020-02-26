@@ -29,11 +29,11 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Setup](#setup)
 - [Usage](#usage)
   - [Python command line](#python-client)
+  - [How it works](#how-it-works)
   - [Evaluation outputs](#rust-client)
   - [Rust command line](#rust-client)
   - [Online streaming analysis](#rust-client)
   - [Android mobile phones](#rust-client)
-- [How it works](#how-it-works)
 - [Reference sketches](#reference-sketches)
   - [*Staphylococcus aureus*](#rust-client-tasks)
   - [*Klebsiella pneumoniae*](#rust-client-tasks)
@@ -152,7 +152,7 @@ More options can be viewed with
 sketchy run --help
 ```
 
-**Custom sketches**
+*Custom sketches*
 
 Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task as described in the [`Constructing reference sketches`](#constructing-reference-sketches) section, and must include a:
 
@@ -174,7 +174,7 @@ Custom collections can be used with reference to the path and file name in the `
 sketchy run --fastq test.fq --sketch ref
 ```
 
-## How it works
+### How it works
 
 In brief, `Sketchy` computes two simple scores: the first is the sum of shared hashes, where Sketchy essentially keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes most of the compute in the `Mash` queries, and `Sketchy` kind of sits on top of that like a parasite and siphons off the output, which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`).
 
