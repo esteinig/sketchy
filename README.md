@@ -110,11 +110,19 @@ conda install -c esteinig -c bioconda sketchy
 
 ## Setup
 
-Pull default species sketches into local storage before first use. ~ 2 GB for multiple species and sketch sizes:
+Pull default species sketches into local storage before first use. This pulls the default minimum sketches.
 
 ```
 sketchy pull
 ```
+
+You can set the home path to whic hthe sketches are downloaded to the default `--path ~/.sketchy`. Use the `--full_sketch` flag to pull the full default collections, which include higher resolutions sketches:
+
+```
+sketchy pull --path ~/.sketchy --full_sketch
+```
+
+Set the environmental variable `SKETCHY_PATH` to the home directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
 Local sketches and template names can be viewed with:
 
@@ -192,9 +200,11 @@ prediction      ST93    MSSA    PVL+    -       S
 break           5       0       10      0       7
 ```
 
-The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highes-ranking i.e most likely predictions
+The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="600" /></a>
+
+What's going on here?
 
 In the heatmap in the left plot, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prediction as the scores are updated.
 
