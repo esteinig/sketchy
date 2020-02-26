@@ -56,9 +56,9 @@ def link(iid: Path, directory, column, extension, outdir, symlink):
         if iid_path.exists():
             if symlink:
                 sym_path = (outdir / str(i + extension)).absolute()
-                log.info(f'Symlink: {iid_path} to {sym_path}')
+                log.info(f'Symlink: {iid_path.absolute()} to {sym_path.absolute()}')
                 os.symlink(
-                    str(iid_path), str(sym_path)
+                    str(iid_path.absolute()), str(sym_path.absolute())
                 )
             else:
                 print(f"{iid_path}")

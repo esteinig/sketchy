@@ -36,5 +36,6 @@ setup(
         'google-cloud-storage'
     ],
     description="Real-time lineage calling and genotyping of bacterial"
-                "pathogens from uncorrected nanopore reads using MinHash",
+                "pathogens from uncorrected nanopore reads using "
+                "genomic neighbor typing and MinHash",
 )

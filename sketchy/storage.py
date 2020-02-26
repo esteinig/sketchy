@@ -1,4 +1,3 @@
-import os
 import tarfile
 import logging
 
@@ -64,9 +63,7 @@ class GoogleCloudSketch:
                 dir_path = Path(f'gs://{self.bucket_name}/{name}.tar.gz')
 
             for f in Path(dir_path).glob("*.msh"):
-                file_name = os.path.basename(
-                    str(f).strip(".msh")
-                )
+                file_name = f.name.rstrip(".msh")
                 # Weird bug: f.name and f.stem strip the s from /saureus
                 name, kmer_size, sketch_size = file_name.split("_")
                 run = f"sketchy run -s {file_name}"

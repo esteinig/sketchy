@@ -10,9 +10,7 @@ source:
   path: .
 
 build:
-  number: 0
-  entry_points:
-    - sketchy = sketchy.terminal.client:terminal_client
+  number: 1
 
 requirements:
   build:
@@ -20,29 +18,6 @@ requirements:
   host:
       - python>=3.7
       - rust>=1.39
-      - mash=2.2
-      - wget
-      - pysam
-      - nextflow
-      - tqdm
-      - colorama
-      - pandas
-      - click
-      - pytest
-      - seaborn
-      - scipy
-      - python-dateutil
-      - numpy
-      - pysam
-      - matplotlib
-      - deprecation
-      - braceexpand
-      - pf-core
-      - networkx
-      - pyfastx
-      - watchdog
-      - psutil
-      - google-cloud-storage
   run:
       - python>=3.7
       - rust>=1.39
@@ -70,13 +45,15 @@ requirements:
       - watchdog
       - google-cloud-storage
 test:
+  imports:
+    - sketchy
   commands:
-    - sketchy-rs -h
     - sketchy --help
+    - sketchy-rs -h
 
 about:
   home: 'https://github.com/esteinig/sketchy'
   license: MIT
   license_file: LICENSE
-  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens using genomic neighbor typing'
+  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens'
 

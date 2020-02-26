@@ -37,8 +37,10 @@ fn main() -> Result<(), Error> {
         
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
         
-        sketchy::run(sketch, threads, ranks, sketch_index, sketch_size, progress);
-
+        sketchy::run(sketch, threads, ranks, sketch_index, sketch_size, progress).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+        
     }
 
     if let Some(evaluate) = matches.subcommand_matches("evaluate") {
@@ -46,7 +48,9 @@ fn main() -> Result<(), Error> {
         let features: String = evaluate.value_of("features").unwrap().to_string();
         let stable: usize = evaluate.value_of("stable").unwrap().parse::<usize>().unwrap();
 
-        sketchy::evaluate(features, stable);
+        sketchy::evaluate(features, stable).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
 
     }
 
