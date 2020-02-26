@@ -84,7 +84,8 @@ class GoogleCloudSketch:
 
         (self.sketch_path / archive_name).mkdir(parents=True, exist_ok=True)
 
-        archive_file = archive_name+'.tar.gz' if self.full_sketch else '.min.tar.gz'
+        ext = '.tar.gz' if self.full_sketch else '.min.tar.gz'
+        archive_file = archive_name+ext
 
         archive_file = self.sketch_path / archive_name / archive_file
 
