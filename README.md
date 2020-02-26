@@ -114,10 +114,10 @@ Pull default species sketches into local storage before first use. This pulls th
 sketchy pull
 ```
 
-You can set the home path to whic hthe sketches are downloaded to the default `--path ~/.sketchy`. Use the `--full_sketch` flag to pull the full default collections, which include higher resolutions sketches:
+You can set the home path to whic hthe sketches are downloaded to the default `--path ~/.sketchy`. Use the `--full` flag to pull the full default collections, which include higher resolutions sketches:
 
 ```
-sketchy pull --path ~/.sketchy --full_sketch
+sketchy pull --path ~/.sketchy --full
 ```
 
 Set the environmental variable `SKETCHY_PATH` to the home directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
@@ -204,7 +204,7 @@ The evaluation plots are the more salient outputs. Each row in the `prefix.png` 
 
 What's going on here?
 
-In the heatmap in the left plot, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prediction as the scores are updated.
+In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prediction as the scores are updated.
 
 In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `x` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to 0) as the prediction was limited to 1000 reads total - these breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as  homogenous color in the heatmap.
 
@@ -308,7 +308,86 @@ wget https://storage.googleapis.com/sketchy-sketch/saureus.tar.gz \
   -O saureus.tar.gz && tar xvzf saureus.tar.gz
 ```
 
-Reference sketch collection can then be found in the `default_collection` directory. Python CLI has not been tested.
+Python CLI has not been tested.
+
+## Reference sketches
+
+Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. 
+
+PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline (QC, Species typing, Skesa assembly, genotyping with Kleborate, SCCion, Mykrobe). Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with Mash. 
+
+Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_kmersize_sketchsize`. Prediction ability is not uniform across genotype features, and should be valiadated on reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches, please let us know.
+
+### Staphylococcus aureus
+
+*S. aureus* sketches will likely be dereplicated in the preprint release to increase speed of predictions. 
+
+* 38893 genomes from the Euopean Nucleotide Archive
+* 1045 sequence types (MLST)
+
+Default collection:
+
+* `saureus_15_1000` (default)
+* `saureus_15_10000` (full)
+
+Genotype features from assemblies with `SCCion`:
+
+* MLST
+* SCC*mec* type
+* Panton Valentine leukocidin (PVL)
+* *mecA* gene (MSSA/MRSA)
+
+ Mykrobe susceptibility phenotypes:
+ 
+* Clindamycin
+* Rifampicin
+* Ciprofloxacin
+* Vancomycin
+* Tetracycline
+* Mupirocin
+* Gentamicin
+* Trimethoprim
+* Penicillin
+* Methicillin
+* Erythromycin
+* FusidicAcid
+
+### Klebsiella pneumoniae
+
+*K. pneumoniae* sketches are from a relatively small collection of less than ten thousand genomes and may be extended in future releases.
+
+* 8149 genomes from the European Nucleotide Archive
+* 626 sequence types
+
+Genotype features from assemblies with `Kleborate`:
+
+* MLST
+* virulence score
+* resistance score
+* Yersiniabactin
+* K-locus serotype
+* O-locus serotype
+
+Resistance genes from assemblies with `Kleborate`, presence or absence:
+
+* AGly (aminoglycosides)
+* Bla (beta-lactamases)
+* Bla_broad (broad spectrum beta-lactamases)
+* Bla_broad_inhR (broad spectrum beta-lactamases with resistance to beta-lactamase inhibitors)
+* Bla_Carb (carbapenemase)
+* Bla_ESBL (extended spectrum beta-lactamases)
+* Bla_ESBL_inhR (extended spectrum beta-lactamases with resistance to beta-lactamase inhibitors)
+* Fcyn (fosfomycin)
+* Flq (fluoroquinolones)
+* Gly (glycopeptides)
+* MLS (macrolides)
+* Ntmdz (nitroimidazole, e.g. metronidazole)
+* Phe (phenicols)
+* Rif (rifampin)
+* Sul (sulfonamides)
+* Tet (tetracyclines)
+* Tmt (trimethoprim)
+* Tgc (tigecycline)
 
 ## Constructing reference sketches
 
