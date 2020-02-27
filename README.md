@@ -64,7 +64,7 @@ singularity pull docker://esteinig/sketchy:latest
 
 #### `Cargo`
 
-NOT AVAILABLE YET - `Rust` client only, where the `compute` subtask requires `Mash` in host `$PATH`:
+`Rust` client only, where the `compute` subtask requires `Mash` in host `$PATH`:
 
 ```bash
 cargo install sketchy-rs
@@ -304,8 +304,16 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 sudo apt-get update && sudo apt-get install curl mash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
-wget https://storage.googleapis.com/sketchy-sketch/saureus.tar.gz \
-  -O saureus.tar.gz && tar xvzf saureus.tar.gz
+wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
+  && tar -xvzf saureus.min.tar.gz
+wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
+
+ cat mobile_test.fq | \
+ sketchy-rs compute \
+    --sketch saureus_15_1000.msh \
+    --ranks 10 \
+    --progress 0 \
+    --threads 1
 ```
 
 Python CLI has not been tested.
