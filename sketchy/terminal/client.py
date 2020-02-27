@@ -9,7 +9,7 @@ from .survey import survey
 from .run import run
 from .plot import plot
 
-VERSION = '0.4.2'
+VERSION = '0.4.3'
 
 
 @click.group()

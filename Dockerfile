@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3
 
 LABEL name="sketchy"
-LABEL version="0.4.2"
+LABEL version="0.4.3"
 LABEL author="esteinig"
 
 RUN apt-get update && apt-get install curl build-essential -y

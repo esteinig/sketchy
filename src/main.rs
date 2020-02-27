@@ -10,7 +10,7 @@ use clap::{Arg, App, SubCommand};
 fn main() -> Result<(), Error> {
 
     let matches = App::new("sketchy")
-        .version("0.4.0")
+        .version("0.4.3")
         .about("\nNanopore lineage calling and genotyping of bacterial pathogens\n")
         .subcommand(SubCommand::with_name("compute")
             .about("\ncompute sum of shared hashes from fasta/q on stdin")
