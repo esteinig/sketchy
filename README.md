@@ -310,12 +310,12 @@ wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
   && tar -xvzf saureus.min.tar.gz
 wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
 
- cat mobile_test.fq | \
- sketchy-rs compute \
-    --sketch saureus_15_1000.msh \
-    --ranks 10 \
-    --progress 0 \
-    --threads 1
+cat mobile_test.fq | \
+sketchy-rs compute \
+   --sketch saureus_15_1000.msh \
+   --ranks 10 \
+   --progress 0 \
+   --threads 1
 ```
 
 Python CLI has not been tested.
