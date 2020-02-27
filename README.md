@@ -343,7 +343,7 @@ Sketch names are addressable in the `sketchy run` function and are constructed i
 
 Example:
 
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_3.png' align="center" height="600" /></a>
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_3.png' align="center" height="400" /></a>
 
 * 38893 genomes from the Euopean Nucleotide Archive
 * 1045 sequence types (MLST)
@@ -379,7 +379,7 @@ Genotype features from assemblies with `SCCion`:
 
 *K. pneumoniae* sketches are from a relatively small collection of less than ten thousand genomes and may be extended in future releases.
 
-<a href='https://github.com/esteinig'><img src='docs/example_kpneumoniae_1.png' align="center" height="600" /></a>
+<a href='https://github.com/esteinig'><img src='docs/example_kpneumoniae_1.png' align="center" height="400" /></a>
 
 * 8149 genomes from the European Nucleotide Archive
 * 626 sequence types
