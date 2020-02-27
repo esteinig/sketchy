@@ -15,8 +15,8 @@ Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 Currently validated species are:
 
-* :closed_umbrella: *Staphylococcus aureus*
-* :briefcase:*Klebsiella pneumoniae* 
+* *Staphylococcus aureus*
+* *Klebsiella pneumoniae* 
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
