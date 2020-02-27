@@ -109,16 +109,16 @@ def run(
         sketchy_path = home
 
     try:
-        sk = str(sketch.name)
-        temp = sk.split('_')[0]
-        if sk in TEMPLATES:
-            sketch_file = sketchy_path / Path(f'{temp}/{sk}_15_1000')
-        elif temp in TEMPLATES:
-            sketch_file = sketchy_path / Path(f'{temp}/{sk}')
+        sketch_name = str(sketch.name)
+        sketch_prefix = sketch_name.split('_')[0]
+        if sketch_name in TEMPLATES:  # default sketch
+            sketch_file = sketchy_path / Path(f'{sketch_name}_15_1000')
+        elif sketch_prefix in TEMPLATES:  # prefixed sketches
+            sketch_file = sketchy_path / Path(f'{sketch_name}')
         else:
-            sketch_file = sketch
+            sketch_file = sketch  # sketch path if no prefix found
     except IndexError:
-        sketch_file = sketch
+        sketch_file = sketch  # sketch path if no prefix found
 
     sw = SketchyWrapper(
         fastx=fastq,
