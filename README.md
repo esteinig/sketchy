@@ -34,8 +34,8 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
   - [Online streaming analysis](#rust-client)
   - [Android mobile phones](#rust-client)
 - [Reference sketches](#reference-sketches)
-  - [*Staphylococcus aureus*](#rust-client-tasks)
-  - [*Klebsiella pneumoniae*](#rust-client-tasks)
+  - [ :briefcase: *Staphylococcus aureus*](#rust-client-tasks)
+  - [ :closed_umbrella: *Klebsiella pneumoniae*](#rust-client-tasks)
 - [Constructing reference sketches](#reference-sketches)
   - [Genome assemblies and sketch construction](#rust-client-tasks)
   - [Genotype features and index preparation](#rust-client-tasks)
@@ -335,7 +335,7 @@ PE Illumina data from ENA were collected with `pathfinder survey` and run throug
 
 Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_kmersize_sketchsize`. Prediction ability is not uniform across genotype features, and should be valiadated on reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches, please let us know.
 
-### Staphylococcus aureus
+### :briefcase: Staphylococcus aureus
 
 *S. aureus* sketches will likely be dereplicated in the preprint release to increase speed of predictions. 
 
@@ -369,7 +369,7 @@ Genotype features from assemblies with `SCCion`:
 * Erythromycin
 * FusidicAcid
 
-### Klebsiella pneumoniae
+### :closed_umbrella: Klebsiella pneumoniae
 
 *K. pneumoniae* sketches are from a relatively small collection of less than ten thousand genomes and may be extended in future releases.
 
