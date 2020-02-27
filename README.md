@@ -137,6 +137,8 @@ sketchy list
 
 See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`.
 
+Reads are expected to belong to the species used in the reference sketch. Use a taxonomic classifier to filter metagenomic samples - we use `Kraken2` and it works well on test data from [Legget et al. (2019)](https://www.biorxiv.org/content/10.1101/180406v2).
+
 ### Python CLI
 
 `Sketchy` can be run through a wrapper in the `Python CLI` which is suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI`.
