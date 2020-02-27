@@ -54,7 +54,7 @@ Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computatio
 
 #### `Singularity`
 
-I prefer `Singularity` for integrated access to host sytem files; loaded with default reference sketches.
+I prefer `Singularity` for integrated access to host sytem files. Container is preloaded with default reference sketches.
 
 ```sh
 singularity pull docker://esteinig/sketchy:latest
@@ -63,7 +63,7 @@ singularity pull docker://esteinig/sketchy:latest
 
 #### `Cargo`
 
-`Rust` client only, where the `compute` subtask requires `Mash` in host `$PATH`:
+`Rust` client only where the `compute` subtask requires `Mash` in host `$PATH`
 
 ```bash
 cargo install sketchy-rs
@@ -77,7 +77,7 @@ sudo apt-get install mash
 
 #### `Docker`
 
-`Docker` is ok too, it's also loaded with the default reference sketches
+`Docker` image is available, also comes preloaded with the default reference sketches
 
 ```sh
 docker pull esteinig/sketchy:latest
