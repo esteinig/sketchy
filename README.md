@@ -387,6 +387,7 @@ Genotype features from assemblies with `Kleborate`:
 * virulence score
 * resistance score
 * Yersiniabactin
+* Hypermucoidy
 * K-locus serotype
 * O-locus serotype
 
@@ -395,10 +396,8 @@ Resistance genes from assemblies with `Kleborate`, presence or absence:
 * AGly (aminoglycosides)
 * Bla (beta-lactamases)
 * Bla_broad (broad spectrum beta-lactamases)
-* Bla_broad_inhR (broad spectrum beta-lactamases with resistance to beta-lactamase inhibitors)
 * Bla_Carb (carbapenemase)
 * Bla_ESBL (extended spectrum beta-lactamases)
-* Bla_ESBL_inhR (extended spectrum beta-lactamases with resistance to beta-lactamase inhibitors)
 * Fcyn (fosfomycin)
 * Flq (fluoroquinolones)
 * Gly (glycopeptides)
