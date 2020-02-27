@@ -207,7 +207,7 @@ stability       5       0       10      0       7
 
 The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
 
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="600" /></a>
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
 
 **What's going on here?**
 
@@ -217,7 +217,7 @@ In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by agg
 
 In the plot on the right, the preference score from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) is computed on the sum of ranked sums of shared hashes (`sssh`) scores from the middle plot. As in the original a threshold of `p = 0.6` (horizontal line) indicates when a prediction should be trusted and when it should not. Note that the preference is always computed on the feature value with the highest score over the feature value with the second highest score, regardless of whether it is the right prediction. In fact, the score is susceptible to 'switches' in predictions, especially using lower resolution sketches, where a prediction is updated and flips to another more likely prediction as more evidence is gathered. 
 
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="600" /></a>
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="500" /></a>
 
 In this example, the same data from the Bengal Bay clone is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST772. This is reflected in the heatmap by distinct color blocks, but lower-resolution also trades-off prediction speed with larger more accurate sketches. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
 
