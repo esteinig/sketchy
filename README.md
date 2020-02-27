@@ -28,6 +28,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Setup](#setup)
 - [Usage](#usage)
   - [Python command line](#python-client)
+  - [Custom sketches](#custom-sketches)
   - [How it works](#how-it-works)
   - [Evaluation outputs](#rust-client)
   - [Rust command line](#rust-client)
@@ -165,7 +166,7 @@ More options can be viewed with
 sketchy run --help
 ```
 
-*Custom sketches*
+### Custom sketches
 
 Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task as described in the [`Constructing reference sketches`](#constructing-reference-sketches) section, and must include a:
 
@@ -442,14 +443,14 @@ DRR128208.fasta
 `Mash` can be used directly to construct the sketch with the following default parameters:
 
 ```
-mash sketch -s 1000 -k 15 *.fasta
+mash sketch -s 1000 -k 15 -o ref *.fasta
 ```
 
 See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
 
 ### Genotype features and index preparation
 
-Genotypes associated with each genome in the reference sketch should be in ta tab-delmited table with a column containing the file name identifiers used in the construction of the reference sketch (for example `uuid`) and it's asosciated genotypes with headers:
+Genotypes associated with each genome in the reference sketch should be in ta tab-delmited table (e.g. `genotypes.tsv`) with appropriate headers. Here the `uuid` column is used to demonstrate that the index **must be in the same order as genmes in the sketch**. We will remove the `uuid` column in the next step when we translate columns into categorical data - which does not make sense for `uuid`.
 
 ```
 uuid        st      sccmec  pvl 
@@ -461,5 +462,17 @@ DRR128207   st772   -       +
 DRR128208   st90    iv      +
 ```
 
-TBC
+To generate the three reference sketch files use `sketchy feature prepare`:
 
+```
+sketchy feature prepare -i genotypes.tsv --drop uuid --prefix ref
+```
+
+which creates:
+
+``
+ref.tsv   # index
+ref.json  # key 
+```
+
+See [how to use custom reference sketches](#custom-sketches) in `sketchy run`.
