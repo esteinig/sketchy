@@ -2,14 +2,14 @@
 
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
-![](https://img.shields.io/badge/version-0.4.2-purple.svg)
+![](https://img.shields.io/badge/version-0.4.3-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
 Real-time lineage matching and genotyping from uncorrected nanopore reads
 
 ## Overview
 
-**`v0.4.2: beta, rust core libs`**
+**`v0.4.3: beta, rust core libs`**
 
 `Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide reference sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate). A list of precomputed genotype features can be found in the corresponding pathogen reference  sections.
 
