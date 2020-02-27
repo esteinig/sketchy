@@ -52,14 +52,13 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline.
 
-
 #### `Singularity`
 
-I prefer `Singularity` for integrated access to host sytem files:
+I prefer `Singularity` for integrated access to host sytem files; loaded with default reference sketches.
 
 ```sh
 singularity pull docker://esteinig/sketchy:latest
-./sketchy_latest.sif --help
+./sketchy_latest.sif list
 ```
 
 #### `Cargo`
@@ -78,11 +77,11 @@ sudo apt-get install mash
 
 #### `Docker`
 
-`Docker` is ok too:
+`Docker` is ok too, it's also loaded with the default reference sketches
 
 ```sh
 docker pull esteinig/sketchy:latest
-docker run -it esteinig/sketchy --help
+docker run -it esteinig/sketchy list
 ```
 
 But to share files between container and the host system you need to set bindmounts, e.g. link the current directory (with a hypothetical `test.fq`) to the preconfigured working directory `/data` inside the container using the current user permissions:
@@ -108,13 +107,13 @@ conda install -c bioconda -c conda-forge mash=2.2 psutil pysam rust pyhon=3.7
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
-sketchy --help
+sketchy pull
+sketchy list
 ```
-
 
 ## Setup
 
-Pull default species sketches into local storage before first use. This pulls the default minimum sketches.
+If no container is used, pull default species sketches into local storage before first use:
 
 ```
 sketchy pull
