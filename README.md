@@ -119,13 +119,13 @@ If no container is used, pull default species sketches into local storage before
 sketchy pull
 ```
 
-You can set the home path to which the sketches are downloaded to the default `--path ~/.sketchy`. Use the `--full` flag to pull the full default collections, which include higher resolutions sketches:
+You can set the path to which the sketches are downloaded e.g. to the default `--path ~/.sketchy`. Use the `--full` flag to pull the complete, high-resolution collections (~ 2 GB):
 
 ```
 sketchy pull --path ~/.sketchy --full
 ```
 
-Set the environmental variable `SKETCHY_PATH` to the home directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
+Set the environmental variable `SKETCHY_PATH` to the sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
 Local sketches and template names can be viewed with:
 
@@ -202,7 +202,7 @@ Sketchy produces a directory `--output` with the intermediary pipeline data file
 ```
                 mlst    meca    pvl     scc     clindamycin
 prediction      ST93    MSSA    PVL+    -       S
-break           5       0       10      0       7
+stability       5       0       10      0       7
 ```
 
 The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
@@ -396,8 +396,8 @@ Default collection:
 Genotype features from assemblies with `Kleborate`:
 
 * MLST
-* virulence score
-* resistance score
+* Virulence score
+* Resistance score
 * Yersiniabactin
 * Hypermucoidy
 * K-locus serotype
