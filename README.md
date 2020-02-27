@@ -337,8 +337,8 @@ Sketch names are addressable in the `sketchy run` function and are constructed i
 
 Default collection:
 
-* `saureus_15_1000` (default)
-* `saureus_15_10000` (full)
+* `saureus_15_1000` (default) - 159 MB
+* `saureus_15_10000` (full) - 1.5 GB
 
 Genotype features from assemblies with `SCCion`:
 
@@ -371,8 +371,8 @@ Genotype features from assemblies with `SCCion`:
 
 Default collection:
 
-* `kpneumoniae_15_1000` (default)
-* `kpneumoniae_15_10000` (full)
+* `kpneumoniae_15_1000` (default) - 34 MB
+* `kpneumoniae_15_10000` (full) - 313 MB
 
 Genotype features from assemblies with `Kleborate`:
 
