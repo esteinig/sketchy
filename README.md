@@ -322,11 +322,9 @@ Python CLI has not been tested.
 
 ## Reference sketches
 
-Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash` for each read in a stream of reads. This means that prediction speeds are sufficiently fast for online predictions (e.g. 100 reads/second) but in particular for large sketches and completed runs the execution time can be excruciatingly slow.
+Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash` for each read in a stream of reads. This means that prediction speeds are sufficiently fast for online predictions (e.g. 100 reads/second) but in particular for large sketches and > 100,000 reads  total runtime can be excruciatingly long.
 
-When using species-wise reference sketches with tens of thousands of reads on completed runs use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs`) which should be sufficient or run long analyses on completed sets or larger read limits in a `screen` or `tmux` screen.
-
-Smaller reference sketches by lineage or created from local collections will be sufficiently fast.
+Fortunately, we generally don't need that many reads to make confident predicrtions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs`) which should be sufficient. Run long analyses on larger read limits in a `screen` of your flavour. Smaller reference sketches by lineage or created from local collections will be sufficiently fast.
 
 PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline: QC -> species typing -> Skesa assembly with Shovill -> genotyping with Kleborate, SCCion, Mykrobe. Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with Mash. 
 
