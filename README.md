@@ -324,7 +324,7 @@ Python CLI has not been tested.
 
 Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. 
 
-PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline (QC, Species typing, Skesa assembly, genotyping with Kleborate, SCCion, Mykrobe). Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with Mash. 
+PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline: QC -> species typing -> Skesa assembly with Shovill -> genotyping with Kleborate, SCCion, Mykrobe. Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with Mash. 
 
 Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_kmersize_sketchsize`. Prediction ability is not uniform across genotype features, and should be valiadated on reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches, please let us know.
 
