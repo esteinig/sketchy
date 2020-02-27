@@ -202,7 +202,7 @@ The evaluation plots are the more salient outputs. Each row in the `prefix.png` 
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="600" /></a>
 
-What's going on here?
+**What's going on here?**
 
 In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prediction as the scores are updated.
 
@@ -298,12 +298,14 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 
 1. Install the [`UserLAnd`](https://github.com/CypherpunkArmory/UserLAnd) app 
 2. Setup an `Ubuntu` image
-3. Run the following script
+3. Run the following in the terminal
 
 ```bash
 sudo apt-get update && sudo apt-get install curl mash
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
+
 wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
   && tar -xvzf saureus.min.tar.gz
 wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
