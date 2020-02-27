@@ -99,10 +99,16 @@ docker run -it \
 
 #### `Conda`
 
-NOT AVAILABLE YET - `Sketchy` is currently on a private channel and requires some dependencies from `BioConda`:
+NOT AVAILABLE YET 
+
+But you can install into an environment like this:
 
 ```sh
-conda install -c esteinig -c bioconda sketchy
+conda install -c bioconda -c conda-forge mash=2.2 psutil pysam rust pyhon=3.7
+cargo install sketchy-rs
+git clone https://github.com/esteinig/sketchy
+pip install ./sketchy
+sketchy --help
 ```
 
 
