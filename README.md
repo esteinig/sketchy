@@ -379,6 +379,8 @@ Genotype features from assemblies with `SCCion`:
 
 *K. pneumoniae* sketches are from a relatively small collection of less than ten thousand genomes and may be extended in future releases.
 
+Example:
+
 <a href='https://github.com/esteinig'><img src='docs/example_kpneumoniae_1.png' align="center" height="400" /></a>
 
 * 8149 genomes from the European Nucleotide Archive
