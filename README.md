@@ -306,7 +306,7 @@ To set up the `Rust CLI` on Android mobile phones, the following can be done in 
 3. Run the following in the terminal
 
 ```bash
-sudo apt-get update && sudo apt-get install curl mash
+sudo apt-get update && sudo apt-get install curl mash build-essential
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install sketchy-rs
