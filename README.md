@@ -470,9 +470,9 @@ sketchy feature prepare -i genotypes.tsv --drop uuid --prefix ref
 
 which creates:
 
-``
+```
 ref.tsv   # index
 ref.json  # key 
 ```
 
-See [how to use custom reference sketches](#custom-sketches) in `sketchy run`.
+See here [how to use custom reference sketches](#custom-sketches) in `sketchy run`.
