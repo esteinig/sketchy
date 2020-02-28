@@ -223,7 +223,7 @@ In this example, the same data from the Bengal Bay clone is run on the lower res
 
 ### Rust CLI
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SKETCHY_PATH` for convenience o access skecth files:
+The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SKETCHY_PATH` for convenience access to sketch files:
  
 ```bash
 SKETCHY_PATH=~/.sketchy
