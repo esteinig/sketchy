@@ -469,7 +469,7 @@ To generate the three reference sketch files use `sketchy feature prepare`:
 sketchy feature prepare -i genotypes.tsv --drop uuid --prefix ref
 ```
 
-together with the `.msh` sketch created above, the final filesfor use in porediction are:
+together with the `.msh` sketch created above, the final files for use in prediction are:
 
 ```
 ref.msh   # sketch
