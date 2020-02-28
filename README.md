@@ -197,21 +197,21 @@ Evaluations are plotted for visual confirmation, along with a preference score a
 
 ### Sketchy evaluation outputs
 
-Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the determined stability breakpoints (`0` indicates that breakpoint could not be called) and final prediction for each genomic feature:
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the determined stability breakpoints in reads (`0` indicates that breakpoint could not be called) and final prediction for each genomic feature, in a hypothetical example:
 
 ```
                 mlst    meca    pvl     scc     clindamycin
 prediction      ST93    MSSA    PVL+    -       S
-stability       5       0       10      0       7
+stability       5       354     10      0       7
 ```
 
-The evaluation plots are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
+The evaluation plots in the folowing examples are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
 
 **What's going on here?**
 
-In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors in the beginning represent feature values not in the ultimate highest-ranking five and demosntrates uncertainty in the initial predictions. On the other hand, increasing homogenous color represents certainty in the prediction as the scores are updated.
+In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors represent feature values not in the ultimate highest-ranking five and demonstrate uncertainty in the initial predictions. On the other hand, homogenous color represents certainty in the prediction which may increase as the scores are updated.
 
 In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `--stable` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to `0`) as the prediction was limited to 1000 reads total; breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as homogenous color in the heatmap.
 
@@ -223,10 +223,10 @@ In this example, the same data from the Bengal Bay clone is run on the lower res
 
 ### Rust CLI
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set an environmental variable for convenience:
+The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SKETCHY_PATH` for convenience o access skecth files:
  
 ```bash
-SKPATH=~/.sketchy/saureus
+SKETCHY_PATH=~/.sketchy
 ```
  
 `Compute` internally calls `Mash` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
@@ -234,7 +234,7 @@ SKPATH=~/.sketchy/saureus
  ```bash
  cat test.fq | head -20000 | \
  sketchy-rs compute \
-    --sketch $SKPATH/saureus.msh \
+    --sketch $SKETCHY_PATH/saureus.msh \
     --ranks 20 \
     --progress 1 \
     --threads 4 \
@@ -246,7 +246,7 @@ SKPATH=~/.sketchy/saureus
 ```bash
 cat test.ssh.tsv | \
 sketchy-rs evaluate \
-    --features $SKPATH/saureus.tsv \
+    --features $SKETCHY_PATH/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -256,12 +256,12 @@ The `Rust` pipeline can be executed in one step, such as:
 ```bash
 cat test.fq | head -20000 \
 | sketchy-rs compute \
-    --sketch $SKPATH/saureus.msh \
+    --sketch $SKETCHY_PATH/saureus.msh \
     --ranks 20 \
     --progress 1 \
     --threads 4 \
 | sketchy-rs evaluate \
-    --features $SKPATH/saureus.tsv \
+    --features $SKETCHY_PATH/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -272,8 +272,8 @@ Plotting and evaluation summaries are handled in the `Python CLI` and accessed v
 sketchy plot \
     --sssh test.sssh.tsv \
     --ssh test.ssh.tsv \
-    --index $SKPATH/saureus.tsv \
-    --key $SKPATH/saureus.json \
+    --index $SKETCHY_PATH/saureus.tsv \
+    --key $SKETCHY_PATH/saureus.json \
     --stable 1000 \
     --palette YnGnBu \
     --prefix test \
@@ -289,12 +289,12 @@ In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fas
 sketchy online watch -d /path/to/live/fastq | \
 cat - | head -20000 \
 | sketchy-rs compute \
-    --sketch $SKPATH/saureus.msh \
+    --sketch $SKETCHY_PATH/saureus.msh \
     --ranks 20 \
     --progress 1 \
     --threads 4 \
 | sketchy-rs evaluate \
-    --features $SKPATH/saureus.tsv \
+    --features $SKETCHY_PATH/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -469,9 +469,10 @@ To generate the three reference sketch files use `sketchy feature prepare`:
 sketchy feature prepare -i genotypes.tsv --drop uuid --prefix ref
 ```
 
-which creates:
+together with the `.msh` sketch created above, the final filesfor use in porediction are:
 
 ```
+ref.msh   # sketch
 ref.tsv   # index
 ref.json  # key 
 ```
