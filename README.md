@@ -55,7 +55,7 @@ Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computatio
 
 #### `Singularity`
 
-I prefer `Singularity` for integrated access to host sytem files. Container is preloaded with default reference sketches.
+I prefer `Singularity` for integrated access to host sytem files. The container is preloaded with default reference sketches and the container environment variable `$SKETCHY_PATH` is set to their internal location at `/sketchy`
 
 ```sh
 singularity pull docker://esteinig/sketchy:latest
@@ -125,7 +125,7 @@ You can set the path to which the sketches are downloaded e.g. to the default `-
 sketchy pull --path ~/.sketchy --full
 ```
 
-Set the environmental variable `SKETCHY_PATH` to the sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
+Set the environment variable `$SKETCHY_PATH` to the sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
 Local sketches and template names can be viewed with:
 
@@ -137,7 +137,7 @@ sketchy list
 
 See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`.
 
-Reads are expected to belong to the species used in the reference sketch. Use a taxonomic classifier to filter metagenomic samples - we use `Kraken2` and it works well on test data from [Legget et al. (2019)](https://www.biorxiv.org/content/10.1101/180406v2).
+Reads are expected to belong to the species of the reference sketch. Use a taxonomic classifier to filter metagenomic samples - we use `Kraken2` and it works well on test data from [Legget et al. (2019)](https://www.biorxiv.org/content/10.1101/180406v2).
 
 ### Python CLI
 
