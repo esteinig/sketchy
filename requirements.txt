@@ -8,7 +8,7 @@ python-dateutil
 numpy
 pysam
 deprecation
-matplotlib
+matplotlib-base
 watchdog
 psutil
 dendropy
