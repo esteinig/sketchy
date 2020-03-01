@@ -1,6 +1,7 @@
-mkdir -p $PREFIX/bin
+#!/bin/bash
+set -x
+export RUST_BACKTRACE=full
 
-cargo build --release
-mv target/release/sketchy $PREFIX/bin/sketchy-rs
+cargo install -v --locked --root "$PREFIX" --path .
 
-$PYTHON -m pip install .
+"$PYTHON" -m pip install --no-deps --ignore-installed -vv .
