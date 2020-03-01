@@ -3,14 +3,14 @@
 
 # conda build -c esteinig -c bioconda -c conda-forge .
 package:
-  name: {{ name }}
-  version: {{ version }}
+  name:               {{ name }}
+  version:            {{ version }}
 
 source:
-    path: .
+  path:               .
 
 build:
-  number: 0
+  number:             0
   entry_points:
     - sketchy = sketchy.terminal.client:terminal_client
 
@@ -51,10 +51,10 @@ test:
     - sketchy-rs -h
 
 about:
-  home: https://github.com/esteinig/sketchy
-  license: MIT
-  license_file: LICENSE
-  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens'
+  home:               https://github.com/esteinig/sketchy
+  license:            MIT
+  license_file:       LICENSE
+  summary:            'Real-time lineage hashing and genotyping of bacterial pathogens'
 
 extra:
   recipe-maintainers:
