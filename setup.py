@@ -24,7 +24,6 @@ setup(
         'numpy',
         'pysam',
         'deprecation',
-        'matplotlib-base',
         'watchdog',
         'psutil',
         'pyfastx',
