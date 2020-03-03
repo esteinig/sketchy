@@ -98,7 +98,7 @@ docker run -it \
 
 #### `Conda`
 
-Thanks to [@mbhall88](https://github.com/mbhall88) `Skethcy` is available on `BioConda`:
+`Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
 ```
 conda install -c bioconda -c conda-forge sketchy
