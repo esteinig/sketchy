@@ -128,14 +128,13 @@ You can set the path to which the sketches are downloaded e.g. to the default `-
 ```
 sketchy pull --path ~/.sketchy --full
 ```
-
-Set the environment variable `$SKETCHY_PATH` to the sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
-
 Local sketches and template names can be viewed with:
 
 ```
 sketchy list
 ```
+
+Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
 ## Usage
 
