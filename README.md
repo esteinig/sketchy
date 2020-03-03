@@ -98,7 +98,7 @@ docker run -it \
 
 #### `Conda`
 
-Installation from `BioConda` needs the `conda-forge` channel. Tons of thanks to [@mbhall88](https://github.com/mbhall88) for this.
+Thanks to [@mbhall88](https://github.com/mbhall88) `Skethcy` is available on `BioConda`:
 
 ```
 conda install -c bioconda -c conda-forge sketchy
