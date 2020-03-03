@@ -51,7 +51,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 ## Install
 
-Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline in `Python`.
+Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies.
 
 #### `Singularity`
 
@@ -98,9 +98,13 @@ docker run -it \
 
 #### `Conda`
 
-NOT AVAILABLE YET 
+Installation from `BioConda` needs the `conda-forge` channel. Tons of thanks to [@mbhall88](https://github.com/mbhall88) for this.
 
-But you can install into an environment like this:
+```
+conda install -c bioconda -c conda-forge sketchy
+```
+
+You can also manually install into an environment like this:
 
 ```sh
 conda install -c bioconda -c conda-forge mash=2.2 psutil pysam rust pyhon=3.7
