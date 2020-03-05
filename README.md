@@ -5,7 +5,7 @@
 ![](https://img.shields.io/badge/version-0.4.3-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
-Real-time lineage matching and genotyping from uncorrected nanopore reads
+Real-time lineage hsdhinng and genotyping of bacterial pathogens from uncorrected nanopore reads
 
 ## Overview
 
