@@ -1,11 +1,10 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/logo.png' align="right" height="210" /></a>
 
-
 ![](https://img.shields.io/badge/lang-rust-black.svg)
 ![](https://img.shields.io/badge/version-0.4.3-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
-Real-time lineage hsdhinng and genotyping of bacterial pathogens from uncorrected nanopore reads
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads
 
 ## Overview
 
