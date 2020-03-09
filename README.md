@@ -158,7 +158,13 @@ Species-wide sketch templates are available for:
 When using a template, execution looks like this:
 
 ```bash
-sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 5000
+sketchy run --fastq test.fq --sketch saureus
+```
+
+Sketchy primarily operates on read streams and therefore prediction can be slow-ish on from completed runs. Initial prediction on the first few thousand reads should be sufficient, often only a few hundred are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap output)
+
+```bash
+sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 3000
 ```
 
 More options can be viewed with
