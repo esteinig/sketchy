@@ -28,13 +28,7 @@ from sketchy.utils import get_output_handle, is_fasta, is_fastq, create_fastx_in
     "-s",
     type=int,
     help="Sample size in number of reads [1000].",
-    default=1000,
-)
-@click.option(
-    "--replacement",
-    "-r",
-    help="Sample with replacement [false].",
-    is_flag=True
+    default=None,
 )
 @click.option(
     "--replacement",
@@ -56,6 +50,9 @@ def fx_sample(fastx, output, sample, replacement, seed):
     fx, build_read = create_fastx_index(fastx)
 
     read_names = [read.name for read in fx]
+
+    if sample is None:
+        sample = len(read_names)
 
     if len(read_names) < sample:
         print(

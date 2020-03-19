@@ -26,9 +26,9 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '--ranks',
     '-r',
-    default=20,
+    default=10,
     type=int,
-    help='Output highest ranking sum of shared hashes [20]'
+    help='Output highest ranking sum of shared hashes [10]'
 )
 @click.option(
     '--outdir',
@@ -84,6 +84,7 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
     '-q',
     '--quiet',
     is_flag=True,
+    help="Run without logging output or progress bar."
 )
 def run(
     fastq,
@@ -133,5 +134,5 @@ def run(
         limit=limit,
         stable=stable,
         threads=threads,
-        palette=palette
+        palette=palette,
     )

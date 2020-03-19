@@ -65,7 +65,7 @@ class GoogleCloudSketch:
     def download_sketch_archive(self, archive_name: str):
 
         self.pl.logger.info(
-            f'Download collection to: {self.sketch_path}'
+            f'Download archive {archive_name} to: {self.sketch_path}'
         )
 
         self.sketch_path.mkdir(parents=True, exist_ok=True)
@@ -84,10 +84,6 @@ class GoogleCloudSketch:
             archive_file.unlink()
         except tarfile.ReadError:
             pass
-
-        self.pl.logger.info(
-            f'Downloads complete, use `sketchy list` to list local sketches'
-        )
 
     def download_blob(self, bucket_name, archive_file):
 

@@ -13,7 +13,7 @@ from click import Option, UsageError
 
 class PoreLogger:
 
-    def __init__(self, level=logging.ERROR, file: Path = None):
+    def __init__(self, level=logging.ERROR, file: Path = None, name: str = 'Sketchy'):
 
         logging.basicConfig(
             level=level,
@@ -22,7 +22,7 @@ class PoreLogger:
             filename=file
         )
 
-        self.logger = logging.getLogger('Sketchy')
+        self.logger = logging.getLogger(name)
 
 
 class SketchySimulator:

@@ -1,28 +1,27 @@
-{% set version = "0.4.3" %}
-{% set name = "sketchy" %}
+{% set version = "0.4.4" %}
 
 # conda build -c esteinig -c bioconda -c conda-forge .
+
 package:
-  name:               {{ name }}
-  version:            {{ version }}
+  name: sketchy
+  version: {{ version }}
 
 source:
-  path:               .
+  path: . # [linux]
 
 build:
-  number:             0
-  entry_points:
-    - sketchy = sketchy.terminal.client:terminal_client
+  number: 0
 
 requirements:
   build:
       - {{ compiler('cxx') }}
-      - rust >=1.39
   host:
-      - python ==3.7
+      - python>=3.7
+      - rust>=1.39
   run:
-      - python ==3.7
-      - mash ==2.2
+      - python>=3.7
+      - rust>=1.39
+      - mash=2.2
       - wget
       - nextflow
       - tqdm
@@ -42,7 +41,6 @@ requirements:
       - networkx
       - pyfastx
       - watchdog
-      - dendropy
 test:
   imports:
     - sketchy
@@ -51,12 +49,8 @@ test:
     - sketchy-rs -h
 
 about:
-  home:               https://github.com/esteinig/sketchy
-  license:            MIT
-  license_file:       LICENSE
-  summary:            'Real-time lineage hashing and genotyping of bacterial pathogens'
+  home: 'https://github.com/esteinig/sketchy'
+  license: MIT
+  license_file: LICENSE
+  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens'
 
-extra:
-  recipe-maintainers:
-    - esteinig
-    - mbhall88

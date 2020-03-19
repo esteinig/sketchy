@@ -3,7 +3,7 @@ From: continuumio/miniconda3
 
 %labels
     name sketchy
-    version 0.4.3
+    version 0.4.4
     author esteinig
 
 %post
@@ -18,18 +18,19 @@ From: continuumio/miniconda3
 
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-    /opt/conda/bin/conda install -c conda-forge -c bioconda --yes \
-        pysam mash=2.2 psutil \
+    cd /sketchy_build \
+        && cargo build --release \
+        && ls /sketchy_build/target/release \
+        && mv /sketchy_build/target/release/sketchy-rs /bin/sketchy-rs
+
+    /opt/conda/bin/conda install -c conda-forge -c bioconda -c esteinig --yes \
+        pysam mash=2.2 psutil nanoq \
         && /opt/conda/bin/conda clean -a \
         && find /opt/conda/ -follow -type f -name '*.a' -delete \
         && find /opt/conda/ -follow -type f -name '*.pyc' -delete
 
-    cd /sketchy_build \
-        && cargo build --release \
-        && mv /sketchy_build/target/release/sketchy /bin/sketchy-rs &&
-        pip install .
-
-    sketchy pull --path $SKETCHY_PATH
+    pip install /sketchy_build
+    sketchy pull --full --path $SKETCHY_PATH
 
 %environment
     export PATH=/opt/conda/bin:/rust/.cargo/bin:$PATH

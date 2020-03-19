@@ -7,7 +7,7 @@ setup(
     author_email="eikejoachim.steinig@my.jcu.edu.au",
     packages=find_packages(),
     include_package_data=True,
-    version="0.4.3",
+    version="0.4.4",
     license="MIT",
     entry_points="""
     [console_scripts]

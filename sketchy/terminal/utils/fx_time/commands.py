@@ -8,7 +8,7 @@ from sketchy.utils import SketchySimulator, MutuallyExclusiveOption
 
 @click.command()
 @click.option(
-    "--fastx",
+    "--fastq",
     "-f",
     type=Path,
     help="Path to Fast{a,q} input file used in evaluation",
@@ -31,16 +31,33 @@ from sketchy.utils import SketchySimulator, MutuallyExclusiveOption
     "--evaluation",
     "-e",
     type=Path,
-    help="Path to evaluation file from `sketchy evaluate`",
+    help="Path to evaluation file containing predictions (data.tsv)",
     default=None,
-    required=True,
+    required=False,
 )
-def fx_time(fastx, evaluation, index):
+@click.option(
+    "--prefix",
+    "-p",
+    type=str,
+    help="Output prefix for time data: {prefix}.time.tsv [skecthy]",
+    default='sketchy',
+    required=False,
+)
+@click.option(
+    "--delta",
+    "-d",
+    type=str,
+    help="Compute time delta between 'first' read or start time of run "
+         "!! GMT !! in format: '20/11/20 16:20:00' [first]",
+    default=None,
+    required=False,
+)
+def fx_time(fastq, evaluation, index, prefix, delta):
 
-    """ Experimental: compute time to prediction from evaluation output and input reads """
+    """ Compute time of prediction from reads and evaluations """
 
     sim = SketchySimulator(
-        fastx=fastx, fastx_index=index
+        fastx=fastq, fastx_index=index
     )
 
     if index:
@@ -48,48 +65,52 @@ def fx_time(fastx, evaluation, index):
     else:
         fx = sim.get_run_index()
 
-    feature_predictions = pandas.read_csv(
-        evaluation, sep='\t', names=['feature', 'prediction', 'first', 'stable']
-    )
+    fx.sort_index().to_csv(f'{prefix}.time.tsv', sep='\t', index_label='read')
 
-    for i, row in feature_predictions.iterrows():
-        first_delta, stable_delta = compute_feature_time_delta(fx, row)
-        print(
-            f"{row['feature']}\t{row['prediction']}\t{row['first']}\t"
-            f"{first_delta}\t{row['stable']}\t{stable_delta}"
+    if evaluation is not None:
+        feature_predictions = pandas.read_csv(
+            evaluation, sep='\t', header=0
+        )
+
+        dates = [
+            compute_feature_time_delta(fx, row, delta=delta)
+            for _, row in feature_predictions.iterrows()
+        ]
+
+        feature_predictions['time'] = dates
+
+        feature_predictions.to_csv(
+            f'{prefix}.time.data.tsv', sep='\t', index=False
         )
 
 
-def compute_feature_time_delta(fx, row):
-
-    try:
-        first = int(
-            row['first']
-        )-1
-        first_feature = fx.iloc[first]
-    except (TypeError, KeyError, ValueError):
-        first_feature = None
+def compute_feature_time_delta(fx, row, delta: str = None):
 
     try:
         stable = int(
-            row['stable']
-        ) - 1
-        stable_feature = fx.iloc[stable]
+            row['stability']
+        )
+        if stable == -1:
+            stable_feature = None
+        else:
+            stable_feature = fx.iloc[stable]
     except (TypeError, KeyError, ValueError):
         stable_feature = None
 
-    first_read = fx.iloc[0]
-
-    if first_feature is not None:
-        first_feature_delta = \
-            dp.parse(first_feature.start_time) - dp.parse(first_read.start_time)
-    else:
-        first_feature_delta = None
-
     if stable_feature is not None:
-        stable_feature_delta = \
-            dp.parse(stable_feature.start_time) - dp.parse(first_read.start_time)
+        if delta:
+            if delta == 'first':
+                first_read = fx.iloc[0]
+                stable_feature_date = dp.parse(stable_feature.start_time) - \
+                    dp.parse(first_read.start_time)
+            else:
+                read_time = dp.parse(stable_feature.start_time).replace(tzinfo=None)
+                start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)
+                stable_feature_date = read_time - start_time
+        else:
+            stable_feature_data = dp.parse(stable_feature.start_time)
+            stable_feature_date = stable_feature_data.strftime("%d-%m-%Y %H:%M:%S")
     else:
-        stable_feature_delta = None
+        stable_feature_date = None
 
-    return first_feature_delta, stable_feature_delta
+    return stable_feature_date

@@ -1,7 +1,7 @@
 
 log.info """
 
-SKETCHY - NF v0.4.1
+SKETCHY - NF v0.4.4
 =======================
 
 +++ UNDER DEVELOPMENT +++
@@ -9,10 +9,23 @@ SKETCHY - NF v0.4.1
 PARALLEL SKETCHY COMPUTE
 ==========================
 
-Run Sketchy on multiple samples in 
-parallel.
+Run Sketchy on multiple samples and
+sketch confirgurations in parallel
 
-sketchy       : $params.sketchy
+sketchy         : $params.sketchy
+sketches        : $params.sketches
+ranks           : $params.ranks
+limits          : $params.limits
+
+==========================
+
+Additonally bootstrap each feature and 
+compute 95% CI of prediction
+
+bootstrap       : $params.bootstrap
+samples         : $params.samples
+limit           : $params.limit
+seed            : $params.seed
 
 METAGENOME : EXTRACT SPECIES
 =============================
@@ -22,17 +35,16 @@ classified with Kraken2
 
 metagenome    : $params.metagenome
 outdir        : $params.outdir
-fastx         : $params.fastx
+fastx         : $params.fastq
 species       : $params.species
 taxdb         : $params.taxdb
 prefix        : $params.prefix
-threads       : $params.threads
 
 BUILD MASH SKETCH
 =====================
 
 Construct a Mash sketch from multiple 
-Fasta files and merge.
+Fasta files and merge
 
 build         : $params.build
 outdir        : $params.outdir
@@ -40,10 +52,127 @@ fasta         : $params.fasta
 prefix        : $params.prefix
 kmer_size     : $params.kmer_size
 sketch_size   : $params.sketch_size
-threads       : $params.threads
 
 """
 
+if (params.sketchy){
+
+    // DISTRIBUTED SKETCHY PREDICTION
+
+    
+    Channel
+        .fromPath(params.fastq)
+        .map { file -> tuple(file.baseName, file) }
+        .into { fastq_nanopore; prestats_fastq }
+
+
+    process StatsPrefilter {
+
+        tag { id }
+        label "ont"
+
+        publishDir "$params.outdir/fastq", mode: "copy", pattern: "*.txt"
+
+        input:
+        set id, file(fq) from prestats_fastq
+
+        output:
+        file("${id}.prefiltered.stats.txt")
+
+        shell:
+
+        """
+        if [[ $fq == *.gz ]]
+        then
+            zcat $fq | nanoq 2> ${id}.prefiltered.stats.txt
+        else
+            nanoq -f $fq 2> ${id}.prefiltered.stats.txt
+        fi
+        """
+
+    }
+
+    process Nanoq {
+        
+        tag { id }
+        label "ont"
+
+        publishDir "$params.outdir/fastq", mode: "copy", pattern: "*.txt"
+
+        input:
+        set id, file(fq) from fastq_nanopore
+
+        output:
+        set id, file("${id}.filtered.fq") into (poststats_fastq, rasusa_fastq, sketchy_fastq, sketchy_baseline, sketchy_bootstrap)
+
+        """
+        if [[ $fq == *.gz ]]
+        then
+            zcat $fq | nanoq -l $params.length -q $params.quality > ${id}.filtered.fq
+        else
+            nanoq -f $fq -l $params.length -q $params.quality > ${id}.filtered.fq
+        fi
+        """
+
+    }
+
+    process StatsPostfilter {
+
+        tag { id }
+        label "ont"
+
+        publishDir "$params.outdir/fastq", mode: "copy", pattern: "*.txt"
+
+        input:
+        set id, file(filtered) from poststats_fastq
+
+        output:
+        file("${id}.filtered.stats.txt")
+
+        """
+        nanoq -f $filtered 2> ${id}.filtered.stats.txt
+        """
+
+    }
+
+
+    process Sketchy {
+        
+        tag { "$id $sketch $rank $limit" }
+        label "sketchy"
+
+        publishDir "$params.outdir/sketchy", mode: "copy"
+
+        input:
+        set id, file(fastq) from sketchy_fastq
+        each sketch from params.sketches
+        each rank from params.ranks
+        each limit from params.limits
+        
+        output:
+        file("${id}.${sketch}.${rank}.${limit}.*")
+        
+        when:
+        params.sketchy
+
+        script:
+
+        """
+        sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${sketch}.${rank}.${limit} --threads $task.cpus 
+        mv sketchy/* .
+
+        if [[ $params.time ]]
+        then
+            sketchy utils fx-time --fastq $fastq --evaluation ${id}.${sketch}.${rank}.${limit}.data.tsv --prefix ${id}.${sketch}.${rank}.${limit}
+            rm *.fxi
+        fi
+     
+        """
+
+    }
+
+
+}
 
 
 if (params.build) {
@@ -68,7 +197,7 @@ if (params.build) {
         """
         echo $fasta $id
         mash sketch -k $params.kmer_size -s $params.sketch_size -o $id \
-        -p $params.threads $fasta
+        -p $task.cpus $fasta
         """
     }
 
@@ -98,27 +227,27 @@ if (params.build) {
 
 if (params.metagenome) {
 
-  fastx = Channel
-      .fromPath(params.fastx)
+    fastq = Channel
+      .fromPath(params.fastq)
       .map { file -> tuple(file.baseName, file) }
 
-  // Classify and extract species reads from Zymo Mocks
+    // Classify and extract species from classified reads
 
-  process Kraken2 {
+    process Kraken2 {
 
         label "kraken2"
 
         publishDir "${params.outdir}/metagenome", mode: "copy", pattern: "*.report"
 
         input:
-        set id, file(fastx) from fastx
+        set id, file(fastq) from fastq
 
         output:
-        set id, file("$fastx"), file("${id}.out"), val("$params.taxdb") into kraken_filter
+        set id, file("$fastq"), file("${id}.out"), val("$params.taxdb") into kraken_filter
         set id, file("${id}.report") into kraken_plot
 
         """
-        kraken2 --db $params.taxdb --threads $task.cpus --output "${id}.out" --report ${id}.report --use-names $fastx
+        kraken2 --db $params.taxdb --threads $task.cpus --output "${id}.out" --report ${id}.report --use-names $fastq
         """
     }
 
@@ -129,33 +258,15 @@ if (params.metagenome) {
         publishDir "${params.outdir}/metagenome", mode: "copy"
 
         input:
-        set id, file(fastx), file(kraken), val(taxdb) from kraken_filter
+        set id, file(fastq), file(kraken), val(taxdb) from kraken_filter
 
         output:
         set file("${id}.species.reads.out"), file("${id}.species.fq")
 
         """
         cat $kraken | grep "$params.species" > ${id}.species.reads.out
-        sketchy utils fx-filter -f $fastx -i ${id}.species.reads.out -o ${id}.species.fq
+        sketchy utils fx-filter -f $fastq -i ${id}.species.reads.out -o ${id}.species.fq
         """
     }
-
-    process KrakenPlot {
-
-        label "sketchy"
-
-        publishDir "${params.outdir}/metagenome", mode: "copy"
-
-        input:
-        set id, file(report) from kraken_plot
-
-        output:
-        file("${id}.png")
-
-        """
-        sketchy utils plot-kraken --report $report --prefix $id
-        """
-    }
-
 
 }

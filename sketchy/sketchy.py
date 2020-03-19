@@ -1,4 +1,4 @@
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import logging
 import pandas
@@ -35,7 +35,9 @@ class SketchyWrapper(PoreLogger):
     ):
 
         PoreLogger.__init__(
-            self, level=logging.INFO if verbose else logging.ERROR
+            self,
+            level=logging.INFO if verbose else logging.ERROR,
+            name='Compute'
         )
 
         self.fastx = fastx
@@ -47,7 +49,6 @@ class SketchyWrapper(PoreLogger):
         self.logger.info(f'Sketchy wrapper v{__version__}')
         self.logger.info(f'Prefix: {prefix}')
         self.logger.info(f'Fastq file: {fastx.absolute()}')
-        self.logger.info(f'Sketch database: {sketch}')
         self.logger.info(f'Output directory: {outdir.absolute()}')
 
         self.outdir.mkdir(exist_ok=True, parents=True)
@@ -58,7 +59,7 @@ class SketchyWrapper(PoreLogger):
         limit: int = None,
         stable: int = 1000,
         threads: int = 4,
-        palette: str = 'YlGnBu'
+        palette: str = 'YlGnBu',
     ) -> None:
 
         sketch, features, keys = self.get_sketch_files()
@@ -68,8 +69,9 @@ class SketchyWrapper(PoreLogger):
         else:
             limit_pipe = ''
 
-        self.logger.info(f'Ranked sum of shared hashes: {ranks}')
-        self.logger.info(f'Predict on reads: {"all" if limit is None else limit}')
+        self.logger.info(f'Sketch database: {sketch}')
+        self.logger.info(f'Consensus ranks: {ranks}')
+        self.logger.info(f'Read limit: {"all" if limit is None else limit}')
         self.logger.info(f'Stability breakpoint: {stable}')
         self.logger.info(f'Threads for Mash: {threads}')
 
@@ -169,7 +171,7 @@ class Evaluation(PoreLogger):
         verbose: bool = False
     ):
 
-        PoreLogger.__init__(self)
+        PoreLogger.__init__(self, name="Evaluate")
 
         if verbose:
             self.logger.setLevel(level=logging.INFO)
@@ -257,10 +259,10 @@ class Evaluation(PoreLogger):
                 feature_data=feature_data
             )
 
-            stability_points = self.compute_breakpoint(feature_data)
+            stability_breakpoint = self.compute_breakpoint(feature_data)
 
             data[feature_name] = {
-                'stability': stability_points[1],
+                'stability': stability_breakpoint,
                 'prediction': top_prediction
             }
 
@@ -276,7 +278,7 @@ class Evaluation(PoreLogger):
                 feature_name=feature_name,
                 feature_data=feature_data,
                 top_feature_values=top_values,
-                stability_points=stability_points,
+                stability_breakpoint=stability_breakpoint,
                 color=color,
                 stable_point=stable_point,
                 break_point=break_point,
@@ -294,15 +296,21 @@ class Evaluation(PoreLogger):
 
             self.logger.info(f"Constructed plots for feature: {feature_name}")
 
-        break_data = pandas.DataFrame(data)
+        break_data = pandas.DataFrame(data).T
+        break_data = break_data[['prediction', 'stability']]
 
-        break_data.to_csv(break_file, sep='\t', index=True)
+        break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 
         plt.tight_layout()
         fig.savefig(plot_file)
 
         self.logger.info(f'Saved evaluation plot to: {plot_file}')
         self.logger.info(f'Saved predictions to: {break_file}')
+
+    def get_break_time_data(self, file: Path, data: pandas.DataFrame):
+
+        self.logger.info('Determining breakpoint time from reads.')
+        self.logger.info(f'Read file: {file}')
 
     def get_top_feature_data(self, feature_data: pandas.DataFrame):
 
@@ -367,22 +375,25 @@ class Evaluation(PoreLogger):
         top_predictions = feature_data[feature_data['feature_rank'] == 0]
         reverse_stability = top_predictions.stability.values[::-1]
 
-        last_stable_block_length = 0
+        last_stable_block_index = 0
         for stable in reverse_stability:
             if stable == 0:
                 break
             else:
-                last_stable_block_length += 1
+                last_stable_block_index += 1
 
-        stable_point = len(reverse_stability) - last_stable_block_length
+        # total reads - block length
+        stable_point = len(reverse_stability) - last_stable_block_index+1
 
-        break_point = None
         if self.stable:
-            break_point = stable_point - self.stable
-            if break_point < 0:
-                break_point = 0
+            read_index = stable_point - self.stable
+            # Conditions: break point validations
+            if last_stable_block_index == 0:  # none detected
+                read_index = -1
+        else:
+            read_index = -1
 
-        return stable_point, break_point
+        return read_index
 
     @staticmethod
     def read_ssh(file: Path = None):
@@ -452,7 +463,7 @@ class Evaluation(PoreLogger):
         feature_name: str,
         feature_data: pandas.DataFrame,
         top_feature_values: list,
-        stability_points: tuple = None,
+        stability_breakpoint: int = None,
         ax: plt.axes = None,
         color: str = 'YlGnBu',
         stable_point: bool = False,
@@ -477,15 +488,11 @@ class Evaluation(PoreLogger):
             ax=ax, ci=None, estimator=None, palette=palette,
             hue_order=[str(v) for v in top_feature_values]
         )
-        if stability_points is not None and stable_point:
+
+        if stability_breakpoint is not None and break_point:
             ax.axvline(
-                x=stability_points[0], linewidth=1, linestyle='--', color='black'
+                x=stability_breakpoint, linewidth=1, linestyle='-', color='black'
             )
-        if stability_points is not None and break_point:
-            if stability_points[1] is not None:
-                ax.axvline(
-                    x=stability_points[1], linewidth=1, linestyle='-', color='black'
-                )
 
         legend = ax.legend()
         legend.texts[0].set_text(feature_name)

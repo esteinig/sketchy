@@ -1,6 +1,5 @@
 import click
 import logging
-import shutil
 
 from pathlib import Path
 from sketchy.utils import SketchySimulator, create_fastx_index, get_output_handle, PoreLogger
