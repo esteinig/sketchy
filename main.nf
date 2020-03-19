@@ -138,10 +138,10 @@ if (params.sketchy){
 
     process Sketchy {
         
-        tag { "$id $sketch $rank $limit" }
+        tag { "$id - $sketch - $rank - $limit" }
         label "sketchy"
 
-        publishDir "$params.outdir/sketchy", mode: "copy"
+        publishDir "$params.outdir/sketchy/${sketch}", mode: "copy"
 
         input:
         set id, file(fastq) from sketchy_fastq
@@ -150,7 +150,7 @@ if (params.sketchy){
         each limit from params.limits
         
         output:
-        file("${id}.${sketch}.${rank}.${limit}.*")
+        file("${id}.${rank}.${limit}.*")
         
         when:
         params.sketchy
@@ -158,12 +158,14 @@ if (params.sketchy){
         script:
 
         """
-        sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${sketch}.${rank}.${limit} --threads $task.cpus 
+        SKETCHY_PATH=$params.home
+
+        sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
         mv sketchy/* .
 
         if [[ $params.time ]]
         then
-            sketchy utils fx-time --fastq $fastq --evaluation ${id}.${sketch}.${rank}.${limit}.data.tsv --prefix ${id}.${sketch}.${rank}.${limit}
+            sketchy utils fx-time --fastq $fastq --evaluation ${id}.${rank}.${limit}.data.tsv --prefix ${id}.${rank}.${limit}
             rm *.fxi
         fi
      

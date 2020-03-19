@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3
 
 LABEL name="sketchy"
-LABEL version="0.4.3"
+LABEL version="0.4.4"
 LABEL author="esteinig"
 
 RUN apt-get update && apt-get install curl build-essential -y
@@ -13,8 +13,8 @@ ENV PATH=/opt/conda/bin:/rust/.cargo/bin:$PATH
 ENV CARGO_HOME=/rust/.cargo
 ENV RUSTUP_HOME=/rust/.rustup
 
-RUN conda install -c conda-forge -c bioconda --yes \
-    pysam mash=$MASH_VERSION psutil \
+RUN conda install -c conda-forge -c bioconda -c esteinig --yes \
+    pysam kraken2 mash=$MASH_VERSION psutil nanoq \
     && conda clean -a \
     && find $CONDA_DIR -follow -type f -name '*.a' -delete \
     && find $CONDA_DIR -follow -type f -name '*.pyc' -delete
@@ -24,11 +24,11 @@ RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | s
 ADD . /sketchy_build
 WORKDIR /sketchy_build
 
-# Sketchy Rust library
-RUN cargo build --release && mv /sketchy_build/target/release/sketchy /bin/sketchy-rs
+# Sketchy Rust client
+RUN cargo build --release && mv /sketchy_build/target/release/sketchy-rs /bin/sketchy-rs
 # Sketchy Python package and data working directory
 RUN pip install /sketchy_build && mkdir /data
-# Sketchy database pull
+# Sketchy min database pull
 RUN sketchy pull --path $SKETCHY_PATH
 
 # /data workdir for easy bindmounts
