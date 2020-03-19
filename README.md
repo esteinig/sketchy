@@ -1,11 +1,10 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/logo.png' align="right" height="210" /></a>
 
-
 ![](https://img.shields.io/badge/lang-rust-black.svg)
 ![](https://img.shields.io/badge/version-0.4.3-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
-Real-time lineage matching and genotyping from uncorrected nanopore reads
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads
 
 ## Overview
 
@@ -51,7 +50,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 ## Install
 
-Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies and access the complete computation and evaluation pipeline in `Python`.
+Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies.
 
 #### `Singularity`
 
@@ -91,16 +90,20 @@ But to share files between container and the host system you need to set bindmou
 docker run -it \
   -v $(pwd):/data \
   -u $(id -u):$(id -g) \
-  esteinig/sketchy run \
+  esteinig/sketchy \
   --fastq /data/test.fq \
   --output /data/test
 ```
 
 #### `Conda`
 
-NOT AVAILABLE YET 
+`Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
-But you can install into an environment like this:
+```
+conda install -c bioconda -c conda-forge sketchy
+```
+
+You can also manually install into an environment like this:
 
 ```sh
 conda install -c bioconda -c conda-forge mash=2.2 psutil pysam rust pyhon=3.7
@@ -124,14 +127,13 @@ You can set the path to which the sketches are downloaded e.g. to the default `-
 ```
 sketchy pull --path ~/.sketchy --full
 ```
-
-Set the environment variable `$SKETCHY_PATH` to the sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
-
 Local sketches and template names can be viewed with:
 
 ```
 sketchy list
 ```
+
+Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
 ## Usage
 
@@ -156,7 +158,13 @@ Species-wide sketch templates are available for:
 When using a template, execution looks like this:
 
 ```bash
-sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 5000
+sketchy run --fastq test.fq --sketch saureus
+```
+
+Sketchy primarily operates on read streams (see [`Benchmarks`](#benchmarks)) and prediction can be slow-ish over entire completed runs. Initial prediction on the first few thousand reads should be sufficient - often only a few hundred reads are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap output)
+
+```bash
+sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 3000
 ```
 
 More options can be viewed with
@@ -286,8 +294,7 @@ sketchy plot \
 In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and the reads into the `Rust CLI:
 
 ```
-sketchy online watch -d /path/to/live/fastq | \
-cat - | head -20000 \
+sketchy online watch -d /path/to/live/fastq | cat - \
 | sketchy-rs compute \
     --sketch $SKETCHY_PATH/saureus.msh \
     --ranks 20 \
