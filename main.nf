@@ -1,13 +1,13 @@
 
 log.info """
 
-SKETCHY - NF v0.4.4
-=======================
+===============================================
+             SKETCHY - NF v0.4.4
+===============================================
 
-+++ UNDER DEVELOPMENT +++
-
-PARALLEL SKETCHY COMPUTE
-==========================
+===============================================
+           PARALLEL SKETCHY COMPUTE          
+===============================================
 
 Run Sketchy on multiple samples and
 sketch confirgurations in parallel
@@ -17,7 +17,7 @@ sketches        : $params.sketches
 ranks           : $params.ranks
 limits          : $params.limits
 
-==========================
+===============================================
 
 Additonally bootstrap each feature and 
 compute 95% CI of prediction
@@ -27,8 +27,9 @@ samples         : $params.samples
 limit           : $params.limit
 seed            : $params.seed
 
-METAGENOME : EXTRACT SPECIES
-=============================
+===============================================
+         METAGENOME : EXTRACT SPECIES          
+===============================================
 
 Extract a species by name from reads
 classified with Kraken2
@@ -40,8 +41,9 @@ species       : $params.species
 taxdb         : $params.taxdb
 prefix        : $params.prefix
 
-BUILD MASH SKETCH
-=====================
+===============================================
+             BUILD MASH SKETCH            
+===============================================
 
 Construct a Mash sketch from multiple 
 Fasta files and merge
@@ -53,6 +55,8 @@ prefix        : $params.prefix
 kmer_size     : $params.kmer_size
 sketch_size   : $params.sketch_size
 
+===============================================
+===============================================
 """
 
 if (params.sketchy){
