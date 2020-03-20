@@ -158,7 +158,7 @@ if (params.sketchy){
         script:
 
         """
-        SKETCHY_PATH=$params.home
+        SKETCHY_PATH=$params.sketchy_path
 
         sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
         mv sketchy/* .
