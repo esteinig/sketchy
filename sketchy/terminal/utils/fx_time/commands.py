@@ -103,6 +103,9 @@ def compute_feature_time_delta(fx, row, delta: str = None):
                 first_read = fx.iloc[0]
                 stable_feature_date = dp.parse(stable_feature.start_time) - \
                     dp.parse(first_read.start_time)
+            elif delta == 'null':  # nextflow setting
+                stable_feature_data = dp.parse(stable_feature.start_time)
+                stable_feature_date = stable_feature_data.strftime("%d-%m-%Y %H:%M:%S")
             else:
                 read_time = dp.parse(stable_feature.start_time).replace(tzinfo=None)
                 start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)

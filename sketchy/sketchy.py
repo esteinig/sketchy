@@ -261,9 +261,14 @@ class Evaluation(PoreLogger):
 
             stability_breakpoint = self.compute_breakpoint(feature_data)
 
+            median_preference = float(
+                feature_data['score'].median()
+            )
+
             data[feature_name] = {
                 'stability': stability_breakpoint,
-                'prediction': top_prediction
+                'prediction': top_prediction,
+                'preference': median_preference
             }
 
             if self.ssh is not None:
@@ -297,7 +302,7 @@ class Evaluation(PoreLogger):
             self.logger.info(f"Constructed plots for feature: {feature_name}")
 
         break_data = pandas.DataFrame(data).T
-        break_data = break_data[['prediction', 'stability']]
+        break_data = break_data[['prediction', 'stability', 'preference']]
 
         break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 

@@ -33,9 +33,9 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '--outdir',
     '-o',
-    default='sketchy_out',
+    default='sketchy',
     type=Path,
-    help='Output directory for data and plots [sketchy_out]'
+    help='Output directory for data and plots [sketchy]'
 )
 @click.option(
     '--prefix',

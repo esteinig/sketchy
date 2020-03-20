@@ -10,21 +10,22 @@ log.info """
 ===============================================
 
 Run Sketchy on multiple samples and
-sketch confirgurations in parallel
+sketch configurations in parallel
 
 sketchy         : $params.sketchy
 sketches        : $params.sketches
 ranks           : $params.ranks
 limits          : $params.limits
-
-===============================================
+time            : $params.time
+delta           : $params.delta
 
 Additonally bootstrap each feature and 
-compute 95% CI of prediction
+compute 95% CI of prediction.
+
+Should be used on clusters.
 
 bootstrap       : $params.bootstrap
 samples         : $params.samples
-limit           : $params.limit
 seed            : $params.seed
 
 ===============================================
