@@ -5,12 +5,15 @@ log.info """
              SKETCHY - NF v0.4.4
 ===============================================
 
+prefix        : $params.prefix
+outdir        : $params.outdir
+
 ===============================================
            PARALLEL SKETCHY COMPUTE          
 ===============================================
 
-Run Sketchy on multiple samples and
-sketch configurations in parallel
+Run Sketchy on multiple samples and sketch 
+configurations in parallel
 
 sketchy         : $params.sketchy
 sketches        : $params.sketches
@@ -19,10 +22,10 @@ limits          : $params.limits
 time            : $params.time
 delta           : $params.delta
 
-Additonally bootstrap each feature and 
-compute 95% CI of prediction.
+Additonally bootstrap each feature and compute 
+95% bootrap interval for each prediction
 
-Should be used on clusters.
+Should be used on clusters!
 
 bootstrap       : $params.bootstrap
 samples         : $params.samples
@@ -32,25 +35,21 @@ seed            : $params.seed
          METAGENOME : EXTRACT SPECIES          
 ===============================================
 
-Extract a species by name from reads
+Extract a species by scientific name from reads 
 classified with Kraken2
 
 metagenome    : $params.metagenome
-outdir        : $params.outdir
-fastx         : $params.fastq
+fastq         : $params.fastq
 species       : $params.species
 taxdb         : $params.taxdb
-prefix        : $params.prefix
 
 ===============================================
              BUILD MASH SKETCH            
 ===============================================
 
-Construct a Mash sketch from multiple 
-Fasta files and merge
+Construct Mash sketch in parallel
 
 build         : $params.build
-outdir        : $params.outdir
 fasta         : $params.fasta
 prefix        : $params.prefix
 kmer_size     : $params.kmer_size
@@ -168,7 +167,7 @@ if (params.sketchy){
         sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
         mv sketchy/* .
 
-        if [[ $params.time ]]
+        if [[ $params.time = true ]]
         then
             sketchy utils fx-time --fastq $fastq --evaluation ${id}.${rank}.${limit}.data.tsv --prefix ${id}.${rank}.${limit}
             rm *.fxi

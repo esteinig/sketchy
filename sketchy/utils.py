@@ -220,8 +220,6 @@ def extract_read_data(read) -> dict:
 
     """ Extract header fields from pysam.Read """
 
-    read_data = read.comment.split(' ')
-
     data = dict(
         runid=None,
         sampleid=None,
@@ -230,6 +228,11 @@ def extract_read_data(read) -> dict:
         ch=None,
         read=None
     )
+
+    if read.comment is None:
+        return data
+
+    read_data = read.comment.split(' ')
 
     for d in read_data:
         for key in data.keys():
