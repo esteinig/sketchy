@@ -6,6 +6,7 @@ LABEL author="esteinig"
 
 RUN apt-get update && apt-get install curl build-essential -y
 
+ENV FULL_SKETCH="--full"
 ENV MASH_VERSION="2.2"
 ENV CONDA_DIR="/opt/conda"
 ENV SKETCHY_PATH="/sketchy"
@@ -29,7 +30,7 @@ RUN cargo build --release && mv /sketchy_build/target/release/sketchy-rs /bin/sk
 # Sketchy Python package and data working directory
 RUN pip install /sketchy_build && mkdir /data
 # Sketchy min database pull
-RUN sketchy pull --path $SKETCHY_PATH
+RUN sketchy pull $FULL_SKETCH --path $SKETCHY_PATH
 
 # /data workdir for easy bindmounts
 WORKDIR /data

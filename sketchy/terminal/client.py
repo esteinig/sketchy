@@ -8,6 +8,7 @@ from .online import online
 from .survey import survey
 from .run import run
 from .plot import plot
+from .collect import collect
 
 VERSION = '0.4.4'
 
@@ -19,6 +20,7 @@ def terminal_client():
     pass
 
 
+terminal_client.add_command(collect)
 terminal_client.add_command(run)
 terminal_client.add_command(plot)
 terminal_client.add_command(survey)
