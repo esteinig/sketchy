@@ -176,7 +176,7 @@ if (params.sketchy){
             ln -s $fastq sketchy.fq
         fi
 
-        sketchy run --fastq sketchy.fq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
+        sketchy run --fastq sketchy.fq --sketch $sketch --ranks $rank --limit $limit --stable $params.stable --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
         mv sketchy/* .
 
         if [[ $params.time = true ]]
