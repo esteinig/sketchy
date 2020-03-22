@@ -61,8 +61,8 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '-b',
     '--stable',
-    type=int,
-    default=1000,
+    type=float,
+    default=1000.,
     help='Stability parameter to compute stable breakpoints, in reads [1000]'
 )
 @click.option(
@@ -108,6 +108,12 @@ def run(
         sketchy_path = os.environ['SKETCHY_PATH']
     except KeyError:
         sketchy_path = home
+
+    if 0. < stable <= 1.:
+        if limit is None:
+            stable = 1000
+        else:
+            stable = int(limit*stable)
 
     try:
         sketch_name = str(sketch.name)

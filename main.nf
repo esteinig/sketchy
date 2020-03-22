@@ -5,7 +5,6 @@ log.info """
              SKETCHY - NF v0.4.4
 ===============================================
 
-prefix        : $params.prefix
 outdir        : $params.outdir
 
 ===============================================
@@ -16,6 +15,12 @@ Run Sketchy on multiple samples and sketch
 configurations in parallel
 
 sketchy         : $params.sketchy
+fastq reads     : $params.fastq
+
+min quality     : $params.quality
+min length      : $params.length
+sort by time    : $params.sort
+
 sketches        : $params.sketches
 ranks           : $params.ranks
 limits          : $params.limits
@@ -25,7 +30,7 @@ delta           : $params.delta
 Additonally bootstrap each feature and compute 
 95% bootrap interval for each prediction
 
-Should be used on clusters!
+! Should be used on clusters only
 
 bootstrap       : $params.bootstrap
 samples         : $params.samples
@@ -163,13 +168,20 @@ if (params.sketchy){
 
         """
         SKETCHY_PATH=$params.sketchy_path
+        
+        if [[ $params.sort = true ]]
+        then
+            sketchy utils fx-sort --fastx $fastq --output sketchy.fq
+        else
+            ln -s $fastq sketchy.fq
+        fi
 
-        sketchy run --fastq $fastq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
+        sketchy run --fastq sketchy.fq --sketch $sketch --ranks $rank --limit $limit --outdir sketchy --prefix ${id}.${rank}.${limit} --threads $task.cpus 
         mv sketchy/* .
 
         if [[ $params.time = true ]]
         then
-            sketchy utils fx-time --fastq $fastq --evaluation ${id}.${rank}.${limit}.data.tsv --prefix ${id}.${rank}.${limit}
+            sketchy utils fx-time --fastq sketchy.fq --evaluation ${id}.${rank}.${limit}.data.tsv --prefix ${id}.${rank}.${limit}
             rm *.fxi
         fi
      
