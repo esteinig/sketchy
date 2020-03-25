@@ -3,7 +3,6 @@ import pandas
 
 from pathlib import Path
 from matplotlib import pyplot as plt
-from numpy import reshape
 import seaborn as sns
 
 
@@ -23,7 +22,7 @@ import seaborn as sns
          'of ranks & reads: 10,1000 - or a sample prefix: isolate1  [None]'
 )
 @click.option(
-    '--reference', '-r', type=str, default=None,
+    '--reference', '-r', type=Path, default=None,
     help='Genotype matrix in same format as output containing feature truths'
 )
 @click.option(
@@ -35,7 +34,7 @@ import seaborn as sns
     help="Parse the time enhanced output files for Nextflow"
 )
 @click.option(
-    '--threshold', '-t', type=float, default=0.6,
+    '--threshold', '-t', type=float, default=0,
     help="Apply threshold value to median preference score summary; values below are set to 0 [0.6] "
 )
 def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, reference):
@@ -45,29 +44,40 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
     if subset:
         subset = subset.split(',')
 
+    if time:
+        nrows = 2
+        ncols = 2
+    else:
+        nrows = 3
+        ncols = 1
+
+    if reference is not None and time:
+        nrows = 3
+        ncols = 2
+    elif reference is not None and not time:
+        nrows = 5
+        ncols = 1
+
     fig, axes = plt.subplots(
-        nrows=2, ncols=2, figsize=(
-            8 * 9, 4 * 9
+        nrows=nrows, ncols=ncols, figsize=(
+            ncols*4 * 9, nrows*2 * 9
         )
     )
-
-    if axes.ndim == 1:
-        axes = reshape(
-            axes, (-1, 2)
-        )
-
-    fig.subplots_adjust(hspace=0.8)
 
     data = []
     columns = []
     additional = []
-    seen = []
 
     if time:
         files = "*.time.data.tsv"
     else:
         files = "*.data.tsv"
-    for file in directory.glob("*.data.tsv"):
+
+    for file in directory.glob(files):
+        if time and 'time' not in file.name:
+            continue
+        if not time and 'time' in file.name:
+            continue
 
         name = file.name.replace(files[1:], "")
 
@@ -91,21 +101,7 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
         columns.append(name)
 
     if data:
-        all_data = pandas.concat(data, axis=1)
-        features = all_data[['feature']]
-        new_index = features.iloc[:, 0]
-
-        predictions = all_data[['prediction']]
-        predictions.index = new_index
-        predictions.columns = columns
-
-        stability = all_data[['stability']]
-        stability.index = new_index
-        stability.columns = columns
-
-        preference = all_data[['preference']]
-        preference.index = new_index
-        preference.columns = columns
+        predictions, stability, preference, times = get_data(data, columns)
 
         if additional:
             additional_data = pandas.concat(additional, axis=1)
@@ -115,16 +111,22 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
             predictions = pandas.concat([additional_data, predictions])
             stability = pandas.concat([additional_data, stability])
             preference = pandas.concat([additional_data, preference])
+            times = pandas.concat([additional_data, times])
 
             if subset is not None:
-                predictions, stability, preference = subset_data(
-                    predictions, stability, preference, subset
+                predictions, stability, preference, times = subset_data(
+                    predictions, stability, preference, times, subset
                 )
+
+        predictions = predictions.T.sort_index()
+        stability = stability.T.sort_index()
+        preference = preference.T.sort_index()
+        times = times.T.sort_index()
 
         if heatmap:
 
-            for df in (predictions, stability, preference):
-                df.drop(labels=['sketch', 'ranks', 'reads'], inplace=True)
+            for df in (predictions, stability, preference, times):
+                df.drop(columns=['sketch', 'ranks', 'reads'], inplace=True)
 
             stability = stability.apply(pandas.to_numeric, errors='coerce')
             preference = preference.apply(pandas.to_numeric, errors='coerce')
@@ -134,34 +136,79 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
 
             plot_heatmap(
                 values=preference,
-                palette="Blues",
-                ax=axes[0][0],
+                palette="Greens",
+                ax=axes[0][0] if time else axes[0],
                 threshold=0.,
-                labels=predictions
+                labels=predictions,
+                title="\nSketchy predictions\n"
             )
 
             plot_heatmap(
                 values=preference,
-                palette="Greens",
-                ax=axes[0][1],
-                threshold=0.6,
+                palette="BuGn",
+                ax=axes[0][1] if time else axes[1],
+                threshold=threshold,
+                title="\nMedian preference score\n"
             )
 
             stability[stability == -1] = None
 
             plot_heatmap(
                 values=stability+1,  # show reads not index
-                palette="Purples_r",
-                ax=axes[1][0],
+                palette="Blues_r",
+                ax=axes[1][0] if time else axes[2],
                 fmt=".0f",
+                title="\nStable breakpoint (reads)\n"
             )
 
-            plt.tight_layout()
-            fig.savefig("test.png")
+            if time:
 
-        predictions.T.sort_index().to_csv(f'{prefix}.predictions.tsv', sep='\t')
-        stability.T.sort_index().to_csv(f'{prefix}.stability.tsv', sep='\t')
-        preference.T.sort_index().to_csv(f'{prefix}.preference.tsv', sep='\t')
+                plot_heatmap(
+                    values=stability+1,  # show reads not index
+                    palette="PuBu_r",
+                    ax=axes[1][1],
+                    fmt=".0f",
+                    labels=times,
+                    time=True,
+                    title="\nStable breakpoint (time)\n"
+                )
+
+            if reference is not None:
+
+                reference_genotypes = pandas.read_csv(
+                    reference, sep='\t', header=0, index_col=0
+                )
+
+                evaluation = compare_to_prediction(
+                    reference_genotypes, predictions, preference, threshold
+                )
+
+                plot_heatmap(
+                    values=evaluation,
+                    palette="PiYG_r",
+                    ax=axes[2][0] if time else axes[3],
+                    threshold=0.,
+                    labels=reference_genotypes,
+                    evaluation=True,
+                    title="\nReference + evaluation\n"
+                )
+
+                plot_heatmap(
+                    values=evaluation,
+                    palette="PRGn_r",
+                    ax=axes[2][1] if time else axes[4],
+                    threshold=0.,
+                    labels=predictions,
+                    evaluation=True,
+                    title="\nPrediction + evaluation\n"
+                )
+
+            plt.tight_layout()
+            fig.savefig(f"{prefix}.png")
+
+        predictions.to_csv(f'{prefix}.predictions.tsv', sep='\t')
+        stability.to_csv(f'{prefix}.stability.tsv', sep='\t')
+        preference.to_csv(f'{prefix}.preference.tsv', sep='\t')
     else:
         print('No files found.')
         exit(1)
@@ -175,35 +222,43 @@ def plot_heatmap(
     cbar: bool = True,
     annot: bool = True,
     labels: pandas.DataFrame = None,
-    threshold: float = 0.
+    threshold: float = 0.,
+    time: bool = False,
+    title: str = "",
+    evaluation: bool = False
 ):
 
     # If all NA
-    if all(values.isna().all().tolist()):
+    if all(
+        values.isna().all().tolist()
+    ):
         values = values.fillna(0.)
 
     p1 = sns.heatmap(
-        values.T.sort_index(),
+        values,
+        vmin=0 if evaluation else None,
+        vmax=3 if evaluation else None,
         linewidths=5,
         cbar=cbar,
         ax=ax,
         annot=annot,
         fmt=fmt,
         cmap=palette,
-        annot_kws={"size": 24, "weight": "bold"}
+        annot_kws={"size": 18 if time else 24, "weight": "bold"}
     )
     p1.tick_params(axis='both', which='major', labelsize=24, length=3, width=2)
     p1.tick_params(axis='x', rotation=90)
     p1.tick_params(axis='y', rotation=0)
-    # p1.set_facecolor("lightgray")
+
+    ax.set_title(title, fontdict={'fontsize': 24})
 
     if threshold > 0.:
         for text in ax.texts:
             if float(text.get_text()) < threshold:
                 text.set_text("")
 
-    if labels is not None:
-        label_vec = labels.T.sort_index().stack().tolist()
+    if not time and labels is not None:
+        label_vec = labels.stack().tolist()
         for i, text in enumerate(ax.texts):
             try:
                 # there is always categorical data never numeric floats
@@ -215,8 +270,47 @@ def plot_heatmap(
 
             text.set_text(val)
 
+    if time:
+        label_vec = labels.stack().tolist()
+        for i, text in enumerate(ax.texts):
+            if isinstance(label_vec[i], str):
+                text.set_text(
+                    label_vec[i].split(" ")[1]
+                )  # date time
+            else:
+                text.set_text()
 
-def subset_data(predictions, stability, preference, subset: list):
+
+def get_data(data: list, columns: list):
+
+    all_data = pandas.concat(data, axis=1)
+
+    features = all_data[['feature']]
+    new_index = features.iloc[:, 0]
+
+    predictions = all_data[['prediction']]
+    predictions.index = new_index
+    predictions.columns = columns
+
+    stability = all_data[['stability']]
+    stability.index = new_index
+    stability.columns = columns
+
+    preference = all_data[['preference']]
+    preference.index = new_index
+    preference.columns = columns
+
+    if 'time' in all_data.columns:
+        time = all_data[['time']]
+        time.index = new_index
+        time.columns = columns
+    else:
+        time = None
+
+    return predictions, stability, preference, time
+
+
+def subset_data(predictions, stability, preference, times, subset: list):
 
     if len(subset) == 1:
         predictions = predictions.loc[
@@ -241,4 +335,43 @@ def subset_data(predictions, stability, preference, subset: list):
             (preference['reads'] == subset[1]), :
         ].T
 
-    return predictions, stability, preference
+        times = times.T
+        times = times.loc[
+            (times['ranks'] == subset[0]) &
+            (times['reads'] == subset[1]), :
+        ].T
+
+    return predictions, stability, preference, times
+
+
+def compare_to_prediction(reference, prediction, preference, threshold):
+
+    """ Compare reference to predictions and evaluate
+
+    :param reference:
+    :param prediction:
+    :return:
+
+    """
+
+    positives = reference == prediction
+    negatives = reference != prediction
+
+    evaluation = reference.copy()
+
+    confident_positives = positives & (preference >= threshold)
+    unconfident_positives = positives & (preference < threshold)
+
+    confident_negatives = negatives & (preference >= threshold)
+    unconfident_negatives = negatives & (preference < threshold)
+
+    # from good to bad essentially
+    for i, mask in enumerate((
+        confident_positives,
+        unconfident_positives,
+        unconfident_negatives,
+        confident_negatives,
+    )):
+        evaluation[mask] = i
+
+    return evaluation.apply(pandas.to_numeric, errors='coerce')

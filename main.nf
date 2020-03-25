@@ -114,12 +114,18 @@ if (params.sketchy){
         output:
         set id, file("${id}.filtered.fq") into (poststats_fastq, rasusa_fastq, sketchy_fastq, sketchy_baseline, sketchy_bootstrap)
 
+
         """
-        if [[ $fq == *.gz ]]
+        if [[ $params.length > 0 && $params.quality > 0 ]]
         then
-            zcat $fq | nanoq -l $params.length -q $params.quality > ${id}.filtered.fq
+            if [[ $fq == *.gz ]]
+            then
+                zcat $fq | nanoq -l $params.length -q $params.quality > ${id}.filtered.fq
+            else
+                nanoq -f $fq -l $params.length -q $params.quality > ${id}.filtered.fq
+            fi
         else
-            nanoq -f $fq -l $params.length -q $params.quality > ${id}.filtered.fq
+            ln -s $fq ${id}.filtered.fq
         fi
         """
 
@@ -139,7 +145,12 @@ if (params.sketchy){
         file("${id}.filtered.stats.txt")
 
         """
-        nanoq -f $filtered 2> ${id}.filtered.stats.txt
+        if [[ $params.length > 0 && $params.quality > 0 ]]
+        then
+            nanoq -f $filtered 2> ${id}.filtered.stats.txt
+        else
+            touch ${id}.filtered.stats.txt
+        fi
         """
 
     }
