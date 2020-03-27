@@ -27,6 +27,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Setup](#setup)
 - [Usage](#usage)
   - [Python command line](#python-client)
+  - [Nextflow pipeline](#nextflow-pipeline)
   - [Custom sketches](#custom-sketches)
   - [How it works](#how-it-works)
   - [Evaluation outputs](#rust-client)
@@ -43,7 +44,6 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 - [Tasks and parameters](#tasks)
   - [Rust CLI](#rust-client-tasks)
   - [Python CLI](#python-client-tasks)
-- [Nextflow pipeline](#nextflow)
 - [Citing](#citing)
   - [BioRxiv](#bioarxiv)
   - [BibTeX](#bibtex)
@@ -106,7 +106,8 @@ conda install -c bioconda -c conda-forge sketchy
 You can also manually install into an environment like this:
 
 ```sh
-conda install -c bioconda -c conda-forge mash=2.2 psutil pysam rust pyhon=3.7
+conda install -c bioconda -c conda-forge \
+  mash=2.2 psutil pysam rust kraken2 coverm nanoq python=3.7
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
@@ -164,7 +165,7 @@ sketchy run --fastq test.fq --sketch saureus
 Sketchy primarily operates on read streams (see [`Benchmarks`](#benchmarks)) and prediction can be slow-ish over entire completed runs. Initial prediction on the first few thousand reads should be sufficient - often only a few hundred reads are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap output)
 
 ```bash
-sketchy run --fastq test.fq --sketch saureus --ranks 20 --limit 3000
+sketchy run --fastq test.fq --sketch saureus --ranks 10 --limit 1000
 ```
 
 More options can be viewed with
@@ -172,6 +173,10 @@ More options can be viewed with
 ```bash
 sketchy run --help
 ```
+
+### Nextflow pipeline
+
+TBD.
 
 ### Custom sketches
 
