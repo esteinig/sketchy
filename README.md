@@ -107,7 +107,7 @@ You can also manually install into an environment like this:
 
 ```sh
 conda install -c bioconda -c conda-forge \
-  mash=2.2 psutil pysam rust kraken2 coverm nanoq python=3.7
+  mash=2.2 psutil pysam rust kraken2 coverm nanoq
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
