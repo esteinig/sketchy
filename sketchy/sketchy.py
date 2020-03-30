@@ -77,12 +77,12 @@ class SketchyWrapper(PoreLogger):
         self.logger.info(f'Threads for Mash: {threads}')
 
         command_ssh = f'cat {self.fastx} {limit_pipe}' \
-            f' | sketchy-rs compute -r {ranks} -s {sketch} -t {threads}' \
-            f' -p {1 if self.verbose else 0}' \
+            f' | sketchy-rs compute -r {int(ranks)} -s {sketch}' \
+            f' -t {int(threads)} -p {1 if self.verbose else 0}' \
             f' > {self.outdir / self.prefix}.ssh.tsv'
 
         command_sssh = f'cat {self.outdir / self.prefix}.ssh.tsv' \
-            f' | sketchy-rs evaluate -f {features} -s {stable}' \
+            f' | sketchy-rs evaluate -f {features} -s {int(stable)}' \
             f' > {self.outdir / self.prefix}.sssh.tsv'
 
         self.logger.info('Computing sum of shared hashes...')
