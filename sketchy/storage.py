@@ -28,7 +28,7 @@ class GoogleCloudSketch:
 
         self.bucket_name = 'sketchy-sketch'
 
-        self.sketches = ['kpneumoniae', 'saureus', 'mtuberculosis']
+        self.sketches = ['kpneumoniae', 'saureus']
         self.full = full
 
         self.pl = PoreLogger(logging.INFO if verbose else logging.ERROR)

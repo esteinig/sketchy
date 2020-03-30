@@ -299,7 +299,7 @@ def plot_heatmap(
     values: pandas.DataFrame,
     palette: [str] or str = "YlGnBu",
     ax=None,
-    fmt: str = ".2f",
+    fmt: str = ".3f",
     cbar: bool = True,
     annot: bool = True,
     labels: pandas.DataFrame = None,
@@ -356,9 +356,14 @@ def plot_heatmap(
         label_vec = labels.stack().tolist()
         for i, text in enumerate(ax.texts):
             if isinstance(label_vec[i], str):
-                text.set_text(
-                    label_vec[i].split(" ")[1]
-                )  # date time
+                try:
+                    text.set_text(
+                        label_vec[i].split(" ")[1]
+                    )  # date time
+                except KeyError:
+                    text.set_text(
+                        label_vec[i]
+                    )  # time delta
             else:
                 text.set_text()
 
