@@ -204,7 +204,10 @@ def collect(
         if heatmap:
 
             for df in (predictions, stability, preference, times):
-                df.drop(columns=['sketch', 'ranks', 'reads'], inplace=True)
+                try:
+                    df.drop(columns=['sketch', 'ranks', 'reads'], inplace=True)
+                except (KeyError, AttributeError):
+                    continue
 
             stability = stability.apply(pandas.to_numeric, errors='coerce')
             preference = preference.apply(pandas.to_numeric, errors='coerce')
@@ -329,6 +332,7 @@ def plot_heatmap(
     p1.tick_params(axis='y', rotation=0)
 
     ax.set_title(title, fontdict={'fontsize': 24})
+    ax.set_xlabel('')
 
     if threshold > 0.:
         for text in ax.texts:
