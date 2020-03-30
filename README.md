@@ -210,15 +210,22 @@ Evaluations are plotted for visual confirmation, along with a preference score a
 
 ### Sketchy evaluation outputs
 
-Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the determined stability breakpoints in reads (`0` indicates that breakpoint could not be called) and final prediction for each genomic feature, in a hypothetical example:
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic featur, the determined stability breakpoints in reads (`-1` indicates that breakpoint could not be called) and the median preference score over the evaluated reads:
 
 ```
-                mlst    meca    pvl     scc     clindamycin
-prediction      ST93    MSSA    PVL+    -       S
-stability       5       354     10      0       7
+feature         prediction      stability       preference
+mlst            ST93            23              0.66666667
+meca            MRSA            17              0.39714868
+pvl             PVL+            23              1.0
+scc             SCCmec-IV       23              0.39745917
+clindamycin     S               0               0.80033841
+rifampicin      S               0               1.0
+ciprofloxacin   S               0               1.0
+vancomycin      S               0               1.0
+tetracycline    S               2               1.0
 ```
 
-The evaluation plots in the folowing examples are the more salient outputs. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
+The evaluation plots in the folowing examples are the more salient outputs and useful for debugging predictions. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
 
