@@ -22,14 +22,14 @@ from sketchy.sketchy import Evaluation
 )
 @click.option(
     '--sssh',
-    '-s',
+    '-ss',
     type=Path,
     required=True,
     help='Path to sum of ranked sums shared hashes data file from evaluation',
 )
 @click.option(
     '--ssh',
-    '-ss',
+    '-s',
     type=Path,
     required=False,
     default=None,

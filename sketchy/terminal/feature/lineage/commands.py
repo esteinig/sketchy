@@ -5,6 +5,7 @@ from braceexpand import braceexpand
 from sketchy.sketchy import LineageIndex
 from sketchy.utils import get_files
 
+
 @click.command()
 @click.option(
     '--data', '-d', default=None, type=Path, required=True,

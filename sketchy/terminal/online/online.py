@@ -4,7 +4,7 @@ from .simulate import simulate
 from .watch import watch
 from .monitor import monitor
 
-VERSION = "0.1"
+VERSION = "0.4.4"
 
 
 @click.group()

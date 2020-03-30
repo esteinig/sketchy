@@ -5,7 +5,7 @@ from .link import link
 from .popmap import popmap
 from .mashdist import mashdist
 
-VERSION = "0.1"
+VERSION = "0.4.4"
 
 
 @click.group()

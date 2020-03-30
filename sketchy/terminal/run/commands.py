@@ -141,4 +141,5 @@ def run(
         stable=stable,
         threads=threads,
         palette=palette,
+        image_format='pdf'
     )

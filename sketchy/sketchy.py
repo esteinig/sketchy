@@ -60,6 +60,7 @@ class SketchyWrapper(PoreLogger):
         stable: int = 1000,
         threads: int = 4,
         palette: str = 'YlGnBu',
+        image_format: str = 'pdf'
     ) -> None:
 
         sketch, features, keys = self.get_sketch_files()
@@ -100,9 +101,9 @@ class SketchyWrapper(PoreLogger):
         )
 
         eve.plot_feature_evaluations(
-            plot_file=Path(f'{self.outdir / self.prefix}.png'),
+            plot_file=Path(f'{self.outdir / self.prefix}.{image_format}'),
             break_file=Path(f'{self.outdir / self.prefix}.data.tsv'),
-            color=palette, break_point=True, stable_point=False
+            color=palette, break_point=True,
         )
 
     def get_sketch_files(self):
@@ -216,12 +217,10 @@ class Evaluation(PoreLogger):
         plot_file: Path,
         break_file: Path,
         color: str = "YlGnBu",
-        stable_point: bool = False,
         break_point: bool = False
     ):
 
         self.logger.info(f"Plot feature evaluations")
-        self.logger.info(f"Plot stable point: {stable_point}")
         self.logger.info(f"Plot break point: {break_point}")
         self.logger.info(f"Color palette: {color}")
         self.logger.info(f"Output plot to file: {plot_file}")
@@ -285,7 +284,6 @@ class Evaluation(PoreLogger):
                 top_feature_values=top_values,
                 stability_breakpoint=stability_breakpoint,
                 color=color,
-                stable_point=stable_point,
                 break_point=break_point,
                 ax=axes[i, 0 if self.ssh is None else 1]
             )
@@ -471,7 +469,6 @@ class Evaluation(PoreLogger):
         stability_breakpoint: int = None,
         ax: plt.axes = None,
         color: str = 'YlGnBu',
-        stable_point: bool = False,
         break_point: bool = False,
     ) -> None:
 

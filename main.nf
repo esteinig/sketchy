@@ -30,7 +30,7 @@ delta           : $params.delta
 Additonally bootstrap each feature and compute 
 95% bootrap interval for each prediction
 
-! Should be used on clusters only
+! Should be used on clusters only !
 
 bootstrap       : $params.bootstrap
 samples         : $params.samples
@@ -112,7 +112,7 @@ if (params.sketchy){
         set id, file(fq) from fastq_nanopore
 
         output:
-        set id, file("${id}.filtered.fq") into (poststats_fastq, rasusa_fastq, sketchy_fastq, sketchy_baseline, sketchy_bootstrap)
+        set id, file("${id}.filtered.fq") into (poststats_fastq, rasusa_fastq, coverm_fastq, sketchy_fastq, sketchy_baseline, sketchy_bootstrap)
 
 
         """
@@ -154,7 +154,6 @@ if (params.sketchy){
         """
 
     }
-
 
     process Sketchy {
         

@@ -17,7 +17,7 @@ import seaborn as sns
     '--prefix', '-p', type=str, default="summary", help='Prefix for summary files [summary]'
 )
 @click.option(
-    '--subset', '-s', type=str, default=None,
+    '--subset', '-su', type=str, default=None,
     help='When using Nextflow use a subset string for specific configurations'
          'of ranks & reads: 10,1000 - or a sample prefix: isolate1  [None]'
 )
@@ -30,14 +30,43 @@ import seaborn as sns
     help="Visualize results as heatmap"
 )
 @click.option(
-    '--time', '-st', is_flag=True,
+    '--time', '-ti', is_flag=True,
     help="Parse the time enhanced output files for Nextflow"
 )
 @click.option(
-    '--threshold', '-t', type=float, default=0,
+    '--threshold', '-th', type=float, default=0,
     help="Apply threshold value to median preference score summary; values below are set to 0 [0.6] "
 )
-def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, reference):
+@click.option(
+    '--statistics', '-st', is_flag=True,
+    help="Read the *.filtered.stats.txt files from the Nextflow output and summarise by prefix."
+)
+@click.option(
+    '--scale', '-sc', type=float, default=1.0,
+    help="Scale plot sizes [1.0]"
+)
+@click.option(
+    '--coverage', '-c', is_flag=True,
+    help="Collect coverage information *.coverage.txt from CoverM in Nextflow"
+)
+@click.option(
+    '--image_format', '-i', type=str, default="pdf",
+    help="Output image format [pdf]"
+)
+def collect(
+    directory,
+    nextflow,
+    prefix,
+    subset,
+    heatmap,
+    threshold,
+    time,
+    reference,
+    statistics,
+    scale,
+    coverage,
+    image_format
+):
 
     """ Collect predictions and summarize results """
 
@@ -60,7 +89,7 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
 
     fig, axes = plt.subplots(
         nrows=nrows, ncols=ncols, figsize=(
-            ncols*4 * 9, nrows*2 * 9
+            ncols*4 * 9*scale, nrows*2 * 9*scale
         )
     )
 
@@ -73,7 +102,44 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
     else:
         files = "*.data.tsv"
 
+    if statistics:
+        files = "*.filtered.stats.txt"
+
+    if coverage:
+        files = "*.coverage.txt"
+
+    stats = []
+    covs = []
     for file in directory.glob(files):
+        if statistics:
+            s = pandas.read_csv(
+                file,
+                sep=' ',
+                names=[
+                    'reads',
+                    'bp',
+                    'max_length',
+                    'min_length',
+                    'mean_length',
+                    'median_length',
+                    'mean_quality',
+                    'median_quality'
+                ]
+            )
+
+            s['prefix'] = file.name.replace(files[1:], '')
+            stats.append(s)
+            continue
+
+        if coverage:
+            c = pandas.read_csv(file, sep='\t')
+            cdata = {
+                'mean_coverage': float(c.iloc[0, 1]),
+                'prefix': file.name.replace(files[1:], '')
+            }
+            covs.append(cdata)
+            continue
+
         if time and 'time' not in file.name:
             continue
         if not time and 'time' in file.name:
@@ -100,6 +166,16 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
         )
         columns.append(name)
 
+    if statistics:
+        stats_df = pandas.concat(stats).set_index('prefix')
+        stats_df.sort_index().to_csv(f"{prefix}.stats.tsv", sep="\t", index=True)
+        return
+
+    if coverage:
+        cov_df = pandas.DataFrame(covs).set_index('prefix')
+        cov_df.sort_index().to_csv(f"{prefix}.coverage.tsv", sep="\t", index=True)
+        return
+
     if data:
         predictions, stability, preference, times = get_data(data, columns)
 
@@ -121,7 +197,9 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
         predictions = predictions.T.sort_index()
         stability = stability.T.sort_index()
         preference = preference.T.sort_index()
-        times = times.T.sort_index()
+
+        if times is not None:
+            times = times.T.sort_index()
 
         if heatmap:
 
@@ -204,7 +282,7 @@ def collect(directory, nextflow, prefix, subset, heatmap, threshold, time, refer
                 )
 
             plt.tight_layout()
-            fig.savefig(f"{prefix}.png")
+            fig.savefig(f"{prefix}.{image_format}")
 
         predictions.to_csv(f'{prefix}.predictions.tsv', sep='\t')
         stability.to_csv(f'{prefix}.stability.tsv', sep='\t')

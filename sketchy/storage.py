@@ -41,12 +41,6 @@ class GoogleCloudSketch:
         for name in self.sketches:
             self.download_sketch_archive(archive_name=name)
 
-        self.pl.logger.info(
-            f'Set SKETCHY_PATH={self.sketch_path}'
-            f'for access to databases in '
-            f'sketchy run and sketchy list'
-        )
-
     def list_sketches(self):
 
         """ List cached or remote reference sketch collection paths """

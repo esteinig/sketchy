@@ -7,7 +7,7 @@ from .fx_sort import fx_sort
 from .fx_index import fx_index
 from .fx_time import fx_time
 
-VERSION = "0.1"
+VERSION = "0.4.4"
 
 
 @click.group()
