@@ -61,7 +61,7 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '-b',
     '--stable',
-    type=float,
+    type=int,
     default=1000.,
     help='Stability parameter to compute stable breakpoints, in reads [1000]'
 )

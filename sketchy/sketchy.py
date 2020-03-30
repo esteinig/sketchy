@@ -77,12 +77,12 @@ class SketchyWrapper(PoreLogger):
         self.logger.info(f'Threads for Mash: {threads}')
 
         command_ssh = f'cat {self.fastx} {limit_pipe}' \
-            f' | sketchy-rs compute -r {int(ranks)} -s {sketch}' \
-            f' -t {int(threads)} -p {1 if self.verbose else 0}' \
+            f' | sketchy-rs compute -r {ranks} -s {sketch}' \
+            f' -t {threads} -p {1 if self.verbose else 0}' \
             f' > {self.outdir / self.prefix}.ssh.tsv'
 
         command_sssh = f'cat {self.outdir / self.prefix}.ssh.tsv' \
-            f' | sketchy-rs evaluate -f {features} -s {int(stable)}' \
+            f' | sketchy-rs evaluate -f {features} -s {stable}' \
             f' > {self.outdir / self.prefix}.sssh.tsv'
 
         self.logger.info('Computing sum of shared hashes...')
@@ -302,6 +302,7 @@ class Evaluation(PoreLogger):
         break_data = pandas.DataFrame(data).T
         break_data = break_data[['prediction', 'stability', 'preference']]
 
+        break_data.stability = break_data.stability.astype(int)
         break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 
         plt.tight_layout()
