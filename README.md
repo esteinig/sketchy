@@ -225,7 +225,7 @@ vancomycin      S               0               1.0
 tetracycline    S               2               1.0
 ```
 
-The evaluation plots in the folowing examples are the more salient outputs and useful for debugging predictions. Each row in the `prefix.png` image corresponds to one genomic feature prediction, which is listed in the middle plot legend together with the default top five value predictions. Each feature value prediction corresponds to a color, where dark colors represent the highest-ranking i.e most likely predictions
+Debugging plots for evaluation are the more salient outputs - the following images show a different sample prediction than the outputs above. Each row in the image corresponds to one genomic feature prediction, which is listed in the middle legend together with the top five alternative feature value predictions. Each feature value prediction corresponds to a color, where darker colors represent the highest-ranking and therefore most likely predictions.
 
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
 
