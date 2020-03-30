@@ -1,14 +1,14 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/logo.png' align="right" height="210" /></a>
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
-![](https://img.shields.io/badge/version-0.4.3-purple.svg)
+![](https://img.shields.io/badge/version-0.4.4-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
 Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads
 
 ## Overview
 
-**`v0.4.3: beta, rust core libs`**
+**`v0.4.4: preprint`**
 
 `Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide reference sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate) amongst others. A list of precomputed genotype features can be found in the corresponding pathogen reference sections.
 
@@ -341,7 +341,7 @@ Python CLI has not been tested.
 
 ## Reference sketches
 
-Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash` for each read in the stream. This means that prediction speeds are sufficiently fast for online predictions (e.g. 100 reads/second) but in particular for large sketches and sets of > 100,000 reads, total runtime can be excruciatingly long.
+Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash`. This means that prediction speeds are sufficiently fast for online predictions for smaller sketches (e.g. M 10,000 genomes, ~ 100 reads/second) but  for large sketches and analyses over 100,000 reads or so, total runtime can be excruciating.
 
 Fortunately, we generally don't need that many reads to make confident predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs`) which should be sufficient for initial analysis. Run long analyses on higher read limits in a `screen` of your flavour. Smaller reference sketches by lineage or created from local collections should always be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
@@ -436,11 +436,11 @@ Resistance genes from assemblies with `Kleborate`, presence or absence:
 
 ## Constructing reference sketches
 
-Reference sketches can be rapidly constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly accessible. All we need is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
+Reference sketches can be constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly accessible. All that is required is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
 
 ### Genome assemblies and sketch construction
 
-Assemblies should be of sufficient quality for genotyping and can produced e.g. with classic tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or from large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
+Assemblies should be of sufficient quality for genotyping and can produced for example with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or with large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
 
 Given a set of high-quality assemblies in the current directory:
 
@@ -463,7 +463,7 @@ See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`B
 
 ### Genotype features and index preparation
 
-Genotypes associated with each genome in the reference sketch should be in a tab-delmited table (e.g. `genotypes.tsv`) with appropriate headers. Here the `uuid` column is used to demonstrate that the index **must be in the same order as genomes in the sketch**. We will remove the `uuid` column in the next step when we translate columns into categorical data - which does not make sense for `uuid`.
+Genotypes associated with each genome in the reference sketch should be in a tab-delimited table (e.g. `genotypes.tsv`) with appropriate headers. Here the `uuid` column is used to demonstrate that the index **must be in the same order as genomes in the sketch**. We will remove the `uuid` column in the next step when we translate columns into categorical data - which does not make sense for `uuid`.
 
 ```
 uuid        st      sccmec  pvl 
