@@ -235,7 +235,7 @@ def collect(
             stability[stability == -1] = None
 
             plot_heatmap(
-                values=stability+1,  # show reads not index
+                values=stability,  # show reads not index
                 palette="Blues_r",
                 ax=axes[1][0] if time else axes[2],
                 fmt=".0f",
@@ -245,7 +245,7 @@ def collect(
             if time:
 
                 plot_heatmap(
-                    values=stability+1,  # show reads not index
+                    values=stability,  # show reads not index
                     palette="PuBu_r",
                     ax=axes[1][1],
                     fmt=".0f",

@@ -302,7 +302,7 @@ class Evaluation(PoreLogger):
         break_data = pandas.DataFrame(data).T
         break_data = break_data[['prediction', 'stability', 'preference']]
 
-        break_data.stability = break_data.stability.astype(int)
+        break_data.stability = break_data.stability.astype(int)+1
         break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 
         plt.tight_layout()
