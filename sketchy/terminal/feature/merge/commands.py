@@ -81,6 +81,12 @@ def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
         mash_info = mash_info.drop(columns="idx_x")
         mash_info = mash_info.rename(columns={'idx_y': 'idx'})
 
+    if 'ids_y' in mash_info.columns:
+        mash_info = mash_info.drop(columns=["ids_y"])
+
+    if "ids_x" in mash_info.columns:
+        mash_info = mash_info.drop(columns=["ids_x"])
+
     mash_info = mash_info.sort_values('idx')
     mash_info.index = mash_info['idx']
     mash_info = mash_info.drop(columns='idx')

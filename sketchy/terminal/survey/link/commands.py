@@ -2,6 +2,7 @@ import click
 import os
 import pandas
 import logging
+import random
 
 from pathlib import Path
 from sketchy.utils import PoreLogger
@@ -32,7 +33,11 @@ from sketchy.utils import PoreLogger
     '--outdir', '-o', type=Path, default="sketchy_link",
     help='If symlink, output directory for symbolic links to files [sketchy_link]'
 )
-def link(iid: Path, directory, column, extension, outdir, symlink):
+@click.option(
+    '--bootstrap', '-b', type=int, default=None,
+    help='Bootstrap sample isolate IDs'
+)
+def link(iid: Path, directory, column, extension, outdir, symlink, bootstrap):
 
     """ Link ID file to FASTA, e.g. from filtered Pathfinder Survey """
 
@@ -51,7 +56,12 @@ def link(iid: Path, directory, column, extension, outdir, symlink):
 
     log = PoreLogger(level=logging.INFO).logger
 
-    for i in iids.iid:
+    if bootstrap:
+        isolates = random.choices(iids.iid, k=bootstrap)
+    else:
+        isolates = iids.iid
+
+    for i in isolates:
         iid_path = directory / str(i + extension)
         if iid_path.exists():
             if symlink:

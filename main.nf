@@ -298,3 +298,62 @@ if (params.metagenome) {
     }
 
 }
+
+if (params.bbuild) {
+
+    // Build a bootstrapped sketch from Pathfinder data by randomly sampling
+    // <sample> genomes from the input files <bootstrap> times with replacement
+
+    process BootstrapSketch {
+
+        tag { "$sample - $replicate" }
+
+        label "bbuild"
+
+        publishDir "${params.outdir}/bbuild/sketches/${sample}"
+
+        input:
+        file(iid) from Channel.fromPath(params.iid)
+        file(survey) from Channel.fromPath(params.survey)
+        file(features) from Channel.fromPath(params.features)
+        each sample from params.samples
+        each replicate from params.bootstraps
+
+        output:
+        file(replicate)
+        set sample, replicate, file("${replicate}.msh"), file("${replicate}.json"), file("${replicate}.tsv") into sketchy_bootstrap
+
+        """
+        sketchy survey link -i $iid -d $survey -b $sample -s -o $replicate
+        mash sketch -k 15 -s 1000 $replicate/*.fasta -o $replicate
+        sketchy feature merge -s ${replicate}.msh  -f $features -i key -p merged
+        sketchy feature prepare -i merged.tsv -d key -p ${replicate}
+        """
+
+    }
+
+    process BootstrapSketchy {
+
+        tag { "$sample - $replicate" }
+        label "sketchy"
+
+        publishDir "$params.outdir/bbuild/sketchy/${sample}/${fastq}", mode: "copy"
+
+        input:
+        set sample, replicate, file(sketch), file(key), file(index) from sketchy_bootstrap
+        each file(fastq) from Channel.fromPath(params.fastq).collect()
+
+        output:
+        set file("${replicate}.data.tsv"), file("${replicate}.ssh.tsv"), file("${replicate}.sssh.tsv")
+
+        """
+        sketchy run --fastq $fastq --sketch $replicate --ranks 10 --limit 10 --stable 10 --outdir sketchy --prefix $replicate --threads $task.cpus
+        mv sketchy/* .
+
+        """
+
+    }
+
+
+
+}

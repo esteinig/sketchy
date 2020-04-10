@@ -1,0 +1,14 @@
+FROM esteinig/sketchy:latest
+
+LABEL name="sketchy-dev"
+LABEL version="latest"
+LABEL author="esteinig"
+
+COPY . /sketchy
+
+RUN pip install /sketchy && rm -r /sketchy
+
+# /data workdir for easy bindmounts
+WORKDIR /data
+ENTRYPOINT ["sketchy"]
+CMD []

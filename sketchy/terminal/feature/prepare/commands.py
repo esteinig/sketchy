@@ -24,7 +24,7 @@ def prepare(index, drop, prefix):
 
     idx = LineageIndex(index_file=index)
 
-    idx.write(file=Path(f"{prefix}.reference.tsv"), idx=True, header=True)
+    idx.write(file=Path(f"{prefix}.reference.tsv"), idx=False, header=True)
 
     if drop is not None:
         if ',' in drop:

@@ -670,7 +670,7 @@ class LineageIndex(PoreLogger):
     def write(self, file: Path, idx: bool = True, header: bool = True):
 
         self.index.sort_values('idx', ascending=True).to_csv(
-            file, sep='\t', header=header, index=idx,
+            file, sep='\t', header=header, index=idx
         )
 
     def has_lineage(self, lineage: str) -> bool:

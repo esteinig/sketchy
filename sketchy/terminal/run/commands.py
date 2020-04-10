@@ -47,7 +47,7 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '--limit',
     '-l',
-    default=None,
+    default=1000,
     type=int,
     help='Maximum number of reads to predict on [all]'
 )
@@ -61,7 +61,7 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
 @click.option(
     '-b',
     '--stable',
-    type=int,
+    type=float,
     default=1000.,
     help='Stability parameter to compute stable breakpoints, in reads [1000]'
 )
@@ -109,11 +109,16 @@ def run(
     except KeyError:
         sketchy_path = home
 
+    if limit == -1:
+        limit = None
+
     if 0. < stable <= 1.:
         if limit is None:
             stable = 1000
         else:
             stable = int(limit*stable)
+    else:
+        stable = int(stable)
 
     try:
         sketch_name = str(sketch.name)
