@@ -154,7 +154,6 @@ Species-wide sketch templates are available for:
 
 * *Staphylococcus aureus*: `saureus`
 * *Klebsiella pneumoniae*: `kpneumoniae`
-* *Mycobacterium tuberculosis*: `mtuberculosis`
 
 When using a template, execution looks like this:
 
