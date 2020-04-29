@@ -100,7 +100,7 @@ docker run -it \
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
 ```
-conda install -c bioconda -c conda-forge sketchy
+conda install -c bioconda -c conda-forge sketchy=0.4.4
 ```
 
 You can also manually install into an environment like this:
