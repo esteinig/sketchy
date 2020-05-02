@@ -209,7 +209,7 @@ Evaluations are plotted for visual confirmation, along with a preference score a
 
 ### Sketchy evaluation outputs
 
-Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic featur, the determined stability breakpoints in reads (`-1` means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic featur, the determined stability breakpoints in reads (`0` or `-1` in < v0.4.4 means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
 
 ```
 feature         prediction      stability       preference
@@ -217,10 +217,10 @@ mlst            ST93            23              0.66666667
 meca            MRSA            17              0.39714868
 pvl             PVL+            23              1.0
 scc             SCCmec-IV       23              0.39745917
-clindamycin     S               0               0.80033841
-rifampicin      S               0               1.0
-ciprofloxacin   S               0               1.0
-vancomycin      S               0               1.0
+clindamycin     S               1               0.80033841
+rifampicin      S               1               1.0
+ciprofloxacin   S               1               1.0
+vancomycin      S               1               1.0
 tetracycline    S               2               1.0
 ```
 
