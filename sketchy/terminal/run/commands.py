@@ -86,6 +86,23 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
     is_flag=True,
     help="Run without logging output or progress bar."
 )
+@click.option(
+    '--no_plot',
+    is_flag=True,
+    help="Do not plot the results; output only table [false]"
+)
+@click.option(
+    '--mpl_backend',
+    type=str,
+    default="",
+    help="Use this Matplotlib backend [default]"
+)
+@click.option(
+    '--image_format',
+    type=str,
+    default="png",
+    help="Use this image format [png]"
+)
 def run(
     fastq,
     sketch,
@@ -97,6 +114,9 @@ def run(
     stable,
     threads,
     home,
+    no_plot,
+    mpl_backend,
+    image_format,
     quiet
 ):
 
@@ -145,6 +165,8 @@ def run(
         limit=limit,
         stable=stable,
         threads=threads,
+        plot=not no_plot,
         palette=palette,
-        image_format='pdf'
+        image_format=image_format,
+        mpl_backend=mpl_backend
     )

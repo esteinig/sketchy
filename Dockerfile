@@ -33,7 +33,6 @@ RUN sketchy pull $FULL_SKETCH --path $SKETCHY_PATH
 
 # /data workdir for easy bindmounts
 WORKDIR /data
-ENTRYPOINT ["sketchy"]
 CMD []
 
 

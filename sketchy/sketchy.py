@@ -5,6 +5,7 @@ import pandas
 import json
 
 import seaborn as sns
+
 import matplotlib.pyplot as plt
 
 from numpy import nan
@@ -59,8 +60,10 @@ class SketchyWrapper(PoreLogger):
         limit: int = None,
         stable: int = 1000,
         threads: int = 4,
+        plot: bool = True,
         palette: str = 'YlGnBu',
-        image_format: str = 'pdf'
+        image_format: str = 'pdf',
+        mpl_backend: str = ""
     ) -> None:
 
         sketch, features, keys = self.get_sketch_files()
@@ -103,7 +106,7 @@ class SketchyWrapper(PoreLogger):
         eve.plot_feature_evaluations(
             plot_file=Path(f'{self.outdir / self.prefix}.{image_format}'),
             break_file=Path(f'{self.outdir / self.prefix}.data.tsv'),
-            color=palette, break_point=True,
+            color=palette, break_point=True, plot=plot, mpl_backend=mpl_backend
         )
 
     def get_sketch_files(self):
@@ -216,34 +219,37 @@ class Evaluation(PoreLogger):
         self,
         plot_file: Path,
         break_file: Path,
+        plot: bool = True,
         color: str = "YlGnBu",
+        mpl_backend: str = "",
         break_point: bool = False
     ):
 
-        self.logger.info(f"Plot feature evaluations")
+        self.logger.info(f"Compute and plot feature evaluations")
         self.logger.info(f"Plot break point: {break_point}")
         self.logger.info(f"Color palette: {color}")
-        self.logger.info(f"Output plot to file: {plot_file}")
         self.logger.info(f"Output predictions to file: {break_file}")
 
         # Something odd with colors, need reverse palettes:
         if not color.endswith('_r'):
             color += '_r'
 
-        number_features = len(self.features)
-        number_plots = 3 if self.ssh is not None else 2
-        fig, axes = plt.subplots(
-            nrows=number_features, ncols=number_plots, figsize=(
-                number_plots * 7, number_features * 4.5
-            )
-        )
-
-        if axes.ndim == 1:
-            axes = reshape(
-                axes, (-1, 2)
+        if plot:
+            self.logger.info(f"Output plot to file: {plot_file}")
+            number_features = len(self.features)
+            number_plots = 3 if self.ssh is not None else 2
+            fig, axes = plt.subplots(
+                nrows=number_features, ncols=number_plots, figsize=(
+                    number_plots * 7, number_features * 4.5
+                )
             )
 
-        fig.subplots_adjust(hspace=0.8)
+            if axes.ndim == 1:
+                axes = reshape(
+                    axes, (-1, 2)
+                )
+
+            fig.subplots_adjust(hspace=0.8)
 
         data = {}
         for (i, (feature, feature_data)) in enumerate(
@@ -270,34 +276,39 @@ class Evaluation(PoreLogger):
                 'preference': median_preference
             }
 
-            if self.ssh is not None:
-                self.plot_heatmap(
+            if plot:
+
+                if mpl_backend:
+                    plt.switch_backend(mpl_backend)
+
+                if self.ssh is not None:
+                    self.plot_heatmap(
+                        feature_name=feature_name,
+                        top_values=top_values,
+                        color=color,
+                        ax=axes[i, 0]
+                    )
+
+                self.plot_sssh(
                     feature_name=feature_name,
-                    top_values=top_values,
+                    feature_data=feature_data,
+                    top_feature_values=top_values,
+                    stability_breakpoint=stability_breakpoint,
                     color=color,
-                    ax=axes[i, 0]
+                    break_point=break_point,
+                    ax=axes[i, 0 if self.ssh is None else 1]
                 )
 
-            self.plot_sssh(
-                feature_name=feature_name,
-                feature_data=feature_data,
-                top_feature_values=top_values,
-                stability_breakpoint=stability_breakpoint,
-                color=color,
-                break_point=break_point,
-                ax=axes[i, 0 if self.ssh is None else 1]
-            )
+                single_score_data = feature_data[
+                    feature_data['feature_rank'] == 0
+                ].reset_index()
 
-            single_score_data = feature_data[
-                feature_data['feature_rank'] == 0
-            ].reset_index()
+                self.plot_preference_score(
+                    feature_data=single_score_data,
+                    ax=axes[i, 1 if self.ssh is None else 2]
+                )
 
-            self.plot_preference_score(
-                feature_data=single_score_data,
-                ax=axes[i, 1 if self.ssh is None else 2]
-            )
-
-            self.logger.info(f"Constructed plots for feature: {feature_name}")
+                self.logger.info(f"Constructed plots for feature: {feature_name}")
 
         break_data = pandas.DataFrame(data).T
         break_data = break_data[['prediction', 'stability', 'preference']]
@@ -305,10 +316,11 @@ class Evaluation(PoreLogger):
         break_data.stability = break_data.stability.astype(int)+1
         break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 
-        plt.tight_layout()
-        fig.savefig(plot_file)
+        if plot:
+            plt.tight_layout()
+            fig.savefig(plot_file)
+            self.logger.info(f'Saved evaluation plot to: {plot_file}')
 
-        self.logger.info(f'Saved evaluation plot to: {plot_file}')
         self.logger.info(f'Saved predictions to: {break_file}')
 
     def get_break_time_data(self, file: Path, data: pandas.DataFrame):

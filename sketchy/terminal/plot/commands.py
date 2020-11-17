@@ -70,7 +70,13 @@ from sketchy.sketchy import Evaluation
     is_flag=True,
     help='Verbose logging output [false]'
 )
-def plot(sssh, ssh, index, key, stable, color, prefix, format, verbose):
+@click.option(
+    '--mpl_backend',
+    type=str,
+    default="",
+    help='Matplotlib backend [default]'
+)
+def plot(sssh, ssh, index, key, stable, color, prefix, format, mpl_backend, verbose):
 
     """ Plot output from Sketchy Rust pipeline """
 
@@ -87,6 +93,7 @@ def plot(sssh, ssh, index, key, stable, color, prefix, format, verbose):
         plot_file=Path(prefix + f'.{format}'),
         break_file=Path(prefix + f'.data.tsv'),
         color=color,
-        stable_point=False,
-        break_point=True
+        break_point=True,
+        plot=True,
+        mpl_backend=mpl_backend
     )
