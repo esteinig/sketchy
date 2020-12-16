@@ -87,7 +87,7 @@ To share files between container and the host system you need to set bindmounts,
 
 ```sh
 docker run -v $(pwd):/data -it esteinig/sketchy \
-  sketchy --fastq /data/test.fq --output /data/test
+  sketchy run --fastq /data/test.fq --sketch --output /data/test
 ```
 
 #### `Conda`
