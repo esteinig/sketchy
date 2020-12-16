@@ -1,14 +1,14 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/logo.png' align="right" height="210" /></a>
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
-![](https://img.shields.io/badge/version-0.4.4-purple.svg)
+![](https://img.shields.io/badge/version-0.4.5-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
 Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads
 
 ## Overview
 
-**`v0.4.4: preprint`**
+**`v0.4.5: preprint`**
 
 `Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide reference sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate) amongst others. A list of precomputed genotype features can be found in the corresponding pathogen reference sections.
 
@@ -100,7 +100,7 @@ docker run -it \
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
 ```
-conda install -c bioconda -c conda-forge sketchy=0.4.4
+conda install -c bioconda -c conda-forge sketchy=0.4.5
 ```
 
 You can also manually install into an environment like this:
@@ -209,7 +209,7 @@ Evaluations are plotted for visual confirmation, along with a preference score a
 
 ### Sketchy evaluation outputs
 
-Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic featur, the determined stability breakpoints in reads (`0` or `-1` in < v0.4.4 means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic feature, the determined stability breakpoints in reads (`0` or `-1` in < v0.4.4 means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
 
 ```
 feature         prediction      stability       preference

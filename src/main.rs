@@ -10,11 +10,11 @@ use clap::{Arg, App, SubCommand};
 fn main() -> Result<(), Error> {
 
     let matches = App::new("sketchy")
-        .version("0.4.4")
+        .version("0.4.5")
         .about("\nNanopore lineage calling and genotyping of bacterial pathogens\n")
         .subcommand(SubCommand::with_name("compute")
             .about("\ncompute sum of shared hashes from fasta/q on stdin")
-            .version("0.4.4")
+            .version("0.4.5")
             .arg(Arg::from_usage("-r, --ranks=[INT] 'max ranks per read'"))
             .arg(Arg::from_usage("-s, --sketch=[FILE] 'reference sketch'"))
             .arg(Arg::from_usage("-p, --progress=[INT] 'progress switch > 0'"))
@@ -22,7 +22,7 @@ fn main() -> Result<(), Error> {
         )
         .subcommand(SubCommand::with_name("evaluate")
             .about("\nevaluate sum of shared hashes from sketchy compute on stdin")
-            .version("0.4.4")
+            .version("0.4.5")
             .arg(Arg::from_usage("-f, --features=[FILE] 'genotype feature index'"))
             .arg(Arg::from_usage("-s, --stable=[INT] 'reads to stable breakpoint'"))
         )
