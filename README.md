@@ -81,18 +81,13 @@ sudo apt-get install mash
 
 ```sh
 docker pull esteinig/sketchy:latest
-docker run -it esteinig/sketchy list
 ```
 
-But to share files between container and the host system you need to set bindmounts, e.g. link the current directory (with a hypothetical `test.fq`) to the preconfigured working directory `/data` inside the container using the current user permissions:
+To share files between container and the host system you need to set bindmounts, e.g. link the current directory (with a hypothetical `test.fq`) to the preconfigured working directory `/data` inside the container:
 
 ```sh
-docker run -it \
-  -v $(pwd):/data \
-  -u $(id -u):$(id -g) \
-  esteinig/sketchy \
-  --fastq /data/test.fq \
-  --output /data/test
+docker run -v $(pwd):/data -it esteinig/sketchy \
+  sketchy run --fastq /data/test.fq --sketch --output /data/test
 ```
 
 #### `Conda`
