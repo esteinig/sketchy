@@ -11,7 +11,6 @@ from pathlib import Path
 from sketchy.utils import PoreLogger
 from watchdog.observers import Observer
 from watchdog.events import RegexMatchingEventHandler
-from watchdog.utils import has_attribute, unicode_paths
 
 EVENT_TYPE_MOVED = "moved"
 EVENT_TYPE_DELETED = "deleted"
@@ -110,29 +109,6 @@ class StandardRegexMatchingEventHandler(RegexMatchingEventHandler):
 
         return self.callback(fpath, **self.callback_arguments)
 
-    def dispatch(self, event):
-        """Dispatch an event after filtering. We handle
-        creation and move events only.
-
-        :param event: watchdog event.
-        :returns: None
-        """
-        if event.event_type not in (EVENT_TYPE_CREATED, EVENT_TYPE_MOVED):
-            return
-        if self.ignore_directories and event.is_directory:
-            return
-
-        paths = []
-        if has_attribute(event, "dest_path"):
-            paths.append(unicode_paths.decode(event.dest_path))
-        if event.src_path:
-            paths.append(unicode_paths.decode(event.src_path))
-
-        if any(r.match(p) for r in self.ignore_regexes for p in paths):
-            return
-
-        if any(r.match(p) for r in self.regexes for p in paths):
-            self._process_file(event)
 
 
 class MonitorLizard(object):
