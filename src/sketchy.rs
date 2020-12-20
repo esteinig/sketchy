@@ -300,7 +300,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx), "| sort -gr"
+        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx), "|", "sort", "-gr"
     ];
 
     let stdout = Command::new("mash") // system call to MASH   

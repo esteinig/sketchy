@@ -24,7 +24,7 @@ fn main() -> Result<(), Error> {
             .about("\nevaluate sum of shared hashes from sketchy compute on stdin")
             .version("0.4.5")
             .arg(Arg::from_usage("-f, --features=[FILE] 'genotype feature index'"))
-            .arg(Arg::from_usage("-s, --stable=[INT] 'reads to stable breakpoint'"))
+            .arg(Arg::from_usage("-s, --stability=[INT] 'reads to stable breakpoint'"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nscreen reads with mash against reference sketch")
@@ -53,9 +53,9 @@ fn main() -> Result<(), Error> {
     if let Some(evaluate) = matches.subcommand_matches("evaluate") {
         
         let features: String = evaluate.value_of("features").unwrap().to_string();
-        let stable: usize = evaluate.value_of("stable").unwrap().parse::<usize>().unwrap();
+        let stability: usize = evaluate.value_of("stability").unwrap().parse::<usize>().unwrap();
 
-        sketchy::evaluate(features, stable).map_err(
+        sketchy::evaluate(features, stability).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
