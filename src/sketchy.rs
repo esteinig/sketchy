@@ -312,7 +312,7 @@ pub fn screen(fastx: String, sketch: String, features: String, procs: i32, index
             || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
         )?;
 
-    let reader = BufReader::new(stdout);
+    let mut reader = BufReader::new(stdout);
 
     let mut first_line = String::new();
     reader.read_line(&mut first_line).expect("Unable to read first line");
