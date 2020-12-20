@@ -71,7 +71,7 @@ fn test_mash_dist() {
     let _stdout = Command::new("mash")  
         .args(&["dist", "-h"])
         .output()
-        .expect("Failed to run MASH DIST command.");
+        .expect("Failed to run MASH DIST");
 
 }
 
@@ -83,7 +83,7 @@ pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
     let info = Command::new("mash")
         .args(&["info", "-H", &*format!("{}", sketch)])
         .output()
-        .expect("Failed to run MASH INFO command.");
+        .expect("Failed to run MASH INFO");
 
     let info_lines = std::str::from_utf8(&info.stdout).unwrap().lines();
 
@@ -107,7 +107,7 @@ fn test_mash_info() {
     let _info = Command::new("mash")
         .args(&["info", "-h"])
         .output()
-        .expect("Failed to run MASH INFO command.");
+        .expect("Failed to run MASH INFO");
 
 }
 
@@ -273,6 +273,57 @@ fn test_get_shared_hashes() {
     // wrong <tail_index> terminates at "/"
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
+}
+pub fn screen(fastx: String, sketch: String, features: String, procs: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+    
+    /* Sketchy screening of species-wide reference sketches using `mash screen`
+
+    Arguments
+    =========
+
+    fastx:
+        fasta/q reads input path for mash screen
+
+    sketch:
+        path to input sketch database file in Sketchy created with MASH
+    
+    features:
+        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
+
+    index_size: 
+        size of sketch index, required for continuous parsing of reads from MASH
+    
+    sketch_size: 
+        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
+
+    */
+
+
+    let mash_args = [
+        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx), "| sort -gr"
+    ];
+
+    let stdout = Command::new("mash") // system call to MASH   
+        .args(&mash_args)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(
+            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
+        )?;
+
+    let reader = BufReader::new(stdout);
+
+    let mut first_line = String::new();
+    reader.read_line(&mut first_line).expect("Unable to read first line");
+
+    let values: Vec<&str> = line.split_whitespace().collect();            
+    
+    println!(
+        "{:}", values
+    )
+
+    Ok(())
 }
 
 pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {

@@ -11,7 +11,7 @@ fn main() -> Result<(), Error> {
 
     let matches = App::new("sketchy")
         .version("0.4.5")
-        .about("\nNanopore lineage calling and genotyping of bacterial pathogens\n")
+        .about("\nNanopore lineage calling and genotyping of bacterial pathogens using Mash\n")
         .subcommand(SubCommand::with_name("compute")
             .about("\ncompute sum of shared hashes from fasta/q on stdin")
             .version("0.4.5")
@@ -25,6 +25,14 @@ fn main() -> Result<(), Error> {
             .version("0.4.5")
             .arg(Arg::from_usage("-f, --features=[FILE] 'genotype feature index'"))
             .arg(Arg::from_usage("-s, --stable=[INT] 'reads to stable breakpoint'"))
+        )
+        .subcommand(SubCommand::with_name("screen")
+            .about("\nscreen reads with mash against reference sketch")
+            .version("0.4.5")
+            .arg(Arg::from_usage("-f, --fastx=[FILE] 'fasta/q input path'"))
+            .arg(Arg::from_usage("-s, --sketch=[FILE] 'reference sketch'"))
+            .arg(Arg::from_usage("-f, --features=[FILE] 'genotype feature index'"))
+            .arg(Arg::from_usage("-t, --threads=[INT] 'max threads for mash'"))
         )
         .get_matches();
         
@@ -49,6 +57,21 @@ fn main() -> Result<(), Error> {
         let stable: usize = evaluate.value_of("stable").unwrap().parse::<usize>().unwrap();
 
         sketchy::evaluate(features, stable).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+
+    }
+
+    if let Some(screen) = matches.subcommand_matches("screen") {
+        
+        let fastx: String = compute.value_of("fastx").unwrap().to_string();
+        let sketch: String = compute.value_of("sketch").unwrap().to_string();
+        let features: String = evaluate.value_of("features").unwrap().to_string();
+        let threads: i32 = compute.value_of("threads").unwrap().parse::<i32>().unwrap();
+
+        let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
+
+        sketchy::screen(fastx, sketch, features, threads, sketch_size, sketch_index).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
