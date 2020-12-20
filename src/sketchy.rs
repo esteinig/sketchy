@@ -319,7 +319,7 @@ pub fn screen(fastx: String, sketch: String, features: String, procs: i32, index
 
     let values: Vec<&str> = first_line.split_whitespace().collect();            
     
-    println!("{:}", values);
+    println!("{:?}", values);
 
     Ok(())
 }
