@@ -300,10 +300,10 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx), "|", "sort -gr"
+        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
-    let stdout = Command::new("mash") // system call to MASH   
+    let screen_out = Command::new("mash") // system call to MASH   
         .args(&mash_args)
         .stdout(Stdio::piped())
         .spawn()?
@@ -311,8 +311,17 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
         .ok_or_else(
             || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
         )?;
+    
+    let screen_sorted = Command::new("sort")
+        .arg("-gr")
+        .stdin(screen_out)
+        .output()?
+        .stdout
+        .ok_or_else(
+            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
+        )?;
 
-    let mut reader = BufReader::new(stdout);
+    let mut reader = BufReader::new(screen_sorted);
 
     let mut first_line = String::new();
     reader.read_line(&mut first_line).expect("Unable to read first line");
