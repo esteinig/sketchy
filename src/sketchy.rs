@@ -316,7 +316,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
         .arg("-gr")
         .stdin(screen_out)
         .output()?
-        .stdout
+        .stdout;
 
     let mut reader = BufReader::new(screen_sorted);
 
