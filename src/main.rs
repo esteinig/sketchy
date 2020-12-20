@@ -64,10 +64,10 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let fastx: String = compute.value_of("fastx").unwrap().to_string();
-        let sketch: String = compute.value_of("sketch").unwrap().to_string();
-        let features: String = evaluate.value_of("features").unwrap().to_string();
-        let threads: i32 = compute.value_of("threads").unwrap().parse::<i32>().unwrap();
+        let fastx: String = screen.value_of("fastx").unwrap().to_string();
+        let sketch: String = screen.value_of("sketch").unwrap().to_string();
+        let features: String = screen.value_of("features").unwrap().to_string();
+        let threads: i32 = screen.value_of("threads").unwrap().parse::<i32>().unwrap();
 
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
 
