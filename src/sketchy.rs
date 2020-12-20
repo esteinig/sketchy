@@ -274,7 +274,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-pub fn screen(fastx: String, sketch: String, features: String, procs: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen`
 
