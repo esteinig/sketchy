@@ -317,9 +317,6 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
         .stdin(screen_out)
         .output()?
         .stdout
-        .ok_or_else(
-            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
-        )?;
 
     let mut reader = BufReader::new(screen_sorted);
 
