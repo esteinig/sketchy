@@ -317,7 +317,7 @@ pub fn screen(fastx: String, sketch: String, features: String, procs: i32, index
     let mut first_line = String::new();
     reader.read_line(&mut first_line).expect("Unable to read first line");
 
-    let values: Vec<&str> = line.split_whitespace().collect();            
+    let values: Vec<&str> = first_line.split_whitespace().collect();            
     
     println!("{:}", values);
 
