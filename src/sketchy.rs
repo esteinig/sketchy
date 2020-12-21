@@ -364,7 +364,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
 
         let screen_row = Row::new(vec![
-            Cell::new(_i),
+            Cell::new(_i.to_string()),
             Cell::new(_shared_hashes)
         ]);
 
