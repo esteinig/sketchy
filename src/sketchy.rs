@@ -352,7 +352,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
             .stdout
             .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
         
-        let grep_reader = BufReader::new(grepped);
+        let mut grep_reader = BufReader::new(grepped);
         let mut genotype = String::new();
         
         grep_reader.read_line(&mut genotype);
