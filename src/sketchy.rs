@@ -325,7 +325,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
     let reader = BufReader::new(screen_sorted);
     
-    let mut table = Table::new()
+    let mut table = Table::new();
     for (_i, line) in reader.lines().enumerate() {
 
         if _i > limit {

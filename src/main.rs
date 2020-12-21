@@ -1,6 +1,7 @@
 extern crate cute;
 extern crate clap;
 extern crate indicatif;
+extern crate prettytable;
 
 mod sketchy;
 
