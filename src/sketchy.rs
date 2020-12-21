@@ -347,8 +347,6 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
             &*format!("{}", _id), &*format!("{}", genotypes)
         ];
 
-        println!("{:?} {:?}", _id, grep_args);
-
         let grepped = Command::new("grep")
             .args(&grep_args)
             .stdout(Stdio::piped())
