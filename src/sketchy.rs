@@ -333,7 +333,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
             let _name: &str = _sketch_path[-1];
             
             
-            println!("{:?} {:?}", sketch_id, _sketch_path, _name);
+            println!("{:?} {:?} {:?}", sketch_id, _sketch_path, _name);
             
     };
 
