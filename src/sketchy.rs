@@ -363,7 +363,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         
         let genotype_values: Vec<&str> = genotype_str.split("\t").collect();
         let genotype_row = Row::new(
-            genotype_values.iter().map(|x| return Cell::new(x); ).collect()
+            genotype_values.iter().map(|x| return Cell::new(x) ).collect()
         );
 
         table.add_row(genotype_row);
