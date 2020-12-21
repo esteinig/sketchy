@@ -124,7 +124,7 @@ sketchy list
 
 Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
 
-## Usage
+## `Sketchy` usage
 
 See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. For an evaluation of genomic neighbor typing using `mash screen` and a comparison to the online implemention of `mash dist` on comprehensive and dereplicated strain-level sketches, please see the preprint. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SP` for convenience access to sketch files:
  
@@ -132,7 +132,7 @@ See the `Tasks and Parameters` section for details on all tasks and settings ava
 SK=~/.sketchy
 ```
 
-### `sketchy screen`
+#### `sketchy screen`
 
 `Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless extremely few reads are available (< 200) in which case we find that the diagnostic plots from the online version can aid in determination of frequently occuring genotypes in the ranked sum of shared hashes (see below). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
@@ -153,9 +153,9 @@ Please cite the following when you use `mash screen` in addition to `Sketchy`:
 * Ondov et al. (2016) - `Mash`
 * Ondov et al. (2019) - `Mash Screen`
 
-### `sketchy stream`
+#### `sketchy stream`
 
-Because streaming is slower than screening, I tend to use this more in cases where extremely few reads are available (< 100) or when streaming is actually required (not that often) - the diagnostic plots help to see if it's a hopeless case, usually. However, in some edge cases the streaming utility can be quite useful - for instance, while preference scores were low, we confirmed a cystic fibrosis *S. aureus* re-infection and some barcoded isolates from < 10 reads.
+Streaming genomic neighbor typing heuristic that implements `mash dist`, the sum of shared hashes and reference sketches with `Mash`. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where extremely few reads are available (< 100) or when streaming is actually required (not that often). However, in some edge cases the streaming utility can be quite useful - for instance, while preference scores were low, we confirmed a cystic fibrosis *S. aureus* re-infection and some barcoded isolates from < 10 reads, which was not possible with the `screen` utility.
 
 `Sketchy's` streaming utility can be run through a wrapper in the `Python client` which is only suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI` (see below). 
 
@@ -163,10 +163,7 @@ Because streaming is slower than screening, I tend to use this more in cases whe
 sketchy run --help
 ```
 
-Species-wide sketch templates are available for:
-
-* *Staphylococcus aureus*: `saureus`
-* *Klebsiella pneumoniae*: `kpneumoniae`
+Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are sufficiently fast for online predictions on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads, total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs compute`) which should be sufficient for initial analysis. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
 When using a template, execution looks like this:
 
@@ -174,7 +171,7 @@ When using a template, execution looks like this:
 sketchy run --fastq test.fq --sketch saureus
 ```
 
-`Sketchy` primarily operates on read streams (see [`Benchmarks`](#benchmarks)) and prediction can be slow-ish over entire completed runs. Initial prediction on the first  thousand reads should be sufficient - often only a few hundred reads are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap diagnosticoutput)
+Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap diagnostic output)
 
 ```bash
 sketchy run --fastq test.fq --sketch saureus --ranks 10 --limit 1000
@@ -291,13 +288,11 @@ TBD.
  
 ## Reference sketches
 
-Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash`. This means that prediction speeds are sufficiently fast for online predictions for smaller sketches (e.g. M 10,000 genomes, ~ 100 reads/second) but  for large sketches and analyses over 100,000 reads or so, total runtime can be excruciating.
-
-Fortunately, we generally don't need that many reads to make confident predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs`) which should be sufficient for initial analysis. Run long analyses on higher read limits in a `screen` of your flavour. Smaller reference sketches by lineage or created from local collections should always be sufficiently fast for online prediction on MinION / Flongle / GridION.
+Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. 
 
 PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline: QC -> species typing with `Kraken2` -> `Skesa` assembly with `Shovill` -> genotyping with `Kleborate`, `SCCion`, `Mykrobe`. Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with `Mash`. 
 
-Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_kmersize_sketchsize`. Prediction ability is not uniform across genotype features, and it is strongly suggested to validate on nanopore reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches for other pathogens, please let us know.
+Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_{kmer}_{size}`. Prediction ability is not uniform across genotype features, and it is strongly suggested to validate on nanopore reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches for other pathogens, please let us know.
 
 ### :closed_umbrella: Staphylococcus aureus
 
