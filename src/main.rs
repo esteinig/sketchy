@@ -67,7 +67,7 @@ fn main() -> Result<(), Error> {
         let fastx: String = screen.value_of("fastx").unwrap().to_string();
         let sketch: String = screen.value_of("sketch").unwrap().to_string();
         let threads: i32 = screen.value_of("threads").unwrap().parse::<i32>().unwrap();
-        let limit: i32 = screen.value_of("limit").unwrap().parse::<i32>().unwrap();
+        let limit: usize = screen.value_of("limit").unwrap().parse::<usize>().unwrap();
 
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
 
