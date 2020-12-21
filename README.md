@@ -132,9 +132,9 @@ See the `Tasks and Parameters` section for details on all tasks and settings ava
 SK=~/.sketchy
 ```
 
-#### `sketchy screen`
+### Screening function
 
-`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless extremely few reads are available (< 200) in which case we find that the diagnostic plots from the online version can aid in determination of frequently occuring genotypes in the ranked sum of shared hashes (see below). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
+`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless few reads are available (< 200). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
 In the `Python client`:
 
@@ -148,12 +148,12 @@ In the `Rust client` directly:
 sketchy-rs -f test.fastq -s $SK/saureus.msh -g $SK/saureus.tsv -l 10 -p
 ```
 
-Please cite the following when you use `mash screen` in addition to `Sketchy`:
+Please cite the following when you use `sketchy screen`:
 
 * Ondov et al. (2016) - `Mash`
 * Ondov et al. (2019) - `Mash Screen`
 
-#### `sketchy stream`
+### Streaming function
 
 Streaming genomic neighbor typing heuristic that implements `mash dist`, the sum of shared hashes and reference sketches with `Mash`. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where extremely few reads are available (< 100) or when streaming is actually required (not that often). However, in some edge cases the streaming utility can be quite useful - for instance, while preference scores were low, we confirmed a cystic fibrosis *S. aureus* re-infection and some barcoded isolates from < 10 reads, which was not possible with the `screen` utility.
 
@@ -236,6 +236,9 @@ sketchy plot \
     --format png
 ```
 
+Please cite the following when you use `sketchy stream`:
+
+* Ondov et al. (2016) - `Mash`
 
 ### Online streaming analysis
 
@@ -281,6 +284,8 @@ sketchy-rs compute \
 ```
 
 Python CLI has not been tested.
+
+
 
 ### Nextflow pipeline
 
