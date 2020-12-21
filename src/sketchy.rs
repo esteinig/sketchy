@@ -361,7 +361,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         let mut genotype_str = String::new();
         let _ = grep_reader.read_line(&mut genotype_str);
         
-        let genotype_values: Vec<&str> = genotype_str.split("\t").collect()
+        let genotype_values: Vec<&str> = genotype_str.split("\t").collect();
         let genotype_row = Row::new(
             genotype_values.iter().map(|x| return Cell::new(x); ).collect()
         );
