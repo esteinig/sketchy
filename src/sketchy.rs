@@ -336,6 +336,8 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         let values: Vec<&str> = line.split_whitespace().collect();   
         
         let sketch_id: &str = values[4];
+        
+        let _shared_hashes: &str = values[2];
 
         let _name_values: Vec<&str> = sketch_id.split("/").collect();
         let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
@@ -356,15 +358,21 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         
         let mut grep_reader = BufReader::new(grepped);
 
-        let mut genotype_str = String::new();
-        let _ = grep_reader.read_line(&mut genotype_str);
+        let mut _genotype_str = String::new();
+        let _ = grep_reader.read_line(&mut _genotype_str);
         
-        let genotype_values: Vec<&str> = genotype_str.split("\t").collect();
-        let genotype_row = Row::new(
-            genotype_values.iter().map(|x| return Cell::new(x) ).collect()
-        );
+        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
 
-        table.add_row(genotype_row);
+        let screen_row = Row::new(vec![
+            Cell::new(_i),
+            Cell::new(_shared_hashes)
+        ]);
+
+        let _ = _genotype_values.iter().map( 
+            |x| screen_row.add_cell(Cell::new(x))
+        );
+        
+        table.add_row(screen_row);
             
     };
 
