@@ -342,10 +342,10 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
         let grep_args = [
-            &*format!("'{}'", _id), &*format!("{}", genotypes)
+            &*format!("{}", _id), &*format!("{}", genotypes)
         ];
 
-        println!("{:?}", _id);
+        println!("{:?} {:?}", _id, grep_args);
 
         let grepped = Command::new("grep")
             .args(&grep_args)
