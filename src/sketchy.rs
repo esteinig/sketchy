@@ -323,18 +323,15 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
 
     let reader = BufReader::new(screen_sorted);
         
-    reader.lines()  
-        .filter_map(|line| line.ok())
-        .for_each(|line| {
-                
+    for (_i, line) in reader.lines().enumerate() {
+
+            let line = line?;
             let values: Vec<&str> = line.split_whitespace().collect();   
             
-            let sketch_id: &str = values[2];
+            let sketch_id: &str = values[4].split("/").collect()[-1];
             
             println!("{:?} {:?}", values, sketch_id);
             
-
-        
         });
 
 
