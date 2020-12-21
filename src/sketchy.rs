@@ -274,7 +274,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-pub fn screen(fastx: String, sketch: String, procs: i32, limit: usize, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limit: usize, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -319,7 +319,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, limit: usize, index_siz
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH."))?;
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH"))?;
 
 
     let reader = BufReader::new(screen_sorted);
@@ -339,11 +339,25 @@ pub fn screen(fastx: String, sketch: String, procs: i32, limit: usize, index_siz
         let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
 
         let _id_values: Vec<&str> = _name.split(".").collect();
-        let _id: &str = _id_values.first().expect("Failed to get id from sketch reference file name");
+        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
-        
+        let grep_args = [
+            &*format!("'{}'", _id), &*format!("{}", genotypes),
+        ];
 
-        println!("{:?} {:?}", _name, _id);
+        let grepped = Command::new("grep")
+            .args(&grep_args)
+            .stdout(Stdio::piped())
+            .spawn()?
+            .stdout
+            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
+        
+        let grep_reader = BufReader::new(grepped);
+        let mut genotype = String::new();
+        
+        grep_reader.read_line(&mut genotype);
+
+        println!("{:?}", genotype);
             
     };
 
