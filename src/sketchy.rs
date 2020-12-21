@@ -276,7 +276,7 @@ fn test_get_shared_hashes() {
 }
 pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
-    /* Sketchy screening of species-wide reference sketches using `mash screen`
+    /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
     Arguments
     =========
@@ -321,14 +321,22 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
         .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH."))?;
 
 
-    let mut reader = BufReader::new(screen_sorted);
+    let reader = BufReader::new(screen_sorted);
+        
+    reader.lines()  
+        .filter_map(|line| line.ok())
+        .for_each(|line| {
+                
+            let values: Vec<&str> = line.split_whitespace().collect();   
+            
+            let sketch_id: str = values[2]
+            
+            println!("{:?} {:?}", values, sketch_id);
+            
 
-    let mut first_line = String::new();
-    reader.read_line(&mut first_line).expect("Unable to read first line");
+        
+        })
 
-    let values: Vec<&str> = first_line.split_whitespace().collect();            
-    
-    println!("{:?}", values);
 
     Ok(())
 }
@@ -368,12 +376,12 @@ pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
     let mut feature_data = vec![];
     for (_i, line) in data_reader.lines().enumerate() {
         let line = line?;
-            let vec: Vec<i32> = line.trim()
-                .split("\t").map(
-                    |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
-                )
-                .collect(); 
-            feature_data.push(vec);
+        let vec: Vec<i32> = line.trim()
+            .split("\t").map(
+                |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
+            )
+            .collect(); 
+        feature_data.push(vec);
     }
     
     // Init the feature map
