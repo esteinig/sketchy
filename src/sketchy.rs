@@ -362,10 +362,11 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         
         let genotype_values: Vec<&str> = genotype_row.split("\t").collect();
 
-        println!("{:?}", genotype_values);
+        table.add_row(genotype_values);
             
     };
 
+    table.printstd();
 
     Ok(())
 }
