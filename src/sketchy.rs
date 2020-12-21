@@ -328,7 +328,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
     let mut table = Table::new();
     for (_i, line) in reader.lines().enumerate() {
 
-        if _i > limit {
+        if _i >= limit {
              break   
         }
 
