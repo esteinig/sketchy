@@ -329,9 +329,12 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
             let values: Vec<&str> = line.split_whitespace().collect();   
             
             let sketch_id: &str = values[4];
-            let _sketch_path: Vec<&str> = sketch_id.split("/").collect();
-            let _name: &str = _sketch_path.last().expect("Failed to get name from sketch reference identifier");
-            let _id: &str = _name.split(".").collect().first().expect("Failed to get id from sketch reference file name");
+
+            let _name_values: Vec<&str> = sketch_id.split("/").collect();
+            let _name: &str = _path_values.last().expect("Failed to get name from sketch reference identifier");
+
+            let _id_values: Vec<&str> = _name.split(".").collect();
+            let _id: &str = _id_values.first().expect("Failed to get id from sketch reference file name");
             
             println!("{:?} {:?} {:?} {:?}", sketch_id, _sketch_path, _name, _id);
             
