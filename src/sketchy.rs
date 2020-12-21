@@ -305,6 +305,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, limit: usize, index_siz
 
     let screen_out = Command::new("mash") // system call to MASH   
         .args(&mash_args)
+        .stderr(Stdio::null())
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
