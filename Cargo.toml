@@ -21,3 +21,4 @@ include = [
 clap = "2.33.0"
 cute = "0.3.0"
 indicatif = "0.14.0"
+prettytable-rs = "0.8"
