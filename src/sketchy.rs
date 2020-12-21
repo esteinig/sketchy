@@ -357,10 +357,12 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
             .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
         
         let mut grep_reader = BufReader::new(grepped);
-        let mut genotype_row = String::new();
-        let _ = grep_reader.read_line(&mut genotype_row);
+
+        let mut genotype_str = String::new();
+        let _ = grep_reader.read_line(&mut genotype_str);
         
-        let genotype_values: Vec<&str> = genotype_row.split("\t").collect().iter().map(|x| x).collect();
+        let genotype_values: Vec<&str> = genotype_str.split("\t").collect()
+        let genotype_row: Vec<&Cell> = genotype_values.iter().map(|x| Cell::new(x) ).collect();
 
         table.add_row(Row::genotype_values);
             
