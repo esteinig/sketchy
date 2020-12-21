@@ -335,7 +335,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
             
 
         
-        })
+        });
 
 
     Ok(())
