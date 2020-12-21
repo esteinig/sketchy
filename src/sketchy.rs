@@ -368,6 +368,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
         let mut screen_row = Row::new(vec![
             Cell::new(_screen_rank),
+            Cell::new(_identity),
             Cell::new(_shared_hashes)
         ]);
 
@@ -548,6 +549,19 @@ fn get_sorted_feature_map(fm: &HashMap<usize, usize>) -> Vec<(&usize, &usize)> {
     feature_map.sort_by_key(|k| Reverse(k.1));
 
     return feature_map
+}
+
+fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
+    
+    if secondary == 0.0 {
+        0.0
+    } else {
+        let numerator = 2.0 * primary;
+        let denominator = primary + secondary;
+
+        (numerator / denominator) - 1.0
+    }
+
 }
 
 fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
