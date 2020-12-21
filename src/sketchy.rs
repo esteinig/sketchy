@@ -331,9 +331,9 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
             let sketch_id: &str = values[4];
             let _sketch_path: Vec<&str> = sketch_id.split("/").collect();
             let _name: &str = _sketch_path.last().expect("Failed to get name from sketch reference identifier");
+            let _id: &str = _name.split(".").collect().first().expect("Failed to get id from sketch reference file name")
             
-            
-            println!("{:?} {:?} {:?}", sketch_id, _sketch_path, _name);
+            println!("{:?} {:?} {:?} {:?}", sketch_id, _sketch_path, _name, _id);
             
     };
 
