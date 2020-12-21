@@ -31,6 +31,7 @@ fn main() -> Result<(), Error> {
             .version("0.4.5")
             .arg(Arg::from_usage("-f, --fastx=[FILE] 'fasta/q input path'"))
             .arg(Arg::from_usage("-s, --sketch=[FILE] 'reference sketch'"))
+            .arg(Arg::from_usage("-l, --limit=[INT] 'limit output to top ranking'"))
             .arg(Arg::from_usage("-t, --threads=[INT] 'max threads for mash'"))
         )
         .get_matches();
@@ -66,10 +67,11 @@ fn main() -> Result<(), Error> {
         let fastx: String = screen.value_of("fastx").unwrap().to_string();
         let sketch: String = screen.value_of("sketch").unwrap().to_string();
         let threads: i32 = screen.value_of("threads").unwrap().parse::<i32>().unwrap();
+        let limit: i32 = screen.value_of("limit").unwrap().parse::<i32>().unwrap();
 
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
 
-        sketchy::screen(fastx, sketch, threads, sketch_size, sketch_index).map_err(
+        sketchy::screen(fastx, sketch, threads, limit, sketch_size, sketch_index).map_err(
             |err| println!("{:?}", err)
         ).ok();
 

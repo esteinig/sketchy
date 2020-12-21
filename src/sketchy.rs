@@ -274,7 +274,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, procs: i32, limit: i32, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -325,18 +325,24 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
         
     for (_i, line) in reader.lines().enumerate() {
 
-            let line = line?;
-            let values: Vec<&str> = line.split_whitespace().collect();   
-            
-            let sketch_id: &str = values[4];
+        if _i > limit {
+             break   
+        }
 
-            let _name_values: Vec<&str> = sketch_id.split("/").collect();
-            let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
+        let line = line?;
+        let values: Vec<&str> = line.split_whitespace().collect();   
+        
+        let sketch_id: &str = values[4];
 
-            let _id_values: Vec<&str> = _name.split(".").collect();
-            let _id: &str = _id_values.first().expect("Failed to get id from sketch reference file name");
-            
-            println!("{:?} {:?}", _name, _id);
+        let _name_values: Vec<&str> = sketch_id.split("/").collect();
+        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
+
+        let _id_values: Vec<&str> = _name.split(".").collect();
+        let _id: &str = _id_values.first().expect("Failed to get id from sketch reference file name");
+        
+        
+
+        println!("{:?} {:?}", _name, _id);
             
     };
 
