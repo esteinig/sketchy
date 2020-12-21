@@ -334,12 +334,13 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
         let line = line?;
         let values: Vec<&str> = line.split_whitespace().collect();   
-        
-        let sketch_id: &str = values[4];
-        
-        let _shared_hashes: &str = values[2];
+                
+        let _identity: &str = values[0];
+        let _shared_hashes: &str = values[1];
 
-        let _name_values: Vec<&str> = sketch_id.split("/").collect();
+        let _sketch_id: &str = values[4];
+
+        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
         let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
 
         let _id_values: Vec<&str> = _name.split(".").collect();
