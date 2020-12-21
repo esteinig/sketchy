@@ -4,18 +4,18 @@
 ![](https://img.shields.io/badge/version-0.4.5-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
-Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing and `Mash`
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing heuristics with `Mash`
 
 ## Overview
 
-**`v0.4.5: preprint`**
+**`v0.5.0: preprint`**
 
-`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` implements `mash screen` for read sets and an online version of `mash dist` (the sum of shared hashes) for real-time nanopore read streams. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. A list of precomputed genotype features, automatically updated databases of the global sequence diversity, and `Nextflow` pipelines for data processing can be found in the corresponding pathogen reference sections. 
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` implements `mash screen` for read sets and an online version of `mash dist` (the sum of shared hashes) for real-time nanopore read streams. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and  automatically updated databases of species genomes can be found in the corresponding pathogen reference sections. 
 
-Currently validated species are:
+Species which we have validated using matching Illumina / ONT sequence data:
 
-* *Staphylococcus aureus*
-* *Klebsiella pneumoniae* 
+* *Staphylococcus aureus* (n = 142)
+* *Klebsiella pneumoniae* (n = 120)
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
