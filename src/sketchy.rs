@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::process::{Command, Stdio};
 use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
+use prettytable::{Table, Row, Cell};
 
 pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_size: usize, progress: usize) -> Result<(), Error> {
     
@@ -323,7 +324,8 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
 
     let reader = BufReader::new(screen_sorted);
-        
+    
+    let mut table = Table::new()
     for (_i, line) in reader.lines().enumerate() {
 
         if _i > limit {
@@ -355,10 +357,12 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
             .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
         
         let mut grep_reader = BufReader::new(grepped);
-        let mut genotype = String::new();
-        let _ = grep_reader.read_line(&mut genotype);
+        let mut genotype_row = String::new();
+        let _ = grep_reader.read_line(&mut genotype_row);
+        
+        let genotype_values: Vec<&str> = genotype_row.split("\t").collect();
 
-        println!("{:?}", genotype);
+        println!("{:?}", genotype_values);
             
     };
 
