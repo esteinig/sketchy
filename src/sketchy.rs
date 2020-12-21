@@ -363,16 +363,16 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         
         let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
 
-        let _screen_rank: &str = &_i.to_string();
+        let _screen_rank: &str = &(_i+1).to_string();
 
         let mut screen_row = Row::new(vec![
             Cell::new(_screen_rank),
             Cell::new(_shared_hashes)
         ]);
 
-        let _ = _genotype_values.iter().map( 
-            |x| screen_row.add_cell(Cell::new(x))
-        );
+        for x in _genotype_values.iter() {
+            screen_row.add_cell(Cell::new(x))
+        }; 
         
         table.add_row(screen_row);
             
