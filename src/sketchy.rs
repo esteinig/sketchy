@@ -329,7 +329,7 @@ pub fn screen(fastx: String, sketch: String, procs: i32, index_size: usize, sket
             let values: Vec<&str> = line.split_whitespace().collect();   
             
             let sketch_id: &str = values[4];
-            let sketch_path: Vec<&str> = sketch_id.split("/");
+            let sketch_path: Vec<&str> = sketch_id.split("/").collect();
             
             
             println!("{:?} {:?}", sketch_id, sketch_path);
