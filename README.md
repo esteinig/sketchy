@@ -4,13 +4,13 @@
 ![](https://img.shields.io/badge/version-0.4.5-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-v1-blue.svg)
 
-Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing and `Mash`
 
 ## Overview
 
 **`v0.4.5: preprint`**
 
-`Sketchy` is an online lineage calling and genotyping algorithm based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` computes the sum of min-wise hashes shared with species-wide reference sketches of bacterial pathogen genomes and their associated genotypes e.g. multi-locus sequence types, susceptibility profiles computed with [Mykrobe](https://github.com/Mykrobe-tools/mykrobe) or serotype alleles inferred with [Kleborate](https://github.com/katholt/kleborate) amongst others. A list of precomputed genotype features can be found in the corresponding pathogen reference sections.
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` implements `mash screen` for read sets and an online version of `mash dist` (the sum of shared hashes) for real-time nanopore read streams. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. A list of precomputed genotype features, automatically updated databases of the global sequence diversity, and `Nextflow` pipelines for data processing can be found in the corresponding pathogen reference sections. 
 
 Currently validated species are:
 
@@ -50,7 +50,7 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 ## Install
 
-Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and other utilities. It is recommended to use one of the following options to install the required dependencies.
+Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and database utilities.
 
 #### `Singularity`
 
@@ -83,13 +83,6 @@ sudo apt-get install mash
 docker pull esteinig/sketchy:latest
 ```
 
-To share files between container and the host system you need to set bindmounts, e.g. link the current directory (with a hypothetical `test.fq`) to the preconfigured working directory `/data` inside the container:
-
-```sh
-docker run -v $(pwd):/data -it esteinig/sketchy \
-  sketchy run --fastq /data/test.fq --sketch --output /data/test
-```
-
 #### `Conda`
 
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
@@ -102,7 +95,7 @@ You can also manually install into an environment like this:
 
 ```sh
 conda install -c bioconda -c conda-forge \
-  mash=2.2 psutil pysam rust coverm nanoq
+  mash=2.2 psutil pysam rust nanoq
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
@@ -110,7 +103,7 @@ sketchy pull
 sketchy list
 ```
 
-## Setup
+## Reference sketches
 
 If no container is used, pull default species sketches into local storage before first use:
 
@@ -133,13 +126,38 @@ Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for th
 
 ## Usage
 
-See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`.
+See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. For an evaluation of genomic neighbor typing using `mash screen` and a comparison to the online implemention of `mash dist` on comprehensive and dereplicated strain-level sketches, please see the preprint. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SP` for convenience access to sketch files:
+ 
+```bash
+SK=~/.sketchy
+```
 
-Reads are expected to belong to the species of the reference sketch. Use a taxonomic classifier to filter metagenomic samples - we use `Kraken2` and it works well on test data from [Legget et al. (2019)](https://www.biorxiv.org/content/10.1101/180406v2).
+### `sketchy screen`
 
-### Python CLI
+`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless extremely few reads are available (< 200) in which case we find that the diagnostic plots from the online version can aid in determination of frequently occuring genotypes in the ranked sum of shared hashes (see below). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
-`Sketchy` can be run through a wrapper in the `Python CLI` which is suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI`.
+In the `Python client`:
+
+```
+sketchy screen --fastx test.fastq --sketch saureus --limit 10 --pretty
+```
+
+In the `Rust client` directly:
+
+```
+sketchy-rs -f test.fastq -s $SK/saureus.msh -g $SK/saureus.tsv -l 10 -p
+```
+
+Please cite the following when you use `mash screen` in addition to `Sketchy`:
+
+* Ondov et al. (2016) - `Mash`
+* Ondov et al. (2019) - `Mash Screen`
+
+### `sketchy stream`
+
+Because streaming is slower than screening, I tend to use this more in cases where extremely few reads are available (< 100) or when streaming is actually required (not that often) - the diagnostic plots help to see if it's a hopeless case, usually. However, in some edge cases the streaming utility can be quite useful - for instance, while preference scores were low, we confirmed a cystic fibrosis *S. aureus* re-infection and some barcoded isolates from < 10 reads.
+
+`Sketchy's` streaming utility can be run through a wrapper in the `Python client` which is only suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI` (see below). 
 
 ```bash
 sketchy run --help
@@ -156,7 +174,7 @@ When using a template, execution looks like this:
 sketchy run --fastq test.fq --sketch saureus
 ```
 
-Sketchy primarily operates on read streams (see [`Benchmarks`](#benchmarks)) and prediction can be slow-ish over entire completed runs. Initial prediction on the first few thousand reads should be sufficient - often only a few hundred reads are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap output)
+`Sketchy` primarily operates on read streams (see [`Benchmarks`](#benchmarks)) and prediction can be slow-ish over entire completed runs. Initial prediction on the first  thousand reads should be sufficient - often only a few hundred reads are required. Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap diagnosticoutput)
 
 ```bash
 sketchy run --fastq test.fq --sketch saureus --ranks 10 --limit 1000
@@ -168,87 +186,14 @@ More options can be viewed with
 sketchy run --help
 ```
 
-### Nextflow pipeline
-
-TBD.
-
-### Custom sketches
-
-Custom reference sketch collections can be generated with the [`sketchy feature prepare`](#sketchy-feature-prepare) task as described in the [`Constructing reference sketches`](#constructing-reference-sketches) section, and must include a:
-
-* reference sketch
-* numeric genotype index
-* genotype key file 
-
-with the same file names and the following extensions, such that:
-
-```bash
-ref.msh   # sketch
-ref.tsv   # index
-ref.json  # key 
-```
-
-Custom collections can be used with reference to the path and file name in the `--sketch` option:
-
-```bash
-sketchy run --fastq test.fq --sketch ref
-```
-
-### How it works
-
-`Sketchy` computes two simple scores: the first is the sum of shared hashes, where it keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes the majority of compute in the `Mash` queries while `Sketchy` siphons off the output which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`) to reduce excessive read-wise output of the reference sketch queries.
-
-In the second stage, an evaluation score is computed by aggregating the sum of ranked sum of shared hashes (`sssh`) for each genotype feature in the associated genotype index that a prediction is made on (e.g. SCC*mec* type or susceptibility to an antibiotic). Final predictions are made on the highest total `sssh` scores which correspond to the dominant feature value in the `sssh` scores of each feature. 
-
-Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best prediction.
-
-### Sketchy evaluation outputs
-
-Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic feature, the determined stability breakpoints in reads (`0` or `-1` in < v0.4.4 means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
-
-```
-feature         prediction      stability       preference
-mlst            ST93            23              0.66666667
-meca            MRSA            17              0.39714868
-pvl             PVL+            23              1.0
-scc             SCCmec-IV       23              0.39745917
-clindamycin     S               1               0.80033841
-rifampicin      S               1               1.0
-ciprofloxacin   S               1               1.0
-vancomycin      S               1               1.0
-tetracycline    S               2               1.0
-```
-
-Debugging plots for evaluation are the more salient outputs - the following images show a different sample prediction than the outputs above. Each row in the image corresponds to one genomic feature prediction, which is listed in the middle legend together with the top five alternative feature value predictions. Each feature value prediction corresponds to a color, where darker colors represent the highest-ranking and therefore most likely predictions.
-
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
-
-**What's going on here?**
-
-In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors represent feature values not in the ultimate highest-ranking five and demonstrate uncertainty in the initial predictions. On the other hand, homogenous color represents certainty in the prediction which may increase as the scores are updated.
-
-In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `--stable` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to `0`) as the prediction was limited to 1000 reads total; breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as homogenous color in the heatmap.
-
-In the plot on the right, the preference score from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) is computed on the sum of ranked sums of shared hashes (`sssh`) scores from the middle plot. As in the original a threshold of `p = 0.6` (horizontal line) indicates when a prediction should be trusted and when it should not. Note that the preference is always computed on the feature value with the highest score over the feature value with the second highest score, regardless of whether it is the right prediction. In fact, the score is susceptible to 'switches' in predictions, especially using lower resolution sketches, where a prediction is updated and flips to another more likely prediction as more evidence is gathered. 
-
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="500" /></a>
-
-In this example, the same data from the Bengal Bay clone is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST772. This is reflected in the heatmap by distinct color blocks, but lower-resolution also trades-off prediction speed with larger more accurate sketches. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
-
-### Rust CLI
-
-The `Rust` command line interface implements two subtasks: `sketchy-rs compute` and `sketchy-rs evaluate`. Both read from `/dev/stdin` and can be piped. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SKETCHY_PATH` for convenience access to sketch files:
+The `Rust` command line interface implements two subtasks: `sketchy-rs compute` (ssh, raw hit sums as in heatmap output) and `sketchy-rs evaluate` (sssh, ranked sums of shared hashes by feature, as in line plot output). Both read from `/dev/stdin` and can be piped. 
  
-```bash
-SKETCHY_PATH=~/.sketchy
-```
- 
-`Compute` internally calls `Mash` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
+`Compute` internally calls `mash dist` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
  
  ```bash
  cat test.fq | head -20000 | \
  sketchy-rs compute \
-    --sketch $SKETCHY_PATH/saureus.msh \
+    --sketch $SK/saureus.msh \
     --ranks 20 \
     --progress 1 \
     --threads 4 \
@@ -260,7 +205,7 @@ SKETCHY_PATH=~/.sketchy
 ```bash
 cat test.ssh.tsv | \
 sketchy-rs evaluate \
-    --features $SKETCHY_PATH/saureus.tsv \
+    --features $SK/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
@@ -270,17 +215,17 @@ The `Rust` pipeline can be executed in one step, such as:
 ```bash
 cat test.fq | head -20000 \
 | sketchy-rs compute \
-    --sketch $SKETCHY_PATH/saureus.msh \
+    --sketch $SK/saureus.msh \
     --ranks 20 \
     --progress 1 \
     --threads 4 \
 | sketchy-rs evaluate \
-    --features $SKETCHY_PATH/saureus.tsv \
+    --features $SK/saureus.tsv \
     --stable 1000 \
 > test.sssh.tsv
 ```
 
-Plotting and evaluation summaries are handled in the `Python CLI` and accessed via the `sketchy plot` task:
+Diagnostic plots and evaluation summaries are handled in the `Python CLI` and accessed via the `sketchy plot` task:
 
 ```
 sketchy plot \
@@ -293,7 +238,7 @@ sketchy plot \
     --prefix test \
     --format png
 ```
- 
+
 
 ### Online streaming analysis
 
@@ -340,6 +285,10 @@ sketchy-rs compute \
 
 Python CLI has not been tested.
 
+### Nextflow pipeline
+
+TBD.
+ 
 ## Reference sketches
 
 Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. Please keep in mind that `Sketchy` is primarily a streaming algorithm and bottlenecked by sketch queries with `Mash`. This means that prediction speeds are sufficiently fast for online predictions for smaller sketches (e.g. M 10,000 genomes, ~ 100 reads/second) but  for large sketches and analyses over 100,000 reads or so, total runtime can be excruciating.
@@ -439,6 +388,26 @@ Resistance genes from assemblies with `Kleborate`, presence or absence:
 
 Reference sketches can be constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly accessible. All that is required is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
 
+Custom sketches must include a:
+
+* reference sketch
+* numeric genotype index
+* genotype key file 
+
+with the same file names and the following extensions, such that:
+
+```bash
+ref.msh   # sketch
+ref.tsv   # index
+ref.json  # key 
+```
+
+Custom collections can be used with reference to the path and file name in the `--sketch` option:
+
+```bash
+sketchy run --fastq test.fq --sketch ref
+```
+
 ### Genome assemblies and sketch construction
 
 Assemblies should be of sufficient quality for genotyping and can produced for example with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or with large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
@@ -491,3 +460,45 @@ ref.json  # key
 ```
 
 See here [how to use custom reference sketches](#custom-sketches) in `sketchy run`.
+
+
+### How the online algorithm works: `sketchy stream`
+
+`Sketchy` computes two simple scores: the first is the sum of shared hashes, where it keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes the majority of compute in the `Mash` queries while `Sketchy` siphons off the output which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`) to reduce excessive read-wise output of the reference sketch queries.
+
+In the second stage, an evaluation score is computed by aggregating the sum of ranked sum of shared hashes (`sssh`) for each genotype feature in the associated genotype index that a prediction is made on (e.g. SCC*mec* type or susceptibility to an antibiotic). Final predictions are made on the highest total `sssh` scores which correspond to the dominant feature value in the `sssh` scores of each feature. 
+
+Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best prediction.
+
+### Sketchy evaluation outputs
+
+Sketchy produces a directory `--output` with the intermediary pipeline data files (`prefix.ssh.tsv` and `prefix.sssh.tsv`). For evaluation and prediction output, the primary data file is `prefix.data.tsv` which shows the final prediction for each genomic feature, the determined stability breakpoints in reads (`0` or `-1` in < v0.4.4 means that a breakpoint could not be called either because predictions were not stable or the chosen stable breakpoint was smaller than the evaluated reads) and the median preference score over the evaluated reads:
+
+```
+feature         prediction      stability       preference
+mlst            ST93            23              0.66666667
+meca            MRSA            17              0.39714868
+pvl             PVL+            23              1.0
+scc             SCCmec-IV       23              0.39745917
+clindamycin     S               1               0.80033841
+rifampicin      S               1               1.0
+ciprofloxacin   S               1               1.0
+vancomycin      S               1               1.0
+tetracycline    S               2               1.0
+```
+
+Debugging plots for evaluation are the more salient outputs - the following images show a different sample prediction than the outputs above. Each row in the image corresponds to one genomic feature prediction, which is listed in the middle legend together with the top five alternative feature value predictions. Each feature value prediction corresponds to a color, where darker colors represent the highest-ranking and therefore most likely predictions.
+
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_1.png' align="center" height="500" /></a>
+
+**What's going on here?**
+
+In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors represent feature values not in the ultimate highest-ranking five and demonstrate uncertainty in the initial predictions. On the other hand, homogenous color represents certainty in the prediction which may increase as the scores are updated.
+
+In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `--stable` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to `0`) as the prediction was limited to 1000 reads total; breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as homogenous color in the heatmap.
+
+In the plot on the right, the preference score from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) is computed on the sum of ranked sums of shared hashes (`sssh`) scores from the middle plot. As in the original a threshold of `p = 0.6` (horizontal line) indicates when a prediction should be trusted and when it should not. Note that the preference is always computed on the feature value with the highest score over the feature value with the second highest score, regardless of whether it is the right prediction. In fact, the score is susceptible to 'switches' in predictions, especially using lower resolution sketches, where a prediction is updated and flips to another more likely prediction as more evidence is gathered. 
+
+<a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="500" /></a>
+
+In this example, the same data from the Bengal Bay clone is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST772. This is reflected in the heatmap by distinct color blocks, but lower-resolution also trades-off prediction speed with larger more accurate sketches. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
