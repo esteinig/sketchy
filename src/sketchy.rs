@@ -360,9 +360,9 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
         let mut genotype_row = String::new();
         let _ = grep_reader.read_line(&mut genotype_row);
         
-        let genotype_values: Vec<&str> = genotype_row.split("\t").collect();
+        let genotype_values: Vec<&str> = genotype_row.split("\t").collect().iter().map(|x| x).collect();
 
-        table.add_row(genotype_values);
+        table.add_row(Row::genotype_values);
             
     };
 
