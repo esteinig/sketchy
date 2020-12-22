@@ -61,7 +61,7 @@ pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, sta
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
 
     // let data_file = File::open(&genotype_index)?;
-    let data_reader = genotype_index.to_path_buf()?;
+    let data_reader = genotype_index.to_path_buf();
 
     ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
 
