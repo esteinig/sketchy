@@ -56,14 +56,13 @@ pub fn run(sketch: String, genotypes: String, threads: i32, ranks: usize, stabil
 
     // SKETCHY - SUM OF SHARED HASHES
 
-
     let mash_reader = BufReader::new(stdout);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
 
     let data_file = File::open(&genotypes)?;
     let data_reader = BufReader::new(data_file);
 
-    compute_ssh(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
+    ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
 
     Ok(())
 }
@@ -131,7 +130,7 @@ fn test_get_sketch_info() {
 }
 
 
-fn compute_ssh<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
     /* Separated sum of shared hashes function for testing */ 
 
@@ -265,7 +264,7 @@ fn compute_ssh<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_s
 
 
 #[test]
-fn test_compute_ssh() {
+fn test_ranked_sum_of_shared_hashes() {
     
     /* Test general functionality of the compute sum of shared hashes function */
 
@@ -279,7 +278,7 @@ fn test_compute_ssh() {
 
     let reader = BufReader::new(test_data_sliced); // 2 reads
     
-    let ssh: Vec<u32> = compute_ssh(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
+    let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
 
     assert_eq!(ssh, vec![7, 77]);
 
@@ -355,6 +354,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
+
 pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
@@ -465,9 +465,73 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
+
+fn evaluate_stability(top_vec: &Vec<usize>, breakpoint: usize) -> usize {
+
+    let len = top_vec.len();
+
+    if len < breakpoint {
+        0
+    } else {
+
+        let mut last_predictions: Vec<&usize> = top_vec.iter().rev().take(breakpoint).collect();
+        last_predictions.dedup();
+        let uniques = last_predictions.len();
+
+        if uniques == 1 {
+            1
+        } else {
+            0
+        }
+
+    }
+
+}
+
+fn get_sorted_feature_map(fm: &HashMap<usize, usize>) -> Vec<(&usize, &usize)> {
+        
+    let mut feature_map = Vec::from_iter(fm);
+    feature_map.sort_by_key(|k| Reverse(k.1));
+
+    return feature_map
+}
+
+fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
+    
+    if secondary == 0.0 {
+        0.0
+    } else {
+        let numerator = 2.0 * primary;
+        let denominator = primary + secondary;
+
+        (numerator / denominator) - 1.0
+    }
+
+}
+
+fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
+    if feature_map.len() < 2 {
+        1.0
+    } else {
+        let primary = *feature_map[0].1 as f64;
+        let secondary = *feature_map[1].1 as f64;
+
+        if secondary == 0.0 {
+            0.0
+        } else {
+            let numerator = 2.0 * primary;
+            let denominator = primary + secondary;
+
+            (numerator / denominator) - 1.0
+        }
+    }
+
+}
+
+
 #[deprecated(
     since = "0.5.0",
-    note = "Please use the compute function instead"
+    note = "Integrated with the sketchy run function, please use instead"
 )]
 pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
     
@@ -602,67 +666,5 @@ pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
     }
 
     Ok(())
-
-}
-
-fn evaluate_stability(top_vec: &Vec<usize>, breakpoint: usize) -> usize {
-
-    let len = top_vec.len();
-
-    if len < breakpoint {
-        0
-    } else {
-
-        let mut last_predictions: Vec<&usize> = top_vec.iter().rev().take(breakpoint).collect();
-        last_predictions.dedup();
-        let uniques = last_predictions.len();
-
-        if uniques == 1 {
-            1
-        } else {
-            0
-        }
-
-    }
-
-}
-
-fn get_sorted_feature_map(fm: &HashMap<usize, usize>) -> Vec<(&usize, &usize)> {
-        
-    let mut feature_map = Vec::from_iter(fm);
-    feature_map.sort_by_key(|k| Reverse(k.1));
-
-    return feature_map
-}
-
-fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
-    
-    if secondary == 0.0 {
-        0.0
-    } else {
-        let numerator = 2.0 * primary;
-        let denominator = primary + secondary;
-
-        (numerator / denominator) - 1.0
-    }
-
-}
-
-fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
-    if feature_map.len() < 2 {
-        1.0
-    } else {
-        let primary = *feature_map[0].1 as f64;
-        let secondary = *feature_map[1].1 as f64;
-
-        if secondary == 0.0 {
-            0.0
-        } else {
-            let numerator = 2.0 * primary;
-            let denominator = primary + secondary;
-
-            (numerator / denominator) - 1.0
-        }
-    }
 
 }
