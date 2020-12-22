@@ -4,7 +4,7 @@
 ![](https://img.shields.io/badge/version-0.5.0-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-1.0-blue.svg)
 
-Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing heuristics with `Mash`
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing with `Mash`
 
 ## Overview
 
