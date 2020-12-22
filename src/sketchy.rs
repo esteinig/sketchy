@@ -18,7 +18,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_size: usize, progress: usize) -> Result<(), Error> {
+pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_size: usize, progress: bool) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
