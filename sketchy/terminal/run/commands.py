@@ -4,17 +4,15 @@ import click
 from sketchy.sketchy import SketchyWrapper
 from pathlib import Path
 
-TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
-
 
 @click.command()
 @click.option(
-    '--fastq',
+    '--fastx',
     '-f',
     default=None,
     type=Path,
     required=True,
-    help='Path to input Fastq containing basecalled nanopore reads'
+    help='Path to input Fastx containing basecalled nanopore reads'
 )
 @click.option(
     '--sketch',
@@ -73,15 +71,13 @@ TEMPLATES = ['kpneumoniae', 'saureus', 'mtuberculosis']
     help='Threads for sketch queries in Mash [4]'
 )
 @click.option(
-    '-h',
-    '--home',
+    '--sketchy',
     type=Path,
     default=Path.home() / '.sketchy',
     help='Sketchy path to reference sketch home directory. '
          'Can be set via environmental variable: SKETCHY_PATH'
 )
 @click.option(
-    '-q',
     '--quiet',
     is_flag=True,
     help="Run without logging output or progress bar."
@@ -113,21 +109,19 @@ def run(
     palette,
     stable,
     threads,
-    home,
+    sketchy,
     no_plot,
     mpl_backend,
     image_format,
     quiet
 ):
 
-    """ Sketchy main access wrapper for Rust pipeline """
-
-    # TODO: Needs checks for user input etc.
+    """ Sketchy wrapper for Rust streaming algorithm on completed read sets"""
 
     try:
-        sketchy_path = os.environ['SKETCHY_PATH']
+        sketchy_path = Path(os.environ['SKETCHY'])
     except KeyError:
-        sketchy_path = home
+        sketchy_path = sketchy
 
     if limit == -1:
         limit = None
@@ -140,17 +134,10 @@ def run(
     else:
         stable = int(stable)
 
-    try:
-        sketch_name = str(sketch.name)
-        sketch_prefix = sketch_name.split('_')[0]
-        if sketch_name in TEMPLATES:  # default sketch
-            sketch_file = sketchy_path / Path(f'{sketch_name}_15_1000')
-        elif sketch_prefix in TEMPLATES:  # prefixed sketches
-            sketch_file = sketchy_path / Path(f'{sketch_name}')
-        else:
-            sketch_file = sketch  # sketch path if no prefix found
-    except IndexError:
-        sketch_file = sketch  # sketch path if no prefix found
+    if not (sketchy_path / sketch).exists():
+        raise ValueError(f"Could not find database sketch: {sketch} at {sketchy_path}")
+    else:
+        sketch_file
 
     sw = SketchyWrapper(
         fastx=fastq,

@@ -16,7 +16,7 @@ def list(path):
 
     try:
         sketchy_path = Path(
-            os.environ['SKETCHY_PATH']
+            os.environ['SKETCHY']
         )
     except KeyError:
         sketchy_path = path

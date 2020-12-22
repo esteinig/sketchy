@@ -144,6 +144,34 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
 
     let start = Instant::now();
     
+    // SSSH Evaluation
+    
+    let data_file = File::open(&features)?;
+    let data_reader = BufReader::new(data_file);
+
+    let mut feature_data = vec![];
+    for (_i, line) in data_reader.lines().enumerate() {
+        let line = line?;
+        let vec: Vec<i32> = line.trim()
+            .split("\t").map(
+                |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
+            )
+            .collect(); 
+        feature_data.push(vec);
+    }
+    
+    // Init the feature map
+    let number_features = feature_data[0].len();
+    let mut sssh: HashMap<usize, HashMap<usize, usize>> = c!{
+        fidx => HashMap::new(), for fidx in 0..number_features
+        };
+
+    let mut top_predictions: HashMap<usize, Vec<usize>> = c!{
+        fidx => vec![], for fidx in 0..number_features
+        };
+     
+
+
     reader.lines()  
         .filter_map(|line| line.ok())
         .for_each(|line| {
@@ -155,7 +183,7 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
             // at sketch index end: output ranked ssh + reset for next read
             if idx == index_size-1 {
                 
-                bar.tick();
+                bar.set_message(&*format!("{}", idx));
 
                 // collect the index of the current sum of shared hashes
                 let mut ssh_index: Vec<(usize, &u32)> = sum_shared_hashes.iter().enumerate().collect();
@@ -166,7 +194,58 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
 
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
-                    println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // flush everytime?
+                    
+                    // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
+                    
+                    // feature evaluation block
+                    if rank == 0 {
+
+                        /* Start of new read in `sketchy compute` output block after <rank> rows
+                        Since we report the sum at the start of each new read (at rank == 0)
+                        we need to skip the first (non-summed) read, and report again when the
+                        last read block is completed and no rank == 0 can be encountered ...  */
+            
+                        if read > 0 {
+            
+                            for (feature, fm) in sssh.iter(){
+            
+                                // Get a sorted feature map as vector
+                                let sorted_feature_map = get_sorted_feature_map(&fm);
+                                // Compute Brinda et al. (2019) preference score on SSSH
+                                let preference_score = compute_preference_score_sssh(&sorted_feature_map);
+            
+                                // Add top feature value to feature vector map:
+                                top_predictions.entry(*feature)
+                                               .or_insert_with(Vec::new)  // prevented by init of vecmap above
+                                               .push(*sorted_feature_map[0].0);
+                                
+                                let stable = evaluate_stability(&top_predictions[feature], breakpoint);
+            
+                                for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
+                                    println!(
+                                        "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
+                                         read-1, feature, feat_value, feat_rank,
+                                         sssh_score, stable, preference_score
+                                    )
+                                }
+                            }
+                            // Clear the feature sssh scores for next read
+                            for (_, feature_map) in sssh.iter_mut(){
+                                feature_map.clear()    
+                            }
+                        }
+                    }
+
+                    // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
+                    let feature_row = &feature_data[ix];
+                    // Iterate mutable over feature keys
+                    for (key, feature_map) in sssh.iter_mut() {
+                        let feature_value = feature_row[*key];
+                        // Add ssh score to feature value in feature map, or init with 0
+                        let feature_value_sssh = feature_map.entry(feature_value as usize).or_insert(0);
+                        *feature_value_sssh += ssh;
+                    }
+
                 }
 
                 idx = 0; read += 1;
@@ -385,6 +464,10 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
     Ok(())
 }
 
+#[deprecated(
+    since = "0.5.0",
+    note = "Please use the stream function instead"
+)]
 pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
     
     /* Compute the sum of ranked sums of shared hashes by feature 

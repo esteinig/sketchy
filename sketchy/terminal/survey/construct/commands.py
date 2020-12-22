@@ -117,7 +117,7 @@ DEFAULTS = {
 )
 @click.option(
     '--output', '-o', default='survey.tsv', type=Path,
-    help='Tab-delimited genotype feature index for Sketchy'
+    help='Tab-delimited genotype genotypes index for Sketchy'
 )
 @click.option(
     '--template', '-t', default=None, type=str,
@@ -133,7 +133,7 @@ DEFAULTS = {
 )
 def construct(directory, output, template, intersect, missing):
 
-    """ Construct genotype feature data from Pathfinder Survey """
+    """ Construct genotype genotypes data from Pathfinder Survey """
 
     survey = SketchySurvey(
         survey_directory=directory

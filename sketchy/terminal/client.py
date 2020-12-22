@@ -3,7 +3,7 @@ import click
 from .utils import utils
 from .list import list
 from .pull import pull
-from .feature import feature
+from .genotypes import genotypes
 from .online import online
 from .survey import survey
 from .run import run
@@ -28,4 +28,4 @@ terminal_client.add_command(pull)
 terminal_client.add_command(list)
 terminal_client.add_command(online)
 terminal_client.add_command(utils)
-terminal_client.add_command(feature)
+terminal_client.add_command(genotypes)
