@@ -172,7 +172,7 @@ fn test_get_sketch_info() {
 }
 
 
-fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
     /* Separated sum of shared hashes function for testing */ 
 
