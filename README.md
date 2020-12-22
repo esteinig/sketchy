@@ -113,7 +113,7 @@ SKETCHY_PATH=$HOME/.sketchy
 
 ### Screening function
 
-`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless few reads are available (< 200). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
+`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
 In the Python client:
 
@@ -134,7 +134,7 @@ Please cite the following when using `sketchy screen`:
 
 ### Streaming function
 
-Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available (< 100) or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
+Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
 
 `Sketchy's` streaming algorithm can be run through a wrapper in the Python client which is only suitable for completed read files (`sketchy run`). Read streams and online sequencing runs should be served with the Rust client (see below). 
 
