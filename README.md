@@ -20,11 +20,8 @@ Species which we have validated using matching Illumina / ONT sequence data:
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
 - [Install](#install)
-- [Setup](#setup)
-- [Usage](#usage)
+- [Usage](#sketchy-usage)
 - [Reference sketches](#reference-sketches)
-  - [ :closed_umbrella: *Staphylococcus aureus*](#rust-client-tasks)
-  - [ :briefcase: *Klebsiella pneumoniae*](#rust-client-tasks)
 - [Constructing reference sketches](#reference-sketches)
 - [Tasks and parameters](#tasks)
 - [Citing](#citing)
@@ -116,7 +113,7 @@ SKETCHY_PATH=$HOME/.sketchy
 
 ### Screening function
 
-`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless few reads are available (< 200). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
+`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless few reads are available (< 200). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
 In the Python client:
 
