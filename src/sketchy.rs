@@ -88,16 +88,16 @@ pub fn get_sketch_files(db_path: &Path, screen: bool)  -> (&Path, &Path) {
     /* Get sketch files from database path and perform checks */
 
     let db_sketch = db_path.join(
-        format!("{}.msh", db_path.file_name().to_string())
+        format!("{:?}.msh", db_path.file_name())
     );
     let db_genotypes = db_path.join(
-        format!("{}.tsv", db_path.file_name().to_string())
+        format!("{:?}.tsv", db_path.file_name())
     );
     let db_index = db_path.join(
-        format!("{}.idx", db_path.file_name().to_string())
+        format!("{:?}.idx", db_path.file_name())
     );
     let db_key = db_path.join(
-        format!("{}.json", db_path.file_name().to_string())
+        format!("{:?}.json", db_path.file_name())
     );
 
     if !db_path.exists(){
