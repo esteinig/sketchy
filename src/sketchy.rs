@@ -88,32 +88,32 @@ pub fn get_sketch_files(db_path: &Path, screen: bool)  -> (&Path, &Path) {
     /* Get sketch files from database path and perform checks */
 
     let db_sketch = db_path.join(
-        format!("{}.msh", db_path.file_name())
+        format!("{}.msh", db_path.file_name().to_string())
     );
     let db_genotypes = db_path.join(
-        format!("{}.tsv", db_path.file_name())
+        format!("{}.tsv", db_path.file_name().to_string())
     );
     let db_index = db_path.join(
-        format!("{}.idx", db_path.file_name())
+        format!("{}.idx", db_path.file_name().to_string())
     );
     let db_key = db_path.join(
-        format!("{}.json", db_path.file_name())
+        format!("{}.json", db_path.file_name().to_string())
     );
 
     if !db_path.exists(){
-        panic!(format!("Could not find sketch database directory: {}", db_path));
+        panic!(format!("Could not find sketch database directory: {}", db_path.display()));
     };
     if !db_sketch.exists(){
-        panic!(format!("Could not find sketch database: {}", db_sketch));
+        panic!(format!("Could not find sketch database: {}", db_sketch.display()));
     };
     if !db_genotypes.exists(){
-        panic!(format!("Could not find sketch genotypes: {}", db_genotypes));
+        panic!(format!("Could not find sketch genotypes: {}", db_genotypes.display()));
     };
     if !db_index.exists(){
-        panic!(format!("Could not find sketch index: {}", db_index));
+        panic!(format!("Could not find sketch index: {}", db_index.display()));
     };
     if !db_key.exists(){
-        panic!(format!("Could not find sketch key: {}", db_key));
+        panic!(format!("Could not find sketch key: {}", db_key.display()));
     };
 
     if screen {
