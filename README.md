@@ -10,7 +10,7 @@ Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected
 
 **`v0.5.0: preprint`**
 
-`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` implements `mash screen` for read sets and an online version of `mash dist` (the sum of shared hashes) for real-time nanopore read streams. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and  automatically updated databases of species genomes can be found in the corresponding pathogen reference sections. 
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` implements `mash screen` for completyed sequence runs and a streaming version of `mash dist` (the sum of shared hashes) for real-time analysis. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and  automatically updated databases of species genomes can be found in the corresponding pathogen reference sections. 
 
 Species which we have validated using matching Illumina / ONT sequence data:
 
@@ -20,39 +20,20 @@ Species which we have validated using matching Illumina / ONT sequence data:
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
 - [Install](#install)
-  - [:new_moon: `singularity`](#singularity)
-  - [:rocket: `cargo`](#cargo)
-  - [:whale: `docker`](#docker)
-  - [:snake: `conda`](#conda)
 - [Setup](#setup)
 - [Usage](#usage)
-  - [Python command line](#python-client)
-  - [Nextflow pipeline](#nextflow-pipeline)
-  - [Custom sketches](#custom-sketches)
-  - [How it works](#how-it-works)
-  - [Evaluation outputs](#rust-client)
-  - [Rust command line](#rust-client)
-  - [Online streaming analysis](#rust-client)
-  - [Android mobile phones](#rust-client)
 - [Reference sketches](#reference-sketches)
   - [ :closed_umbrella: *Staphylococcus aureus*](#rust-client-tasks)
   - [ :briefcase: *Klebsiella pneumoniae*](#rust-client-tasks)
 - [Constructing reference sketches](#reference-sketches)
-  - [Genome assemblies and sketch construction](#rust-client-tasks)
-  - [Genotype features and index preparation](#rust-client-tasks)
-  - [Lineage and local sketches](#rust-client-tasks)
 - [Tasks and parameters](#tasks)
-  - [Rust CLI](#rust-client-tasks)
-  - [Python CLI](#python-client-tasks)
 - [Citing](#citing)
-  - [BioRxiv](#bioarxiv)
-  - [BibTeX](#bibtex)
 
 ## Install
 
 Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and database utilities.
 
-#### `Singularity`
+**`Singularity`**
 
 I prefer `Singularity` for integrated access to host sytem files. The container is preloaded with default reference sketches and the container environment variable `$SKETCHY_PATH` is set to their internal location at `/sketchy`
 
@@ -61,7 +42,7 @@ singularity pull docker://esteinig/sketchy:latest
 ./sketchy_latest.sif list
 ```
 
-#### `Cargo`
+**`Cargo`**
 
 `Rust` client only where the `compute` subtask requires `Mash` in host `$PATH`
 
@@ -75,7 +56,7 @@ On Linux systems one should be able to install `Mash` conveniently e.g.
 sudo apt-get install mash
 ```
 
-#### `Docker`
+**`Docker`**
 
 `Docker` image is available, also comes preloaded with the default reference sketches
 
@@ -83,7 +64,7 @@ sudo apt-get install mash
 docker pull esteinig/sketchy:latest
 ```
 
-#### `Conda`
+**`BioConda`**
 
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
@@ -139,37 +120,31 @@ SK=~/.sketchy
 In the `Python client`:
 
 ```
-sketchy screen --fastx test.fastq --sketch saureus --limit 10 --pretty
+sketchy screen --fastx test.fastq --db $SK/saureus --limit 10 --pretty
 ```
 
 In the `Rust client` directly:
 
 ```
-sketchy-rs -f test.fastq -s $SK/saureus.msh -g $SK/saureus.tsv -l 10 -p
+sketchy-rs screen -f test.fastq -d $SK/saureus -l 10 -p
 ```
 
-Please cite the following when you use `sketchy screen`:
+Please cite the following when using `sketchy screen`:
 
 * Ondov et al. (2016) - `Mash`
 * Ondov et al. (2019) - `Mash Screen`
 
 ### Streaming function
 
-Streaming genomic neighbor typing heuristic that implements `mash dist`, the sum of shared hashes and reference sketches with `Mash`. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where extremely few reads are available (< 100) or when streaming is actually required (not that often). However, in some edge cases the streaming utility can be quite useful - for instance, while preference scores were low, we confirmed a cystic fibrosis *S. aureus* re-infection and some barcoded isolates from < 10 reads, which was not possible with the `screen` utility.
+Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available (< 100) or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
 
-`Sketchy's` streaming utility can be run through a wrapper in the `Python client` which is only suitable for completed read files. Read streams and online sequencing runs should be served with the `Rust CLI` (see below). 
+`Sketchy's` streaming utility can be run through a wrapper in the `Python client` which is only suitable for completed read files (hence assigned as `run` task). Read streams and online sequencing runs should be served with the `Rust CLI` (see below). 
 
 ```bash
 sketchy run --help
 ```
 
 Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are sufficiently fast for online predictions on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads, total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs compute`) which should be sufficient for initial analysis. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
-
-When using a template, execution looks like this:
-
-```bash
-sketchy run --fastq test.fq --sketch saureus
-```
 
 Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap diagnostic output)
 
@@ -183,54 +158,32 @@ More options can be viewed with
 sketchy run --help
 ```
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs compute` (ssh, raw hit sums as in heatmap output) and `sketchy-rs evaluate` (sssh, ranked sums of shared hashes by feature, as in line plot output). Both read from `/dev/stdin` and can be piped. 
- 
-`Compute` internally calls `mash dist` and processes the output stream by computing the sum of shared hashes. If heatmaps should be included in the evaluations, the output should be directed to a file, e.g.
- 
+The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
+
  ```bash
- cat test.fq | head -20000 | \
- sketchy-rs compute \
-    --sketch $SK/saureus.msh \
-    --ranks 20 \
-    --progress 1 \
-    --threads 4 \
- > test.ssh.tsv
+ cat test.fq | head -20000 | sketchy-rs stream -d $SK/saureus -t 4 -p > sssh.tsv
  ```
  
-`Evaluate` then computes the sum of ranked sums of shared hashes, and other summaries for plotting:
+`Predict` then uses either the final (current) ranked scores at the last read (`-m last`) or the totall over the read stream (`-m tota`) to infer the genotype profiles:
 
 ```bash
-cat test.ssh.tsv | \
-sketchy-rs evaluate \
-    --features $SK/saureus.tsv \
-    --stable 1000 \
-> test.sssh.tsv
+cat test.ssh.tsv | sketchy-rs predict -d $SK/saureus -m last > predict.tsv
 ```
 
-The `Rust` pipeline can be executed in one step, such as:
+`Stream` and `predict` read from `/dev/stdin` - if limiting the read stream (e.g. with `head`) they can be piped:
 
 ```bash
-cat test.fq | head -20000 \
-| sketchy-rs compute \
-    --sketch $SK/saureus.msh \
-    --ranks 20 \
-    --progress 1 \
-    --threads 4 \
-| sketchy-rs evaluate \
-    --features $SK/saureus.tsv \
-    --stable 1000 \
-> test.sssh.tsv
+cat test.fq | head -20000 | \
+sketchy-rs stream -d $SK/saureus -t 4 -p | \
+sketchy-rs predict -d $SK/saureus -m last > predict.tsv
 ```
 
 Diagnostic plots and evaluation summaries are handled in the `Python CLI` and accessed via the `sketchy plot` task:
 
 ```
 sketchy plot \
-    --sssh test.sssh.tsv \
-    --ssh test.ssh.tsv \
-    --index $SKETCHY_PATH/saureus.tsv \
-    --key $SKETCHY_PATH/saureus.json \
-    --stable 1000 \
+    --sssh sssh.tsv \
+    --db $SK/saureus \
     --palette YnGnBu \
     --prefix test \
     --format png
