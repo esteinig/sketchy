@@ -127,7 +127,7 @@ fn test_get_sketch_info() {
 }
 
 
-fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, ranks: usize, progress: usize) -> Vec<u32> {
+fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, ranks: usize, progress: bool) -> Vec<u32> {
     
     /* Separated sum of shared hashes function for testing */ 
 
@@ -136,7 +136,7 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
     let mut idx: usize = 0;
     let mut read: u32 = 0; // max 4b reads
 
-    let bar = if progress > 0 {
+    let bar = if progress {
         ProgressBar::new_spinner()
     } else {
         ProgressBar::hidden()
@@ -259,7 +259,7 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
 
     bar.finish_with_message(&msg);
     
-    sum_shared_hashes
+    Ok(())
 }
 
 
@@ -354,7 +354,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limit: usize, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -466,7 +466,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
 #[deprecated(
     since = "0.5.0",
-    note = "Please use the stream function instead"
+    note = "Please use the compute function instead"
 )]
 pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
     

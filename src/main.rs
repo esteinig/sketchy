@@ -38,8 +38,8 @@ fn main() -> Result<(), Error> {
         let sketch: String = stream.value_of("sketch").unwrap().to_string();
         let ranks: usize = stream.value_of("ranks").unwrap().parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("threads").unwrap().parse::<i32>().unwrap();
-        let stability: usize = evaluate.value_of("stability").unwrap().parse::<usize>().unwrap();
-        let progress: bool = screen.is_present("progress")
+        let stability: usize = stream.value_of("stability").unwrap().parse::<usize>().unwrap();
+        let progress: bool = stream.is_present("progress")
 
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
         
