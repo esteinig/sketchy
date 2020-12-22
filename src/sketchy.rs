@@ -60,7 +60,7 @@ pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, sta
     let mash_reader = BufReader::new(stdout);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
 
-    let _genotype_index = genotype_index.to_str().unwrap();
+    let _genotype_index = genotype_index.to_str().unwrap().to_string();
 
     let data_file = File::open(&_genotype_index)?;
     let data_reader = BufReader::new(data_file);
