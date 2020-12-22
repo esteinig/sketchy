@@ -136,7 +136,7 @@ Please cite the following when using `sketchy screen`:
 
 Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available (< 100) or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
 
-`Sketchy's` streaming utility can be run through a wrapper in the Python client which is only suitable for completed read files (hence assigned as `run` task). Read streams and online sequencing runs should be served with the Rust client (see below). 
+`Sketchy's` streaming algorithm can be run through a wrapper in the Python client which is only suitable for completed read files (`sketchy run`). Read streams and online sequencing runs should be served with the Rust client (see below). 
 
 ```bash
 sketchy run --fastq test.fq --limit 1000 --ranks 10 --outdir test
