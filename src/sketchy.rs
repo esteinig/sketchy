@@ -19,7 +19,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn run(sketch: &Path, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -60,9 +60,7 @@ pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, sta
     let mash_reader = BufReader::new(stdout);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
 
-    let _genotype_index = genotype_index.to_str().unwrap().to_string();
-
-    let data_file = File::open(&_genotype_index)?;
+    let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
     ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
