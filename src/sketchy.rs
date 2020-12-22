@@ -18,7 +18,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_size: usize, progress: bool) -> Result<(), Error> {
+pub fn run(sketch: String, genotypes: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -44,7 +44,7 @@ pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_s
 
 
     let mash_args = [
-        "dist", "-p", &*format!("{}", procs), "-i", &*format!("{}", sketch), "-"
+        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), "-"
     ];
 
     let stdout = Command::new("mash") // system call to MASH   
@@ -56,10 +56,14 @@ pub fn run(sketch: String, procs: i32, ranks: usize, index_size: usize, sketch_s
 
     // SKETCHY - SUM OF SHARED HASHES
 
-    let reader = BufReader::new(stdout);
+
+    let mash_reader = BufReader::new(stdout);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
 
-    compute_ssh(reader, tail_index, index_size, ranks, progress);
+    let data_file = File::open(&genotypes)?;
+    let data_reader = BufReader::new(data_file);
+
+    compute_ssh(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
 
     Ok(())
 }
@@ -127,7 +131,7 @@ fn test_get_sketch_info() {
 }
 
 
-fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, ranks: usize, progress: bool) -> Vec<u32> {
+fn compute_ssh<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
     /* Separated sum of shared hashes function for testing */ 
 
@@ -145,9 +149,6 @@ fn compute_ssh<R: BufRead>(reader: R, tail_index: usize, index_size: usize, rank
     let start = Instant::now();
     
     // SSSH Evaluation
-    
-    let data_file = File::open(&features)?;
-    let data_reader = BufReader::new(data_file);
 
     let mut feature_data = vec![];
     for (_i, line) in data_reader.lines().enumerate() {
@@ -354,7 +355,7 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limit: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -380,7 +381,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, procs: i32, limi
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", procs), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
+        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
     let screen_out = Command::new("mash") // system call to MASH   

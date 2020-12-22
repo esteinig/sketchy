@@ -41,9 +41,10 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("stability").unwrap().parse::<usize>().unwrap();
         let progress: bool = stream.is_present("progress")
 
-        let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch);
-        
-        sketchy::run(sketch, threads, ranks, sketch_index, sketch_size, progress).map_err(
+        let (sketch_msh, genotypes): (str, str) = sketchy::get_sketch_files(&sketch);
+        let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
+
+        sketchy::run(sketch_msh, genotypes, threads, ranks, stability, sketch_index, sketch_size, progress).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
