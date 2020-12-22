@@ -31,20 +31,11 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 ## Install
 
-Sketchy implements a `Rust` command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a `Python` command-line interface (`sketchy`) for evaluation plots and database utilities.
-
-**`Singularity`**
-
-I prefer `Singularity` for integrated access to host sytem files. The container is preloaded with default reference sketches and the container environment variable `$SKETCHY_PATH` is set to their internal location at `/sketchy`
-
-```sh
-singularity pull docker://esteinig/sketchy:latest
-./sketchy_latest.sif list
-```
+Sketchy implements a Rust command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a Python command-line interface (`sketchy`) for evaluation plots and database utilities.
 
 **`Cargo`**
 
-`Rust` client only where the `compute` subtask requires `Mash` in host `$PATH`
+Rust client only where the `compute` subtask requires `Mash` in host `$PATH`
 
 ```bash
 cargo install sketchy-rs
@@ -56,9 +47,17 @@ On Linux systems one should be able to install `Mash` conveniently e.g.
 sudo apt-get install mash
 ```
 
+**`Singularity`**
+
+Singularity container is preloaded with default reference sketches at the root path `/sketchy`
+
+```sh
+singularity pull docker://esteinig/sketchy:latest
+```
+
 **`Docker`**
 
-`Docker` image is available, also comes preloaded with the default reference sketches
+Docker image is available, also comes preloaded with the default reference sketches
 
 ```sh
 docker pull esteinig/sketchy:latest
@@ -69,14 +68,14 @@ docker pull esteinig/sketchy:latest
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
 ```
-conda install -c bioconda -c conda-forge sketchy=0.4.5
+conda install -c bioconda -c conda-forge sketchy=0.5.0
 ```
 
-You can also manually install into an environment like this:
+You can also manually install the latest commits into an environment like this:
 
 ```sh
 conda install -c bioconda -c conda-forge \
-  mash=2.2 psutil pysam rust nanoq
+  mash=2.2.2 psutil pysam rust nanoq
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
@@ -92,10 +91,10 @@ If no container is used, pull default species sketches into local storage before
 sketchy pull
 ```
 
-You can set the path to which the sketches are downloaded e.g. to the default `--path ~/.sketchy`. Use the `--full` flag to pull the complete, high-resolution collections (~ 2 GB):
+You can set the path to which the sketches are downloaded e.g. to the default `--path ~/.sketchy`. 
 
 ```
-sketchy pull --path ~/.sketchy --full
+sketchy pull --path ~/.sketchy
 ```
 Local sketches and template names can be viewed with:
 
@@ -103,30 +102,32 @@ Local sketches and template names can be viewed with:
 sketchy list
 ```
 
-Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for the `sketchy list` and `sketchy run` tasks to discover databases automatically.
+Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for tasks to discover databases automatically.
 
 ## Sketchy usage
 
-See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. For an evaluation of genomic neighbor typing using `mash screen` and a comparison to the online implemention of `mash dist` on comprehensive and dereplicated strain-level sketches, please see the preprint. Setup with `sketchy pull` deposited the default sketches to `~/.sketchy` so we can set the environment variable `SP` for convenience access to sketch files:
- 
+See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. For an evaluation of genomic neighbor typing using `mash screen` and a comparison to the online implemention of `mash dist` on comprehensive and dereplicated strain-level sketches, please see the preprint. 
+
+Setup environment variable to databases (or specify database paths in `--db` arguments)
+
 ```bash
-SK=~/.sketchy
+SKETCHY_PATH=$HOME/.sketchy
 ```
 
 ### Screening function
 
 `Sketchy` primarily uses a screening of the reference sketch containment in the provided read set as implemented by `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates, unless few reads are available (< 200). Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
 
-In the `Python client`:
+In the Python client:
 
 ```
-sketchy screen --fastx test.fastq --db $SK/saureus --limit 10 --pretty
+sketchy screen --fastx test.fastq --db saureus --limit 10 --pretty
 ```
 
-In the `Rust client` directly:
+In the Rust client:
 
 ```
-sketchy-rs screen -f test.fastq -d $SK/saureus -l 10 -p
+sketchy-rs screen -f test.fastq -d saureus -l 10 -p
 ```
 
 Please cite the following when using `sketchy screen`:
@@ -138,52 +139,41 @@ Please cite the following when using `sketchy screen`:
 
 Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available (< 100) or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
 
-`Sketchy's` streaming utility can be run through a wrapper in the `Python client` which is only suitable for completed read files (hence assigned as `run` task). Read streams and online sequencing runs should be served with the `Rust CLI` (see below). 
+`Sketchy's` streaming utility can be run through a wrapper in the Python client which is only suitable for completed read files (hence assigned as `run` task). Read streams and online sequencing runs should be served with the Rust client (see below). 
 
 ```bash
-sketchy run --help
+sketchy run --fastq test.fq --limit 1000 --ranks 10 --outdir test
 ```
 
-Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are sufficiently fast for online predictions on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads, total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 3000` or `cat test.fq | head -12000 | sketchy-rs compute`) which should be sufficient for initial analysis. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
+Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 1000` or `cat test.fq | head -4000 | sketchy-rs compute`) which should be sufficient for initial analysis. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
-Parameter `--ranks` controls the width of the consensus window for feature aggregation over the top ranking hits against the reference sketch (rows in heatmap diagnostic output)
-
-```bash
-sketchy run --fastq test.fq --sketch saureus --ranks 10 --limit 1000
-```
-
-More options can be viewed with
-
-```bash
-sketchy run --help
-```
 
 The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
  ```bash
- cat test.fq | head -20000 | sketchy-rs stream -d $SK/saureus -t 4 -p > sssh.tsv
+ cat test.fq | head -4000 | sketchy-rs stream -d saureus -t 4 -p > sssh.tsv
  ```
  
-`Predict` then uses either the final (current) ranked scores at the last read (`-m last`) or the totall over the read stream (`-m tota`) to infer the genotype profiles:
+`Predict` then uses either the final (current) ranked scores at the last read (`-m last`) or the totall over the read stream (`-m total`) to infer the genotype profiles:
 
 ```bash
-cat test.ssh.tsv | sketchy-rs predict -d $SK/saureus -m last > predict.tsv
+cat test.ssh.tsv | sketchy-rs predict -d saureus -m last > predict.tsv
 ```
 
 `Stream` and `predict` read from `/dev/stdin` - if limiting the read stream (e.g. with `head`) they can be piped:
 
 ```bash
-cat test.fq | head -20000 | \
-sketchy-rs stream -d $SK/saureus -t 4 -p | \
-sketchy-rs predict -d $SK/saureus -m last > predict.tsv
+cat test.fq | head -4000 | \
+sketchy-rs stream -d saureus -t 4 -p | \
+sketchy-rs predict -d saureus -m last > predict.tsv
 ```
 
-Diagnostic plots and evaluation summaries are handled in the `Python CLI` and accessed via the `sketchy plot` task:
+Diagnostic plots and evaluation summaries are handled in the Python client and accessed via the `sketchy plot` task:
 
 ```
 sketchy plot \
     --sssh sssh.tsv \
-    --db $SK/saureus \
+    --db saureus \
     --palette YnGnBu \
     --prefix test \
     --format png
@@ -195,24 +185,15 @@ Please cite the following when you use `sketchy stream`:
 
 ### Online streaming analysis
 
-In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the `Rust CLI`. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and the reads into the `Rust CLI:
+In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client:
 
 ```
-sketchy online watch -d /path/to/live/fastq | cat - \
-| sketchy-rs compute \
-    --sketch $SKETCHY_PATH/saureus.msh \
-    --ranks 20 \
-    --progress 1 \
-    --threads 4 \
-| sketchy-rs evaluate \
-    --features $SKETCHY_PATH/saureus.tsv \
-    --stable 1000 \
-> test.sssh.tsv
+sketchy online watch -d /live/fastq | cat - | sketchy-rs stream --db saureus > test.sssh.tsv
 ```
 
 ### Android mobile phones
 
-To set up the `Rust CLI` on Android mobile phones, the following can be done in a couple of minutes:
+To set up the Rust client on Android mobile phones, the following can be done quite easily:
 
 1. Install the [`UserLAnd`](https://github.com/CypherpunkArmory/UserLAnd) app 
 2. Setup an `Ubuntu` image
@@ -228,17 +209,8 @@ wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
   && tar -xvzf saureus.min.tar.gz
 wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
 
-cat mobile_test.fq | \
-sketchy-rs compute \
-   --sketch saureus_15_1000.msh \
-   --ranks 10 \
-   --progress 0 \
-   --threads 1
+cat mobile_test.fq | sketchy-rs stream --db ./saureus.min
 ```
-
-Python CLI has not been tested.
-
-
 
 ### Nextflow pipeline
 
