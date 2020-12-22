@@ -6,6 +6,7 @@ extern crate prettytable;
 mod sketchy;
 
 use std::io::Error;
+use std::path::Path;
 use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
@@ -35,13 +36,13 @@ fn main() -> Result<(), Error> {
         
     if let Some(stream) = matches.subcommand_matches("stream") {
         
-        let db: String = stream.value_of("db").unwrap().to_string();
+        let db: Path = stream.value_of("db").unwrap().to_string();
         let ranks: usize = stream.value_of("ranks").unwrap().parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("threads").unwrap().parse::<i32>().unwrap();
         let stability: usize = stream.value_of("stability").unwrap().parse::<usize>().unwrap();
-        let progress: bool = stream.is_present("progress")
+        let progress: bool = stream.is_present("progress");
 
-        let (sketch_msh, genotypes): (String, String) = sketchy::get_sketch_files(&db);
+        let (sketch_msh, genotypes): (Path, Path) = sketchy::get_sketch_files(&db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
         sketchy::run(sketch_msh, genotypes, threads, ranks, stability,progress sketch_index, sketch_size).map_err(
@@ -52,13 +53,13 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let fastx: String = screen.value_of("fastx").unwrap().to_string();
-        let db: String = screen.value_of("db").unwrap().to_string();
+        let fastx: Path = screen.value_of("fastx").unwrap().to_string();
+        let db: Path = screen.value_of("db").unwrap().to_string();
         let threads: i32 = screen.value_of("threads").unwrap().parse::<i32>().unwrap();
         let limit: usize = screen.value_of("limit").unwrap().parse::<usize>().unwrap();
-        let pretty: bool = screen.is_present("pretty")
+        let pretty: bool = screen.is_present("pretty");
 
-        let (sketch_msh, genotypes): (String, String) = sketchy::get_sketch_files(&db);
+        let (sketch_msh, genotypes): (Path, Path) = sketchy::get_sketch_files(&db);
 
         sketchy::screen(fastx, sketch_msh, genotypes, threads, limit).map_err(
             |err| println!("{:?}", err)

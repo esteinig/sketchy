@@ -10,6 +10,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 use std::fs::File;
 use std::iter::FromIterator;
 use std::cmp::Reverse;
+use std::path::Path;
 use cute::c;
 use indicatif::ProgressBar;
 use std::collections::HashMap;
@@ -18,7 +19,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: String, genotypes: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn run(sketch: Path, genotypes: Path, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -44,7 +45,7 @@ pub fn run(sketch: String, genotypes: String, threads: i32, ranks: usize, stabil
 
 
     let mash_args = [
-        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), "-"
+        "dist", "-p", format!("{}", threads), "-i", format!("{}", sketch), "-"
     ];
 
     let stdout = Command::new("mash") // system call to MASH   
@@ -80,12 +81,50 @@ fn test_mash_dist() {
 }
 
 
-pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
+
+
+pub fn get_sketch_files(db_path: &Path) {
+    
+    /* Get sketch files from database path and perform checks */
+
+    let db_sketch = db_path.join(
+        format!("{}.msh", db_path.file_name())
+    );
+    let db_genotypes = db_path.join(
+        format!("{}.tsv", db_path.file_name())
+    );
+    let db_index = db_path.join(
+        format!("{}.idx", db_path.file_name())
+    );
+    let db_key = db_path.join(
+        format!("{}.json", db_path.file_name())
+    );
+
+    if !db_path.exists(){
+        panic!(format!("Could not find sketch database directory: {}", db_path));
+    };
+    if !db_sketch.exists(){
+        panic!(format!("Could not find sketch database: {}", db_sketch));
+    };
+    if !db_genotypes.exists(){
+        panic!(format!("Could not find sketch genotypes: {}", db_genotypes));
+    };
+    if !db_index.exists(){
+        panic!(format!("Could not find sketch index: {}", db_index));
+    };
+    if !db_key.exists(){
+        panic!(format!("Could not find sketch key: {}", db_key));
+    };
+
+}
+
+
+pub fn get_sketch_info(sketch: &Path) -> (usize, usize) {
     
     /* Get sketch size and number of sketches from sketch file */
 
     let info = Command::new("mash")
-        .args(&["info", "-H", &*format!("{}", sketch)])
+        .args(&["info", "-H", format!("{}", sketch)])
         .output()
         .expect("Failed to run MASH INFO");
 
@@ -219,7 +258,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: R, tail_index
                                                .or_insert_with(Vec::new)  // prevented by init of vecmap above
                                                .push(*sorted_feature_map[0].0);
                                 
-                                let stable = evaluate_stability(&top_predictions[feature], breakpoint);
+                                let stable = evaluate_stability(&top_predictions[feature], stability);
             
                                 for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
                                     println!(
@@ -355,7 +394,7 @@ fn test_get_shared_hashes() {
 
 }
 
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
+pub fn screen(fastx: Path, sketch: Path, genotypes: Path, threads: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -381,7 +420,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
+        "screen", "-p", format!("{}", threads), "-w", format!("{}", sketch), format!("{}", fastx)
     ];
 
     let screen_out = Command::new("mash") // system call to MASH   
@@ -427,7 +466,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
         let grep_args = [
-            &*format!("{}", _id), &*format!("{}", genotypes)
+            format!("{}", _id), format!("{}", genotypes)
         ];
 
         let grepped = Command::new("grep")
