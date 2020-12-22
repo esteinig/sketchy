@@ -45,7 +45,7 @@ pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, sta
 
 
     let mash_args = [
-        "dist", "-p", format!("{}", threads), "-i", format!("{}", sketch), "-"
+        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch.display()), "-"
     ];
 
     let stdout = Command::new("mash") // system call to MASH   
@@ -130,7 +130,7 @@ pub fn get_sketch_info(sketch: &Path) -> (usize, usize) {
     /* Get sketch size and number of sketches from sketch file */
 
     let info = Command::new("mash")
-        .args(&["info", "-H", format!("{}", sketch)])
+        .args(&["info", "-H", &*format!("{}", sketch.display())])
         .output()
         .expect("Failed to run MASH INFO");
 
@@ -426,7 +426,7 @@ pub fn screen(fastx: &Path, sketch: &Path, genotypes: &Path, threads: i32, limit
 
 
     let mash_args = [
-        "screen", "-p", format!("{}", threads), "-w", format!("{}", sketch), format!("{}", fastx)
+        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch.display()), &*format!("{}", fastx.display())
     ];
 
     let screen_out = Command::new("mash") // system call to MASH   
@@ -472,7 +472,7 @@ pub fn screen(fastx: &Path, sketch: &Path, genotypes: &Path, threads: i32, limit
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
         let grep_args = [
-            format!("{}", _id), format!("{}", genotypes)
+            &*format!("{}", _id), &*format!("{}", genotypes.display())
         ];
 
         let grepped = Command::new("grep")
