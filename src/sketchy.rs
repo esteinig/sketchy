@@ -116,7 +116,7 @@ pub fn get_sketch_files(db_path: &Path)  -> (&Path, &Path, &Path, &Path) {
         panic!(format!("Could not find sketch key: {}", db_key.display()));
     };
 
-    (db_sketch, db_genotypes, db_index, db_key)
+    (&db_sketch, &db_genotypes, &db_index, &db_key)
     
 }
 
