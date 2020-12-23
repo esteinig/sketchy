@@ -350,12 +350,24 @@ pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 
 
 
-pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
+pub fn get_sketch_files(db: String, sketchy_path: &str)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
+
+    if !db_path.exists(){
+        // Try using the sketchy_path environment variable with the database name given:
+        let db_path = Path::new(sketchy_path).join(db_name);
+        if !db_path.exists(){
+            clap::Error::with_description("Database sketch directory is not available", clap::ErrorKind::InvalidValue).exit();
+        }
+    };
+
+    println!("{:?}", db_path);
+
+
 
     let db_sketch = db_path.join(
         format!("{}.msh", db_name)
@@ -370,9 +382,6 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
         format!("{}.key", db_name)
     );
 
-    if !db_path.exists(){
-        clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue).exit();
-    };
     if !db_sketch.exists(){
         clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();
     };

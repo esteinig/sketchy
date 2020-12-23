@@ -5,10 +5,13 @@ extern crate prettytable;
 
 mod sketchy;
 
+use std::env;
 use std::io::Error;
 use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
+
+    let sketchy_path: &str = env::var("SKETCHY_PATH").unwrap_or("$HOME/.sketchy");
 
     let matches = App::new("sketchy")
         .version("0.5.0")
@@ -37,7 +40,6 @@ fn main() -> Result<(), Error> {
         
         let db_err = clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue);
 
-        
         let db: String = stream.value_of("DB").unwrap_or_else(|| db_err.exit()).to_string();
         let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
