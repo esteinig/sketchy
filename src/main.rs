@@ -101,12 +101,13 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         let ssh: String = predict.value_of("SSH").unwrap_or("-").to_string();
+        let mode: String = predict.value_of("MODE").unwrap_or("last").to_string();
         let limit: usize = predict.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = predict.is_present("PRETTY");
         
         let (_, genotypes, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::predict(ssh, genotype_index, genotype_key, genotypes, limit, pretty).map_err(
+        sketchy::predict(ssh, mode, genotype_index, genotype_key, genotypes, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
