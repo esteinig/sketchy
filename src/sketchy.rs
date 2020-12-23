@@ -90,16 +90,16 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let db_path = Path::new(&db);
 
     let db_sketch = db_path.join(
-        db_path.file_name().unwrap() + ".msh"
+        db_path.file_name().unwrap().set_extension("png")
     );
     let db_genotypes = db_path.join(
-        db_path.file_name().unwrap() + ".tsv"
+        db_path.file_name().unwrap().set_extension("png")
     );
     let db_index = db_path.join(
-        db_path.file_name().unwrap() + ".idx"
+        db_path.file_name().unwrap().set_extension("png")
     );
     let db_key = db_path.join(
-        db_path.file_name().unwrap() + ".json"
+        db_path.file_name().unwrap().set_extension("png")
     );
 
     if !db_path.exists(){
