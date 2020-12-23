@@ -197,8 +197,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let stdin_reader = BufReader::new(stdin);
     for (_i, line) in stdin_reader.lines().enumerate() {
         let line = line?;
-        let content: Vec<i32> = line.trim().split("\t").map(
-            |x| x.parse::<i32>().unwrap()
+        let content: Vec<String> = line.trim().split("\t").map(
+            |x| x.parse::<String>().unwrap()
         ).collect();
         
         println!("{:?}", content);
