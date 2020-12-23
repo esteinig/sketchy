@@ -12,7 +12,6 @@ use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
 use std::time::Instant;
-use std::io::prelude::*;
 use indicatif::ProgressBar;
 use std::iter::FromIterator;
 use std::collections::HashMap;
@@ -194,11 +193,11 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
-    let stdin = std::io::stdin();
-    for line in stdin.lock().lines() {
-    println!("{}", line.unwrap());
+    let stdin_reader = BufReader::new(std::io::stdin());
+    for (_i, line) in stdin_reader.lines().enumerate() {
+        let line = line?;
+        println!("{}", _i);
     }
-
     Ok(())
 
 }
