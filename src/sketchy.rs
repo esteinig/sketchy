@@ -233,12 +233,13 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                 // collect the highest ranked ssh scores and their indices
                 let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
                 
-                let ssh: usize = ssh as usize;
 
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
                     
                     // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
+                    
+                    let ssh: usize = ssh as usize;
                     
                     // feature evaluation block
                     if rank == 0 {
