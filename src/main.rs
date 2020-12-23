@@ -11,7 +11,8 @@ use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
 
-    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or("$HOME/.sketchy".to_string());
+    let sketchy_home: String = os::homedir().join(".sketchy").to_str().unwrap();
+    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home);
 
     let matches = App::new("sketchy")
         .version("0.5.0")
