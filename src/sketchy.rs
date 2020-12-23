@@ -11,7 +11,6 @@ use std::fs::File;
 use std::iter::FromIterator;
 use std::cmp::Reverse;
 use std::path::Path;
-use cute::c;
 use indicatif::ProgressBar;
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
