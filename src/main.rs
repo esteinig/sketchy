@@ -96,13 +96,13 @@ fn main() -> Result<(), Error> {
 
     if let Some(predict) = matches.subcommand_matches("predict") {
 
-        let db: String = screen.value_of("DB").unwrap_or_else(||
+        let db: String = predict.value_of("DB").unwrap_or_else(||
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        let ssh: String = stream.value_of("SSH").unwrap_or("-").to_string();
-        let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
-        let pretty: bool = screen.is_present("PRETTY");
+        let ssh: String = predict.value_of("SSH").unwrap_or("-").to_string();
+        let limit: usize = predict.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
+        let pretty: bool = predict.is_present("PRETTY");
         
         let (_, genotypes, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
