@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
         
     if let Some(stream) = matches.subcommand_matches("stream") {
         
-        let db: String = stream.value_of("db").unwrap().expect("No database sketch provided. Exit.").to_string();
+        let db: String = stream.value_of("db").unwrap_err("TEST").to_string();
         let ranks: usize = stream.value_of("ranks").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("stability").unwrap_or("100").parse::<usize>().unwrap();
@@ -53,8 +53,8 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let fastx: String = screen.value_of("fastx").unwrap()..expect("No database sketch provided. Exit.").to_string();
-        let db: String = screen.value_of("db").unwrap().expect("No database sketch provided. Exit.").to_string();
+        let fastx: String = screen.value_of("fastx").unwrap().unwrap_err("TEST").to_string();
+        let db: String = screen.value_of("db").unwrap().unwrap_err("TEST").to_string();
         let threads: i32 = screen.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
         let limit: usize = screen.value_of("limit").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("pretty");
