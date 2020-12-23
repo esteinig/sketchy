@@ -84,9 +84,11 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db_path: &Path)  -> (&Path, &Path, &Path, &Path) {
+pub fn get_sketch_files(db: String)  -> (&Path, &Path, &Path, &Path) {
     
     /* Get sketch files from database path and perform checks */
+
+    let db_path = Path::new(db);
 
     let db_sketch = db_path.join(
         format!("{:?}.msh", db_path.file_name())
