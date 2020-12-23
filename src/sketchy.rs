@@ -187,8 +187,26 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
+    genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
+
     
 
+}
+
+fn read_genotype_key(path: &String) -> Result<HashMap<String, Value>, Box<Error>> {
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file
+    let m: HashMap<String, Value> = serde_json::from_reader(reader)?;
+
+    Ok(m)
+}
+
+fn main() {
+    let u = read_user_from_file("test.json").unwrap();
+    println!("{:#?}", u);
 }
 
 fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
