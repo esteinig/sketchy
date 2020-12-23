@@ -8,11 +8,11 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 */
 
 use cute::c;
-use std::io;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
 use std::time::Instant;
+use std::io::prelude::*;
 use indicatif::ProgressBar;
 use std::iter::FromIterator;
 use std::collections::HashMap;
@@ -194,8 +194,9 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
-    for line in io::stdin().lock().lines() {
-        println!("{}", line.unwrap());
+    let stdin = std::io::stdin();
+    for line in stdin.lock().lines() {
+    println!("{}", line.unwrap());
     }
 
     Ok(())
