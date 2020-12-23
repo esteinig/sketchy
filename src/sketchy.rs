@@ -103,20 +103,24 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
         format!("{}.json", db_name)
     );
 
+    
+    let err1 = clap::Error::with_description("Database sketch is missing file", clap::ErrorKind::InvalidValue);
+    let err2 = clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue);
+
     if !db_path.exists(){
-        panic!(format!("Could not find sketch database directory: {}", db_path.display()));
+        err2.exit();
     };
     if !db_sketch.exists(){
-        panic!(format!("Could not find sketch database: {}", db_sketch.display()));
+        err1.exit();
     };
     if !db_genotypes.exists(){
-        panic!(format!("Could not find sketch genotypes: {}", db_genotypes.display()));
+        err1.exit();
     };
     if !db_index.exists(){
-        panic!(format!("Could not find sketch index: {}", db_index.display()));
+        err1.exit();
     };
     if !db_key.exists(){
-        panic!(format!("Could not find sketch key: {}", db_key.display()));
+        err1.exit();
     };
 
     (
