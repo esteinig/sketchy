@@ -363,7 +363,7 @@ pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, 
         }
     };
 
-    println!("{:?}", db_path);
+    println!("{:?} {:?}", db_path, sketchy_path);
 
     let db_sketch = db_path.join(
         format!("{}.msh", db_name)
