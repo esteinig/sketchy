@@ -6,7 +6,6 @@ extern crate prettytable;
 mod sketchy;
 
 use std::io::Error;
-use std::path::Path;
 use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
