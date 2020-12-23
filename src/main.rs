@@ -34,14 +34,11 @@ fn main() -> Result<(), Error> {
         .get_matches();
         
     if let Some(stream) = matches.subcommand_matches("stream") {
-                
-        if stream.value_of("db").is_none() {
-            println!("Please provide a reference sketch database");
-            std::process::exit(1);
-        } else {
-            let db: String = stream.value_of("db").unwrap().to_string();
-        }
+        
+        let db_err = clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue);
 
+        
+        let db: String = stream.value_of("db").unwrap_or_else(|| db_err.exit()).to_string();
         let ranks: usize = stream.value_of("ranks").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("stability").unwrap_or("100").parse::<usize>().unwrap();
