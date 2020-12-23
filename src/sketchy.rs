@@ -7,17 +7,18 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 */
 
+use cute::c;
 use std::fs::File;
-use std::iter::FromIterator;
-use std::cmp::Reverse;
 use std::path::Path;
+use std::cmp::Reverse;
+use std::time::Instant;
 use indicatif::ProgressBar;
+use std::iter::FromIterator;
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
-use std::time::Instant;
-use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 use prettytable::format::{FormatBuilder};
+use std::io::{BufRead, BufReader, Error, ErrorKind};
 
 pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
