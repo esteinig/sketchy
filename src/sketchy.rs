@@ -239,8 +239,8 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                     
                     // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
                     
-                    let ssh: usize = ssh as usize;
-                    
+                    let ssh: usize = *ssh as usize;
+
                     // feature evaluation block
                     if rank == 0 {
 
