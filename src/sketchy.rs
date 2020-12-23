@@ -103,24 +103,20 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
         format!("{}.json", db_name)
     );
 
-    
-    let err1 = clap::Error::with_description("Database sketch is missing file", clap::ErrorKind::InvalidValue);
-    let err2 = clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue);
-
     if !db_path.exists(){
-        err2.exit();
+        clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_sketch.exists(){
-        err1.exit();
+        clap::Error::with_description("Database sketch is missing sktch file", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_genotypes.exists(){
-        err1.exit();
+        clap::Error::with_description("Database sketch is missing genotype file", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_index.exists(){
-        err1.exit();
+        clap::Error::with_description("Database sketch is missing index file", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_key.exists(){
-        err1.exit();
+        clap::Error::with_description("Database sketch is missing key file", clap::ErrorKind::InvalidValue).exit();
     };
 
     (
