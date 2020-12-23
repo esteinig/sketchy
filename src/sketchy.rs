@@ -228,6 +228,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
             // at sketch index end: output ranked ssh + reset for next read
             if idx == index_size-1 {
                 
+                bar.tick();
                 bar.set_message(&*format!("{}", idx));
 
                 // collect the index of the current sum of shared hashes
