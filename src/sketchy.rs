@@ -348,8 +348,6 @@ pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
-
-
 pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
@@ -452,28 +450,6 @@ fn test_get_sketch_info() {
 
 }
 
-// #[test]
-// fn test_ranked_sum_of_shared_hashes() {
-    
-//     /* Test general functionality of the compute sum of shared hashes function */
-
-//     // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
-
-//     let sketch_size: usize = 1000;
-//     let default_tail_index: usize = sketch_size.to_string().len();
-    
-//     let test_data_bytes = include_bytes!("data/test_mash.out");
-//     let test_data_sliced: &[u8] = &test_data_bytes[..];
-
-//     let reader = BufReader::new(test_data_sliced); // 2 reads
-    
-//     let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
-
-//     assert_eq!(ssh, vec![7, 77]);
-
-// }
-
-
 fn get_shared_hashes(input: &str, tail_index: usize) -> String {
 
     /* Parse shared hashes from input line string
@@ -544,6 +520,25 @@ fn test_get_shared_hashes() {
 
 }
 
+fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
+    if feature_map.len() < 2 {
+        1.0
+    } else {
+        let primary = *feature_map[0].1 as f64;
+        let secondary = *feature_map[1].1 as f64;
+
+        if secondary == 0.0 {
+            0.0
+        } else {
+            let numerator = 2.0 * primary;
+            let denominator = primary + secondary;
+
+            (numerator / denominator) - 1.0
+        }
+    }
+
+}
+
 fn evaluate_stability(top_vec: &Vec<usize>, breakpoint: usize) -> usize {
 
     let len = top_vec.len();
@@ -574,175 +569,37 @@ fn get_sorted_feature_map(fm: &HashMap<usize, usize>) -> Vec<(&usize, &usize)> {
     return feature_map
 }
 
-fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
+// #[test]
+// fn test_ranked_sum_of_shared_hashes() {
     
-    if secondary == 0.0 {
-        0.0
-    } else {
-        let numerator = 2.0 * primary;
-        let denominator = primary + secondary;
+//     /* Test general functionality of the compute sum of shared hashes function */
 
-        (numerator / denominator) - 1.0
-    }
+//     // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
 
-}
-
-fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
-    if feature_map.len() < 2 {
-        1.0
-    } else {
-        let primary = *feature_map[0].1 as f64;
-        let secondary = *feature_map[1].1 as f64;
-
-        if secondary == 0.0 {
-            0.0
-        } else {
-            let numerator = 2.0 * primary;
-            let denominator = primary + secondary;
-
-            (numerator / denominator) - 1.0
-        }
-    }
-
-}
-
-
-#[deprecated(
-    since = "0.5.0",
-    note = "Integrated with the sketchy run function, please use instead"
-)]
-pub fn evaluate(features: String, breakpoint: usize) -> Result<(), Error> {
+//     let sketch_size: usize = 1000;
+//     let default_tail_index: usize = sketch_size.to_string().len();
     
-    /* Compute the sum of ranked sums of shared hashes by feature 
+//     let test_data_bytes = include_bytes!("data/test_mash.out");
+//     let test_data_sliced: &[u8] = &test_data_bytes[..];
 
-    Creates an empty HashMap where keys are indices of columns in feature data
-    and keys are HashMaps with indices of feature values as keys and current
-    sum of ranked sums of shared hashes as values; maps are emptied on new read.
+//     let reader = BufReader::new(test_data_sliced); // 2 reads
     
-    Uses list comprehension macro: cute::c
+//     let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
 
-    Arguments
-    =========
+//     assert_eq!(ssh, vec![7, 77]);
 
-    Compute the sum of ranked sum of shared hashes (sssh) by feature
-    from the sum of shared hashes output from sketchy compute.
+// }
 
-    Operates on STDIN : /dev/stdin
 
-    features:
-        prepared feature index for evaluation, numeric categorical 
-        feature columns, row order as sketch
-
-    breakpoint:
-        denote a stable read breakpoint in the output stream after this many 
-        continuous top feature value predictions, actual breakpoint is
-        then: stable_breakpoint (in reads) - breakpoint (in reads)
-
-    */
-
-    let data_file = File::open(&features)?;
-    let data_reader = BufReader::new(data_file);
-
-    let mut feature_data = vec![];
-    for (_i, line) in data_reader.lines().enumerate() {
-        let line = line?;
-        let vec: Vec<i32> = line.trim()
-            .split("\t").map(
-                |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
-            )
-            .collect(); 
-        feature_data.push(vec);
-    }
+// fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
     
-    // Init the feature map
-    let number_features = feature_data[0].len();
-    let mut sssh: HashMap<usize, HashMap<usize, usize>> = c!{
-        fidx => HashMap::new(), for fidx in 0..number_features
-        };
+//     if secondary == 0.0 {
+//         0.0
+//     } else {
+//         let numerator = 2.0 * primary;
+//         let denominator = primary + secondary;
 
-    let mut top_predictions: HashMap<usize, Vec<usize>> = c!{
-        fidx => vec![], for fidx in 0..number_features
-        };
-    
+//         (numerator / denominator) - 1.0
+//     }
 
-    let mut read = 0;    
-    for line in stdin().lock().lines() {
-        // Each line in sketchy compute ssh output:
-        let line_str = line?;
-        let ssh_row: Vec<usize> = line_str.split("\t")
-            .map(|x| x.parse::<usize>().unwrap())
-            .collect();
-
-        let idx  = ssh_row[0];
-        let ssh  = ssh_row[1];
-        let rank = ssh_row[2];
-                
-        if rank == 0 {
-
-            /* Start of new read in `sketchy compute` output block after <rank> rows
-            Since we report the sum at the start of each new read (at rank == 0)
-            we need to skip the first (non-summed) read, and report again when the
-            last read block is completed and no rank == 0 can be encountered ...  */
-
-            if read > 0 {
-
-                for (feature, fm) in sssh.iter(){
-
-                    // Get a sorted feature map as vector
-                    let sorted_feature_map = get_sorted_feature_map(&fm);
-                    // Compute Brinda et al. (2019) preference score on SSSH
-                    let preference_score = compute_preference_score_sssh(&sorted_feature_map);
-
-                    // Add top feature value to feature vector map:
-                    top_predictions.entry(*feature)
-                                   .or_insert_with(Vec::new)  // prevented by init of vecmap above
-                                   .push(*sorted_feature_map[0].0);
-                    
-                    let stable = evaluate_stability(&top_predictions[feature], breakpoint);
-
-                    for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
-                        println!(
-                            "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-                             read-1, feature, feat_value, feat_rank,
-                             sssh_score, stable, preference_score
-                        )
-                    }
-                }
-                // Clear the feature sssh scores for next read
-                for (_, feature_map) in sssh.iter_mut(){
-                    feature_map.clear()    
-                }
-            }
-            read += 1;
-        }
-        // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
-        let feature_row = &feature_data[idx];
-        // Iterate mutable over feature keys
-        for (key, feature_map) in sssh.iter_mut() {
-            let feature_value = feature_row[*key];
-            // Add ssh score to feature value in feature map, or init with 0
-            let feature_value_sssh = feature_map.entry(feature_value as usize).or_insert(0);
-            *feature_value_sssh += ssh;
-        }
-    }
-
-    // ... this is done here:
-    for (feature, fm) in sssh.iter(){
-        let sorted_feature_map = get_sorted_feature_map(&fm);
-        top_predictions.entry(*feature)
-                        .or_insert_with(Vec::new) 
-                        .push(*sorted_feature_map[0].0);
-        let stable = evaluate_stability(&top_predictions[feature], breakpoint);
-        let preference_score = compute_preference_score_sssh(&sorted_feature_map);
-        for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
-            println!(
-                "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-                    read-1, feature, feat_value, feat_rank,
-                    sssh_score, stable, preference_score
-            )
-        }
-    }
-
-    Ok(())
-
-}
+// }

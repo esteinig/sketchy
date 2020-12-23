@@ -12,7 +12,7 @@ use clap::{Arg, App, SubCommand};
 
 fn main() -> Result<(), Error> {
 
-    let sketchy_home: String = dirs::home_dir().unwrap_or("");
+    let sketchy_home: String = dirs::home_dir().unwrap_or("").to_str().unwrap();
     let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home);
 
     let matches = App::new("sketchy")
