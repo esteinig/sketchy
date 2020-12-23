@@ -34,7 +34,7 @@ fn main() -> Result<(), Error> {
             .about("\npredict from sum of shared hashes")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
-            .arg(Arg::with_name("SSH").short("s").long("ssh").takes_value(true).required(true).help("Ranked sum of shared hashes input [-]"))
+            .arg(Arg::with_name("SSH").short("s").long("ssh").takes_value(true).help("Ranked sum of shared hashes input [-]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
