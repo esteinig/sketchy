@@ -133,7 +133,7 @@ pub fn get_sketch_info(sketch: String) -> (usize, usize) {
     /* Get sketch size and number of sketches from sketch file */
 
     let info = Command::new("mash")
-        .args(&["info", "-H", &*format!("{}", sketch.display())])
+        .args(&["info", "-H", &*format!("{}", sketch)])
         .output()
         .expect("Failed to run MASH INFO");
 
