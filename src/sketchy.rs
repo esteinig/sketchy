@@ -18,6 +18,7 @@ use std::process::{Command, Stdio};
 use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
+use prettytables::format::{FormatBuilder};
 
 pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
@@ -123,7 +124,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     let mut table = Table::new();
     
     if !pretty {
-        let raw =  format::FormatBuilder::new().column_separator('\t').build();
+        let raw = FormatBuilder::new().column_separator('\t').build();
         table.set_format(raw);
     }
 
