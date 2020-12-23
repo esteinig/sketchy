@@ -46,7 +46,7 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
 
-        let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, sketchy_path);
+        let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, &sketchy_path);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
         
 
@@ -64,7 +64,7 @@ fn main() -> Result<(), Error> {
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db, sketchy_path);
+        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db, &sketchy_path);
 
         sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
