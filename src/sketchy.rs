@@ -201,7 +201,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             |x| x.parse::<i32>().unwrap()
         ).collect();
         
-        println!("{}", content);
+        println!("{:?}", content);
     }
 
     Ok(())
