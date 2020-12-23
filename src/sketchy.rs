@@ -84,7 +84,7 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db_path: Path)  -> (Path, Path, Path, Path) {
+pub fn get_sketch_files(db_path: &Path)  -> (Path, Path, Path, Path) {
     
     /* Get sketch files from database path and perform checks */
 
@@ -122,7 +122,7 @@ pub fn get_sketch_files(db_path: Path)  -> (Path, Path, Path, Path) {
 }
 
 
-pub fn get_sketch_info(sketch: Path) -> (usize, usize) {
+pub fn get_sketch_info(sketch: &Path) -> (usize, usize) {
     
     /* Get sketch size and number of sketches from sketch file */
 
