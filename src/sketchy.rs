@@ -189,9 +189,9 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
     let mut feature_data = vec![];
     for (_i, line) in data_reader.lines().enumerate() {
         let line = line?;
-        let vec: Vec<&usize> = line.trim()
+        let vec: Vec<i32> = line.trim()
             .split("\t").map(
-                |x| x.parse::<usize>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
+                |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
             )
             .collect(); 
         feature_data.push(vec);
@@ -278,7 +278,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                     }
 
                     // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
-                    let feature_row = &feature_data[ix];
+                    let feature_row = &feature_data[ix as usize];
 
                     // Iterate mutable over feature keys
                     for (key, feature_map) in sssh.iter_mut() {
