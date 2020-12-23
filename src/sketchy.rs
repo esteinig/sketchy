@@ -119,10 +119,10 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     };
 
     (
-        String::new(db_sketch.to_str().unwrap()),
-        String::new(db_genotypes.to_str().unwrap()),
-        String::new(db_index.to_str().unwrap()),
-        String::new(db_key.to_str().unwrap())
+        db_sketch.to_str().unwrap().to_string(),
+        db_genotypes.to_str().unwrap().to_string(),
+        db_index.to_str().unwrap().to_string(),
+        db_key.to_str().unwrap().to_string()
     )
     
 }
