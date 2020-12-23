@@ -128,7 +128,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
 }
 
 
-pub fn get_sketch_info(sketch: String) -> (usize, usize) {
+pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
     
     /* Get sketch size and number of sketches from sketch file */
 
