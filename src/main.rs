@@ -47,7 +47,7 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        let fastx: String = screen.value_of("FASTX").unwrap_or("-").to_string();
+        let fastx: String = stream.value_of("FASTX").unwrap_or("-").to_string();
         let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
@@ -65,7 +65,7 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let db: String = stream.value_of("DB").unwrap_or_else(||
+        let db: String = screen.value_of("DB").unwrap_or_else(||
             clap::Error::with_description("Could not find sketch DB", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
         
