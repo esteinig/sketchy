@@ -176,11 +176,6 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
     
     /* Separated sum of shared hashes function for testing */ 
 
-    let mut sum_shared_hashes: Vec<u32> = vec![0; index_size];
-
-    let mut idx: usize = 0;
-    let mut read: u32 = 0; // max 4b reads
-
     let bar = if progress {
         ProgressBar::new_spinner()
     } else {
@@ -203,6 +198,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
     }
     
     // Init the feature map
+
     let number_features = feature_data[0].len();
     let mut sssh: HashMap<usize, HashMap<usize, usize>> = c!{
         fidx => HashMap::new(), for fidx in 0..number_features
@@ -212,8 +208,11 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
         fidx => vec![], for fidx in 0..number_features
         };
      
-
-
+    
+    let mut idx: usize = 0;
+    let mut read: u32 = 0; // max 4b reads  
+    let mut sum_shared_hashes: Vec<u32> = vec![0; index_size]; // max 4b ssh scores
+  
     reader.lines()  
         .filter_map(|line| line.ok())
         .for_each(|line| {
@@ -232,7 +231,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                 // sort indexed and updated ssh scores  
                 ssh_index.sort_by_key(|k| k.1);
                 // collect the highest ranked ssh scores and their indices
-                let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
+                let ranked_ssh: Vec<(&i32, &u32)> = ssh_index.drain(index_size-ranks..).collect();
 
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
@@ -280,6 +279,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
 
                     // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
                     let feature_row = &feature_data[ix];
+
                     // Iterate mutable over feature keys
                     for (key, feature_map) in sssh.iter_mut() {
                         let feature_value = feature_row[*key];
