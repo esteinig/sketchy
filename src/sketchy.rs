@@ -100,23 +100,23 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
         format!("{}.idx", db_name)
     );
     let db_key = db_path.join(
-        format!("{}.json", db_name)
+        format!("{}.key", db_name)
     );
 
     if !db_path.exists(){
         clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_sketch.exists(){
-        clap::Error::with_description("Database sketch is missing sktch file", clap::ErrorKind::InvalidValue).exit();
+        clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_genotypes.exists(){
-        clap::Error::with_description("Database sketch is missing genotype file", clap::ErrorKind::InvalidValue).exit();
+        clap::Error::with_description("Database sketch is missing genotype file (.tsv)", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_index.exists(){
-        clap::Error::with_description("Database sketch is missing index file", clap::ErrorKind::InvalidValue).exit();
+        clap::Error::with_description("Database sketch is missing index file (.idx)", clap::ErrorKind::InvalidValue).exit();
     };
     if !db_key.exists(){
-        clap::Error::with_description("Database sketch is missing key file", clap::ErrorKind::InvalidValue).exit();
+        clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
     };
 
     (
