@@ -187,9 +187,9 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
-    genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
+    let genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
 
-
+    prinln!("{:?}", genotype_map);
 
 }
 
