@@ -189,7 +189,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
     let mut feature_data = vec![];
     for (_i, line) in data_reader.lines().enumerate() {
         let line = line?;
-        let vec: Vec<usize> = line.trim()
+        let vec: Vec<&usize> = line.trim()
             .split("\t").map(
                 |x| x.parse::<usize>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
             )
