@@ -123,7 +123,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     let mut table = Table::new();
     
     if !pretty {
-        let raw = prettytable::format::TableFormat::new("\t");
+        let raw =  format::FormatBuilder::new().column_separator('\t').build();
         table.set_format(raw);
     }
 
