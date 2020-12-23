@@ -229,7 +229,6 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
             if idx == index_size-1 {
                 
                 bar.tick();
-                bar.set_message(&*format!("{}", idx));
 
                 // collect the index of the current sum of shared hashes
                 let mut ssh_index: Vec<(usize, &u32)> = sum_shared_hashes.iter().enumerate().collect();
