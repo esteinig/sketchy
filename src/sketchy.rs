@@ -19,7 +19,7 @@ use std::process::{Command, Stdio};
 use prettytable::{Table, Row, Cell};
 use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
-use serde_json::{Result, Value};
+use serde_json::{Value};
 
 pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
