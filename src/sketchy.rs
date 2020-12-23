@@ -195,7 +195,6 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     for line in io::stdin().lines() {
-        // Now print the line (line.unwrap() first) via the println!() macro
         println!("{}", line.unwrap());
     }
 
