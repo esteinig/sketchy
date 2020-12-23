@@ -19,7 +19,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -63,121 +63,122 @@ pub fn run(sketch: String, genotype_index: String, threads: i32, ranks: usize, s
     let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
-    ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
+    ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress).map_err(
+        |err| println!("{:?}", err)
+    ).ok();
 
     Ok(())
 }
 
-#[test]
-fn test_mash_dist() {
+pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
     
-    /* Test dependency MASH DIST in $PATH */
+    /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
-    let _stdout = Command::new("mash")  
-        .args(&["dist", "-h"])
-        .output()
-        .expect("Failed to run MASH DIST");
+    Arguments
+    =========
 
-}
+    fastx:
+        fasta/q reads input path for mash screen
 
-
-
-
-pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
+    sketch:
+        path to input sketch database file in Sketchy created with MASH
     
-    /* Get sketch files from database path and perform checks */
+    features:
+        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
 
-    let db_path = Path::new(&db);
-    let db_name = db_path.file_name().unwrap().to_str().unwrap();
-
-    let db_sketch = db_path.join(
-        format!("{}.msh", db_name)
-    );
-    let db_genotypes = db_path.join(
-        format!("{}.tsv", db_name)
-    );
-    let db_index = db_path.join(
-        format!("{}.idx", db_name)
-    );
-    let db_key = db_path.join(
-        format!("{}.key", db_name)
-    );
-
-    if !db_path.exists(){
-        clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_sketch.exists(){
-        clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_genotypes.exists(){
-        clap::Error::with_description("Database sketch is missing genotype file (.tsv)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_index.exists(){
-        clap::Error::with_description("Database sketch is missing index file (.idx)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_key.exists(){
-        clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
-    };
-
-    (
-        db_sketch.to_str().unwrap().to_string(),
-        db_genotypes.to_str().unwrap().to_string(),
-        db_index.to_str().unwrap().to_string(),
-        db_key.to_str().unwrap().to_string()
-    )
+    index_size: 
+        size of sketch index, required for continuous parsing of reads from MASH
     
-}
+    sketch_size: 
+        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
+
+    */
 
 
-pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
+    let mash_args = [
+        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
+    ];
+
+    let screen_out = Command::new("mash") // system call to MASH   
+        .args(&mash_args)
+        .stderr(Stdio::null())
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(
+            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
+        )?;
     
-    /* Get sketch size and number of sketches from sketch file */
+    let screen_sorted = Command::new("sort")
+        .arg("-gr")
+        .stdin(screen_out)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH"))?;
 
-    let info = Command::new("mash")
-        .args(&["info", "-H", &*format!("{}", sketch)])
-        .output()
-        .expect("Failed to run MASH INFO");
 
-    let info_lines = std::str::from_utf8(&info.stdout).unwrap().lines();
+    let reader = BufReader::new(screen_sorted);
+    
+    let mut table = Table::new();
+    for (_i, line) in reader.lines().enumerate() {
 
-    let mut return_values = vec![];    
-    for (i, line) in info_lines.enumerate() {
-        if i == 4 || i == 5 {
-            let values: Vec<&str> = line.split_whitespace().collect();            
-            let value: usize = values.last().unwrap().parse().unwrap();
-            return_values.push(value);
+        if _i >= limit {
+             break   
         }
-    }
 
-    (return_values[0], return_values[1])
+        let line = line?;
+        let values: Vec<&str> = line.split_whitespace().collect();   
+                
+        let _identity: &str = values[0];
+        let _shared_hashes: &str = values[1];
+
+        let _sketch_id: &str = values[4];
+
+        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
+        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
+
+        let _id_values: Vec<&str> = _name.split(".").collect();
+        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
+        
+        let grep_args = [
+            &*format!("{}", _id), &*format!("{}", genotypes)
+        ];
+
+        let grepped = Command::new("grep")
+            .args(&grep_args)
+            .stdout(Stdio::piped())
+            .spawn()?
+            .stdout
+            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
+        
+        let mut grep_reader = BufReader::new(grepped);
+
+        let mut _genotype_str = String::new();
+        let _ = grep_reader.read_line(&mut _genotype_str);
+        
+        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
+
+        let _screen_rank: &str = &(_i+1).to_string();
+
+        let mut screen_row = Row::new(vec![
+            Cell::new(_screen_rank),
+            Cell::new(_identity),
+            Cell::new(_shared_hashes)
+        ]);
+
+        for x in _genotype_values.iter() {
+            screen_row.add_cell(Cell::new(x))
+        }; 
+        
+        table.add_row(screen_row);
+            
+    };
+
+    table.printstd();
+
+    Ok(())
 }
-
-#[test]
-fn test_mash_info() {
-    
-    /* Test dependency MASH INFO in $PATH */
-
-    let _info = Command::new("mash")
-        .args(&["info", "-h"])
-        .output()
-        .expect("Failed to run MASH INFO");
-
-}
-
-#[test]
-fn test_get_sketch_info() {
-    
-    /* Test obtaining sketch size and number of sketches from sketch file */
-
-    let sketch_file: String = String::from("src/data/test_mash.msh");
-    let expected_values: (usize, usize) = (1000, 2);
-
-    let return_values = get_sketch_info(&sketch_file);
-
-    assert_eq!(return_values, expected_values);
-
-}
-
 
 fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
@@ -316,25 +317,134 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
 
 
 #[test]
-fn test_ranked_sum_of_shared_hashes() {
+fn test_mash_dist() {
     
-    /* Test general functionality of the compute sum of shared hashes function */
+    /* Test dependency MASH DIST in $PATH */
 
-    // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
-
-    let sketch_size: usize = 1000;
-    let default_tail_index: usize = sketch_size.to_string().len();
-    
-    let test_data_bytes = include_bytes!("data/test_mash.out");
-    let test_data_sliced: &[u8] = &test_data_bytes[..];
-
-    let reader = BufReader::new(test_data_sliced); // 2 reads
-    
-    let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
-
-    assert_eq!(ssh, vec![7, 77]);
+    let _stdout = Command::new("mash")  
+        .args(&["dist", "-h"])
+        .output()
+        .expect("Failed to run MASH DIST");
 
 }
+
+
+
+
+pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
+    
+    /* Get sketch files from database path and perform checks */
+
+    let db_path = Path::new(&db);
+    let db_name = db_path.file_name().unwrap().to_str().unwrap();
+
+    let db_sketch = db_path.join(
+        format!("{}.msh", db_name)
+    );
+    let db_genotypes = db_path.join(
+        format!("{}.tsv", db_name)
+    );
+    let db_index = db_path.join(
+        format!("{}.idx", db_name)
+    );
+    let db_key = db_path.join(
+        format!("{}.key", db_name)
+    );
+
+    if !db_path.exists(){
+        clap::Error::with_description("Database sketch is missing", clap::ErrorKind::InvalidValue).exit();
+    };
+    if !db_sketch.exists(){
+        clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();
+    };
+    if !db_genotypes.exists(){
+        clap::Error::with_description("Database sketch is missing genotype file (.tsv)", clap::ErrorKind::InvalidValue).exit();
+    };
+    if !db_index.exists(){
+        clap::Error::with_description("Database sketch is missing index file (.idx)", clap::ErrorKind::InvalidValue).exit();
+    };
+    if !db_key.exists(){
+        clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
+    };
+
+    (
+        db_sketch.to_str().unwrap().to_string(),
+        db_genotypes.to_str().unwrap().to_string(),
+        db_index.to_str().unwrap().to_string(),
+        db_key.to_str().unwrap().to_string()
+    )
+    
+}
+
+
+pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
+    
+    /* Get sketch size and number of sketches from sketch file */
+
+    let info = Command::new("mash")
+        .args(&["info", "-H", &*format!("{}", sketch)])
+        .output()
+        .expect("Failed to run MASH INFO");
+
+    let info_lines = std::str::from_utf8(&info.stdout).unwrap().lines();
+
+    let mut return_values = vec![];    
+    for (i, line) in info_lines.enumerate() {
+        if i == 4 || i == 5 {
+            let values: Vec<&str> = line.split_whitespace().collect();            
+            let value: usize = values.last().unwrap().parse().unwrap();
+            return_values.push(value);
+        }
+    }
+
+    (return_values[0], return_values[1])
+}
+
+#[test]
+fn test_mash_info() {
+    
+    /* Test dependency MASH INFO in $PATH */
+
+    let _info = Command::new("mash")
+        .args(&["info", "-h"])
+        .output()
+        .expect("Failed to run MASH INFO");
+
+}
+
+#[test]
+fn test_get_sketch_info() {
+    
+    /* Test obtaining sketch size and number of sketches from sketch file */
+
+    let sketch_file: String = String::from("src/data/test_mash.msh");
+    let expected_values: (usize, usize) = (1000, 2);
+
+    let return_values = get_sketch_info(&sketch_file);
+
+    assert_eq!(return_values, expected_values);
+
+}
+// #[test]
+// fn test_ranked_sum_of_shared_hashes() {
+    
+//     /* Test general functionality of the compute sum of shared hashes function */
+
+//     // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
+
+//     let sketch_size: usize = 1000;
+//     let default_tail_index: usize = sketch_size.to_string().len();
+    
+//     let test_data_bytes = include_bytes!("data/test_mash.out");
+//     let test_data_sliced: &[u8] = &test_data_bytes[..];
+
+//     let reader = BufReader::new(test_data_sliced); // 2 reads
+    
+//     let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
+
+//     assert_eq!(ssh, vec![7, 77]);
+
+// }
 
 
 fn get_shared_hashes(input: &str, tail_index: usize) -> String {
@@ -406,117 +516,6 @@ fn test_get_shared_hashes() {
     assert_eq!(get_shared_hashes(line_default, 0), "100");
 
 }
-
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
-    
-    /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
-
-    Arguments
-    =========
-
-    fastx:
-        fasta/q reads input path for mash screen
-
-    sketch:
-        path to input sketch database file in Sketchy created with MASH
-    
-    features:
-        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
-
-    index_size: 
-        size of sketch index, required for continuous parsing of reads from MASH
-    
-    sketch_size: 
-        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
-
-    */
-
-
-    let mash_args = [
-        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
-    ];
-
-    let screen_out = Command::new("mash") // system call to MASH   
-        .args(&mash_args)
-        .stderr(Stdio::null())
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(
-            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
-        )?;
-    
-    let screen_sorted = Command::new("sort")
-        .arg("-gr")
-        .stdin(screen_out)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH"))?;
-
-
-    let reader = BufReader::new(screen_sorted);
-    
-    let mut table = Table::new();
-    for (_i, line) in reader.lines().enumerate() {
-
-        if _i >= limit {
-             break   
-        }
-
-        let line = line?;
-        let values: Vec<&str> = line.split_whitespace().collect();   
-                
-        let _identity: &str = values[0];
-        let _shared_hashes: &str = values[1];
-
-        let _sketch_id: &str = values[4];
-
-        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
-        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
-
-        let _id_values: Vec<&str> = _name.split(".").collect();
-        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
-        
-        let grep_args = [
-            &*format!("{}", _id), &*format!("{}", genotypes)
-        ];
-
-        let grepped = Command::new("grep")
-            .args(&grep_args)
-            .stdout(Stdio::piped())
-            .spawn()?
-            .stdout
-            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
-        
-        let mut grep_reader = BufReader::new(grepped);
-
-        let mut _genotype_str = String::new();
-        let _ = grep_reader.read_line(&mut _genotype_str);
-        
-        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
-
-        let _screen_rank: &str = &(_i+1).to_string();
-
-        let mut screen_row = Row::new(vec![
-            Cell::new(_screen_rank),
-            Cell::new(_identity),
-            Cell::new(_shared_hashes)
-        ]);
-
-        for x in _genotype_values.iter() {
-            screen_row.add_cell(Cell::new(x))
-        }; 
-        
-        table.add_row(screen_row);
-            
-    };
-
-    table.printstd();
-
-    Ok(())
-}
-
 
 fn evaluate_stability(top_vec: &Vec<usize>, breakpoint: usize) -> usize {
 
