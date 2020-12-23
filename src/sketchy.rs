@@ -46,7 +46,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
 
 
     if fastx != "-" {
-        if !Path::new(fastx).exists(){
+        if !Path::new(&fastx).exists(){
             clap::Error::with_description("Could not detect FASTX", clap::ErrorKind::InvalidValue).exit();
         };
     };
