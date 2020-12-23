@@ -19,7 +19,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: Path, genotype_index: &Path, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn run(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -45,7 +45,7 @@ pub fn run(sketch: Path, genotype_index: &Path, threads: i32, ranks: usize, stab
 
 
     let mash_args = [
-        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch.display()), "-"
+        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), "-"
     ];
 
     let stdout = Command::new("mash") // system call to MASH   
@@ -60,8 +60,7 @@ pub fn run(sketch: Path, genotype_index: &Path, threads: i32, ranks: usize, stab
     let mash_reader = BufReader::new(stdout);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
     
-    let data_filename = genotype_index.to_str().unwrap();
-    let data_file = File::open(data_filename)?;
+    let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
     ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress);
@@ -84,7 +83,7 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db: &String)  -> (&Path, &Path, &Path, &Path) {
+pub fn get_sketch_files(db: String)  -> (String, String String, String) {
     
     /* Get sketch files from database path and perform checks */
 
@@ -119,12 +118,17 @@ pub fn get_sketch_files(db: &String)  -> (&Path, &Path, &Path, &Path) {
         panic!(format!("Could not find sketch key: {}", db_key.display()));
     };
 
-    (&db_sketch, &db_genotypes, &db_index, &db_key)
+    (
+        String::new(db_sketch.to_str().unwrap()),
+        String::new(db_genotypes.to_str().unwrap()),
+        String::new(db_index.to_str().unwrap()),
+        String::new(db_key.to_str().unwrap())
+    )
     
 }
 
 
-pub fn get_sketch_info(sketch: &Path) -> (usize, usize) {
+pub fn get_sketch_info(sketch: String) -> (usize, usize) {
     
     /* Get sketch size and number of sketches from sketch file */
 
@@ -174,7 +178,7 @@ fn test_get_sketch_info() {
 }
 
 
-fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: R, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
     /* Separated sum of shared hashes function for testing */ 
 
@@ -402,7 +406,7 @@ fn test_get_shared_hashes() {
 
 }
 
-pub fn screen(fastx: Path, sketch: Path, genotypes: Path, threads: i32, limit: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -428,7 +432,7 @@ pub fn screen(fastx: Path, sketch: Path, genotypes: Path, threads: i32, limit: u
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch.display()), &*format!("{}", fastx.display())
+        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
     let screen_out = Command::new("mash") // system call to MASH   
@@ -474,7 +478,7 @@ pub fn screen(fastx: Path, sketch: Path, genotypes: Path, threads: i32, limit: u
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
         let grep_args = [
-            &*format!("{}", _id), &*format!("{}", genotypes.display())
+            &*format!("{}", _id), &*format!("{}", genotypes)
         ];
 
         let grepped = Command::new("grep")
