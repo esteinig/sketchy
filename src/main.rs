@@ -22,28 +22,32 @@ fn main() -> Result<(), Error> {
         .subcommand(SubCommand::with_name("stream")
             .about("\nsum of shared hashes from fasta/q on stdin")
             .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("reference sketch db"))
-            .arg(Arg::with_name("RANKS").short("r").long("ranks").takes_value(true).help("max ssh ranks per read"))
-            .arg(Arg::with_name("STABILITY").short("s").long("stability").takes_value(true).help("reads to stable breakpointh"))
-            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("max threads for mash"))
-            .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("progress bar on"))
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("reference sketch db [required]"))
+            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).help("fasta/q input path [-]"))
+            .arg(Arg::with_name("RANKS").short("r").long("ranks").takes_value(true).help("max ssh ranks per read [10]"))
+            .arg(Arg::with_name("STABILITY").short("s").long("stability").takes_value(true).help("reads to stable breakpoint [100]"))
+            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("max threads for mash [4]"))
+            .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("progress bar on [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nscreen read set against reference sketch")
             .version("0.5.0")
-            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("fasta/q input path"))
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("reference sketch db"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("limit ranked results"))
-            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("max threads for mash"))
-            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("pretty print on"))
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("reference sketch db [required]"))
+            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("fasta/q input path [required]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("limit ranked results [10]"))
+            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("max threads for mash [4]"))
+            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("pretty print on [false]"))
         )
         .get_matches();
         
     if let Some(stream) = matches.subcommand_matches("stream") {
         
-        let db_err = clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue);
 
-        let db: String = stream.value_of("DB").unwrap_or_else(|| db_err.exit()).to_string();
+        let db: String = stream.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+        let fastx: String = screen.value_of("FASTX").unwrap_or("-").to_string();
         let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
@@ -61,8 +65,14 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let fastx: String = screen.value_of("FASTX").unwrap().to_string();
-        let db: String = screen.value_of("DB").unwrap().to_string();
+        let db: String = stream.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Could not find sketch DB", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+        
+        let fastx: String = screen.value_of("FASTX").unwrap_or_else(||
+            clap::Error::with_description("Could not find input FASTX", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
         let threads: i32 = screen.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");

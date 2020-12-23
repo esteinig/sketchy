@@ -20,7 +20,7 @@ use prettytable::{Table, Row, Cell};
 use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 
-pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -45,8 +45,14 @@ pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize
     */
 
 
+    if fastx != "-" {
+        if !Path::new(fastx).exists(){
+            clap::Error::with_description("Could not detect FASTX", clap::ErrorKind::InvalidValue).exit();
+        };
+    };
+
     let mash_args = [
-        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), "-"
+        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
     let stdout = Command::new("mash") // system call to MASH   
