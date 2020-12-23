@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
-    for line in io::stdin().lines() {
+    for line in io::stdin().lock().lines() {
         println!("{}", line.unwrap());
     }
 
