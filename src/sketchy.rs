@@ -189,7 +189,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
     let genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
 
-    prinln!("{:?}", genotype_map);
+    println!("{:?}", genotype_map);
 
 }
 
