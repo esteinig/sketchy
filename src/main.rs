@@ -38,11 +38,11 @@ fn main() -> Result<(), Error> {
         let db_err = clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue);
 
         
-        let db: String = stream.value_of("db").unwrap_or_else(|| db_err.exit()).to_string();
-        let ranks: usize = stream.value_of("ranks").unwrap_or("10").parse::<usize>().unwrap();
-        let threads: i32 = stream.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
-        let stability: usize = stream.value_of("stability").unwrap_or("100").parse::<usize>().unwrap();
-        let progress: bool = stream.is_present("progress");
+        let db: String = stream.value_of("DB").unwrap_or_else(|| db_err.exit()).to_string();
+        let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
+        let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
+        let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
+        let progress: bool = stream.is_present("PROGRESS");
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
@@ -56,11 +56,11 @@ fn main() -> Result<(), Error> {
 
     if let Some(screen) = matches.subcommand_matches("screen") {
         
-        let fastx: String = screen.value_of("fastx").unwrap().to_string();
-        let db: String = screen.value_of("db").unwrap().to_string();
-        let threads: i32 = screen.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
-        let limit: usize = screen.value_of("limit").unwrap_or("10").parse::<usize>().unwrap();
-        let pretty: bool = screen.is_present("pretty");
+        let fastx: String = screen.value_of("FASTX").unwrap().to_string();
+        let db: String = screen.value_of("DB").unwrap().to_string();
+        let threads: i32 = screen.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
+        let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
+        let pretty: bool = screen.is_present("PRETTY");
 
         let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
 
