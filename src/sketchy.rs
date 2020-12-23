@@ -12,7 +12,6 @@ use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
 use std::time::Instant;
-use serde::Deserialize;
 use indicatif::ProgressBar;
 use std::iter::FromIterator;
 use std::collections::HashMap;
@@ -189,7 +188,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
     genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
 
-    
+
 
 }
 
