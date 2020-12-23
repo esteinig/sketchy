@@ -87,7 +87,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
-    let db_path = Path::new(db);
+    let db_path = Path::new(&db);
 
     let db_sketch = db_path.join(
         format!("{:?}.msh", db_path.file_name())
