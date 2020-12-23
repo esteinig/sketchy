@@ -198,7 +198,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     for line in stdin.lock().lines() {
         let input = line.expect("Failed to read line");
         let content: Vec<&str> = input.split("/").collect();
-        println!("{:?}", content);
+        println!("{:?}", input);
     }
     Ok(())
 
