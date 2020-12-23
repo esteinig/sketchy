@@ -84,7 +84,7 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db: String)  -> (&Path, &Path, &Path, &Path) {
+pub fn get_sketch_files(db: String)  -> (Path, Path, Path, Path) {
     
     /* Get sketch files from database path and perform checks */
 
