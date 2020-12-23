@@ -44,8 +44,6 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
 
-        println!("{}", progress);
-
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
         
