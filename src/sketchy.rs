@@ -19,7 +19,7 @@ use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
 
-pub fn run(sketch: &Path, genotype_index: &Path, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn run(sketch: Path, genotype_index: &Path, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -84,7 +84,7 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db_path: &Path)  -> (&Path, &Path, &Path, &Path) {
+pub fn get_sketch_files(db_path: Path)  -> (Path, Path, Path, Path) {
     
     /* Get sketch files from database path and perform checks */
 
@@ -117,12 +117,12 @@ pub fn get_sketch_files(db_path: &Path)  -> (&Path, &Path, &Path, &Path) {
         panic!(format!("Could not find sketch key: {}", db_key.display()));
     };
 
-    (&db_sketch, &db_genotypes, &db_index, &db_key)
+    (db_sketch, db_genotypes, db_index, db_key)
     
 }
 
 
-pub fn get_sketch_info(sketch: &Path) -> (usize, usize) {
+pub fn get_sketch_info(sketch: Path) -> (usize, usize) {
     
     /* Get sketch size and number of sketches from sketch file */
 
@@ -400,7 +400,7 @@ fn test_get_shared_hashes() {
 
 }
 
-pub fn screen(fastx: &Path, sketch: &Path, genotypes: &Path, threads: i32, limit: usize) -> Result<(), Error> {
+pub fn screen(fastx: Path, sketch: Path, genotypes: Path, threads: i32, limit: usize) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
