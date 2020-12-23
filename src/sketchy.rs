@@ -12,6 +12,7 @@ use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
 use std::time::Instant;
+use serde::Deserialize;
 use indicatif::ProgressBar;
 use std::iter::FromIterator;
 use std::collections::HashMap;
@@ -70,7 +71,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
     let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
-    ranked_sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress).map_err(
+    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress).map_err(
         |err| println!("{:?}", err)
     ).ok();
 
@@ -182,9 +183,17 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool){
+
+    /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
+
     
-    /* Separated sum of shared hashes function for testing */ 
+
+}
+
+fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+    
+    /* Sum of shared hashes core function */ 
 
     let bar = if progress {
         ProgressBar::new_spinner()
@@ -194,7 +203,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
 
     let start = Instant::now();
     
-    // SSSH Evaluation
+    // Ranked sums of sum of shared hashes (by feature) for evaluation
 
     let mut feature_data = vec![];
     for (_i, line) in data_reader.lines().enumerate() {
@@ -247,7 +256,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
                     
-                    // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
+                    // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores for heatmaps
                     
                     let ssh: usize = **ssh as usize;
 
@@ -302,10 +311,10 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                     }
 
                 }
-
+                // sketch index end for this read
                 idx = 0; read += 1;
-
-            } else { idx += 1; }
+            
+            } else { idx += 1; } // in sketch index
 
         });
 

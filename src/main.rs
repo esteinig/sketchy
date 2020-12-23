@@ -2,6 +2,7 @@ extern crate dirs;
 extern crate cute;
 extern crate clap;
 extern crate indicatif;
+extern crate serde_json;
 extern crate prettytable;
 
 mod sketchy;
@@ -29,12 +30,20 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
         )
+        .subcommand(SubCommand::with_name("predict")
+            .about("\npredict from sum of shared hashes")
+            .version("0.5.0")
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
+            .arg(Arg::with_name("SSH").short("s").long("ssh").takes_value(true).required(true).help("Ranked sum of shared hashes input [-]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
+            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+        )
         .subcommand(SubCommand::with_name("screen")
             .about("\nscreen read set against reference sketch")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
             .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("Fasta/q input path [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit ranked results [10]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
@@ -44,7 +53,7 @@ fn main() -> Result<(), Error> {
         
 
         let db: String = stream.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Could not find sketch database", clap::ErrorKind::InvalidValue).exit()
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
         let fastx: String = stream.value_of("FASTX").unwrap_or("-").to_string();
@@ -66,11 +75,11 @@ fn main() -> Result<(), Error> {
     if let Some(screen) = matches.subcommand_matches("screen") {
         
         let db: String = screen.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Could not find sketch DB", clap::ErrorKind::InvalidValue).exit()
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
         
         let fastx: String = screen.value_of("FASTX").unwrap_or_else(||
-            clap::Error::with_description("Could not find input FASTX", clap::ErrorKind::InvalidValue).exit()
+            clap::Error::with_description("Could not find input read file", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
         let threads: i32 = screen.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
@@ -80,6 +89,24 @@ fn main() -> Result<(), Error> {
         let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db, &sketchy_path);
 
         sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+
+    }
+
+    if let Some(predict) = matches.subcommand_matches("predict") {
+
+        let db: String = screen.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+        let ssh: String = stream.value_of("SSH").unwrap_or("-").to_string();
+        let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
+        let pretty: bool = screen.is_present("PRETTY");
+        
+        let (_, genotypes, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+
+        sketchy::predict(ssh, genotype_index, genotype_key, genotypes, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
