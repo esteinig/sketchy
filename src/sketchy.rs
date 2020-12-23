@@ -282,7 +282,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
 
                     // Iterate mutable over feature keys
                     for (key, feature_map) in sssh.iter_mut() {
-                        let feature_value = feature_row[*key];
+                        let feature_value = feature_row[*key] as u32;
                         // Add ssh score to feature value in feature map, or init with 0
                         let feature_value_sssh = feature_map.entry(feature_value as usize).or_insert(0);
                         *feature_value_sssh += *ssh;
