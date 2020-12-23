@@ -56,7 +56,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
         "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
-    let stdout = Command::new("mash") // system call to MASH   
+    let mash_dist_stream = Command::new("mash") // system call to MASH   
         .args(&mash_args)
         .stdout(Stdio::piped())
         .spawn()?
@@ -65,7 +65,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
 
     // SKETCHY - SUM OF SHARED HASHES
 
-    let mash_reader = BufReader::new(stdout);
+    let mash_reader = BufReader::new(mash_dist_stream);
     let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
     
     let data_file = File::open(&genotype_index)?;
@@ -193,8 +193,13 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
 
-    println!("{:?}", keys);
+    let stdin = io::stdin();
 
+    for line in stdin.lock().lines() {
+        let input = line.expect("Failed to read line");
+        let content: Vec<&str> = input.split("/").collect();
+        println!("{:?}", content);
+    }
     Ok(())
 
 }
