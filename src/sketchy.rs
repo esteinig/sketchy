@@ -70,7 +70,7 @@ pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize
     Ok(())
 }
 
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -121,6 +121,12 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     let reader = BufReader::new(screen_sorted);
     
     let mut table = Table::new();
+    
+    if !pretty {
+        let raw = format::FormatBuilder::new().column_separator('\t');
+        table.set_format(raw);
+    }
+
     for (_i, line) in reader.lines().enumerate() {
 
         if _i >= limit {
@@ -141,22 +147,11 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
         let _id_values: Vec<&str> = _name.split(".").collect();
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
-        let grep_args = [
-            &*format!("{}", _id), &*format!("{}", genotypes)
-        ];
+        let contents = fs::read_to_string(genotypes)?;
 
-        let grepped = Command::new("grep")
-            .args(&grep_args)
-            .stdout(Stdio::piped())
-            .spawn()?
-            .stdout
-            .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from GREP"))?;
-        
-        let mut grep_reader = BufReader::new(grepped);
+        let _grep_result = grep(&_id, &contents); 
+        let _genotype_str = _grep_results[0]; // there is only ever one unique id
 
-        let mut _genotype_str = String::new();
-        let _ = grep_reader.read_line(&mut _genotype_str);
-        
         let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
 
         let _screen_rank: &str = &(_i+1).to_string();
@@ -328,6 +323,29 @@ fn test_mash_dist() {
 
 }
 
+
+#[test]
+fn test_grep_one_result() {
+    let query = "duct";
+    let contents = "\
+        Rust:
+        safe, fast, productive.
+        Pick three.";
+    assert_eq!(vec!["safe, fast, productive."], grep(query, contents));
+}
+
+
+pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let mut results = Vec::new();
+
+    for line in contents.lines() {
+        if line.contains(query) {
+            results.push(line);
+        }
+    }
+
+    results
+}
 
 
 

@@ -64,7 +64,7 @@ fn main() -> Result<(), Error> {
 
         let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
 
-        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit).map_err(
+        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
