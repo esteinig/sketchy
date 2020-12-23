@@ -147,7 +147,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
         let _id_values: Vec<&str> = _name.split(".").collect();
         let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
         
-        let contents = std::fs::read_to_string(genotypes)?;
+        let contents = std::fs::read_to_string(&genotypes)?;
 
         let _grep_result = grep(&_id, &contents); 
         let _genotype_str = _grep_results[0]; // there is only ever one unique id
