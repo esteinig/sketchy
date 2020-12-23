@@ -149,7 +149,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
         
         let contents = std::fs::read_to_string(&genotypes)?;
 
-        let _grep_result = grep(&_id, &contents); 
+        let _grep_results = grep(&_id, &contents); 
         let _genotype_str = _grep_results[0]; // there is only ever one unique id
 
         let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
