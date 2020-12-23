@@ -18,7 +18,7 @@ use std::process::{Command, Stdio};
 use std::time::Instant;
 use std::io::{BufRead, BufReader, Error, ErrorKind, stdin};
 use prettytable::{Table, Row, Cell};
-use prettytables::format::{FormatBuilder};
+use prettytable::format::{FormatBuilder};
 
 pub fn stream(sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
