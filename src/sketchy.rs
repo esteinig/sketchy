@@ -227,11 +227,11 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                 bar.set_message(&*format!("{}", idx));
 
                 // collect the index of the current sum of shared hashes
-                let mut ssh_index: Vec<(usize, usize)> = sum_shared_hashes.iter().enumerate().collect();
+                let mut ssh_index: Vec<(usize, &u32)> = sum_shared_hashes.iter().enumerate().collect();
                 // sort indexed and updated ssh scores  
                 ssh_index.sort_by_key(|k| k.1);
                 // collect the highest ranked ssh scores and their indices
-                let ranked_ssh: Vec<(usize, usize)> = ssh_index.drain(index_size-ranks..).collect();
+                let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
 
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
@@ -285,7 +285,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                         let feature_value = feature_row[*key];
                         // Add ssh score to feature value in feature map, or init with 0
                         let feature_value_sssh = feature_map.entry(feature_value as usize).or_insert(0);
-                        *feature_value_sssh += ssh;
+                        *feature_value_sssh += ssh as usize;
                     }
 
                 }
