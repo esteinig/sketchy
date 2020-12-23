@@ -35,7 +35,10 @@ fn main() -> Result<(), Error> {
         
     if let Some(stream) = matches.subcommand_matches("stream") {
         
-        let db: String = stream.value_of("db").unwrap().to_string();
+        let db: String = stream.value_of("db").unwrap().to_string().map_err(
+            |err| println!("No database sketch provided: {:?}", err)
+        ).ok();
+        
         let ranks: usize = stream.value_of("ranks").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("threads").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("stability").unwrap_or("100").parse::<usize>().unwrap();
