@@ -354,16 +354,12 @@ pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, 
 
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
-
-    println!("{:?} {:?}", db_path, sketchy_path);
     
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
     } else {
         clap::Error::with_description("Database sketch directory is not available", clap::ErrorKind::InvalidValue).exit();
     };
-
-    println!("{:?}", db_path);
 
     let db_sketch = db_path.join(
         format!("{}.msh", db_name)
@@ -377,8 +373,6 @@ pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, 
     let db_key = db_path.join(
         format!("{}.key", db_name)
     );
-
-    println!("{:?} {:?}", db_path, db_sketch);
 
     if !db_sketch.exists(){
         clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();

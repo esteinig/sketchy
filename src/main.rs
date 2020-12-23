@@ -14,7 +14,9 @@ fn main() -> Result<(), Error> {
 
     let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
     let sketchy_home: String = format!("{}/.sketchy", user_home);
-    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home);
+    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
+
+    println!("{:?}", sketchy_path);
 
     let matches = App::new("sketchy")
         .version("0.5.0")
