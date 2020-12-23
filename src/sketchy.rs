@@ -183,13 +183,15 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool){
+pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
     let genotype_map: HashMap<String, Value> = read_genotype_key(&genotype_key);
 
     println!("{:?}", genotype_map);
+
+    Ok(())
 
 }
 
@@ -204,10 +206,6 @@ fn read_genotype_key(path: &String) -> Result<HashMap<String, Value>, Box<Error>
     Ok(m)
 }
 
-fn main() {
-    let u = read_user_from_file("test.json").unwrap();
-    println!("{:#?}", u);
-}
 
 fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
     
