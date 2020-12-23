@@ -350,7 +350,7 @@ pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 
 
 
-pub fn get_sketch_files(db: String, sketchy_path: Str)  -> (String, String, String, String) {
+pub fn get_sketch_files(db: String, sketchy_path: String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
