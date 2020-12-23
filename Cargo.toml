@@ -18,6 +18,7 @@ include = [
 ]
 
 [dependencies]
+dirs = "1.0.5"
 clap = "2.33.0"
 cute = "0.3.0"
 indicatif = "0.14.0"
