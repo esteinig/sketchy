@@ -278,7 +278,7 @@ fn ranked_sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<Fil
                     }
 
                     // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
-                    let feature_row = &feature_data[ix];
+                    let feature_row = &feature_data[ix as u32];
 
                     // Iterate mutable over feature keys
                     for (key, feature_map) in sssh.iter_mut() {
