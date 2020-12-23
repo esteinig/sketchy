@@ -57,7 +57,7 @@ fn main() -> Result<(), Error> {
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
         
 
-        sketchy::stream(sketch_msh, genotype_index, threads, ranks, stability, progress, sketch_index, sketch_size).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, ranks, stability, progress, sketch_index, sketch_size).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
