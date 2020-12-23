@@ -84,7 +84,7 @@ fn test_mash_dist() {
 
 
 
-pub fn get_sketch_files(db: String)  -> (Path, Path, Path, Path) {
+pub fn get_sketch_files(db: String)  -> (&Path, &Path, &Path, &Path) {
     
     /* Get sketch files from database path and perform checks */
 
@@ -119,7 +119,7 @@ pub fn get_sketch_files(db: String)  -> (Path, Path, Path, Path) {
         panic!(format!("Could not find sketch key: {}", db_key.display()));
     };
 
-    (db_sketch, db_genotypes, db_index, db_key)
+    (&db_sketch, &db_genotypes, &db_index, &db_key)
     
 }
 
