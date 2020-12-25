@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let current_read: i32 = 0;
-    let previou_read: i32 = 0;
+    let previous_read: i32 = 0;
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
