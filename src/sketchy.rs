@@ -206,7 +206,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         
         let read = &content[0];
         let feature_key = &content[1];
-        let feature_value = &content[3];
+        let feature_value = &content[3] as usize;
 
         let feature_data = &feature_translation[feature_key];
         let feature_name = &feature_data["name"];
