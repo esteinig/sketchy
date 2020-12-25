@@ -204,13 +204,13 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             |x| x.parse::<String>().unwrap()
         ).collect();
         
-        if current_read && &content[0] != current_read{
+        if current_read && content[0] != current_read{
             // not on first, only when read index changes
             println!("Read changed!");
         }
 
         let current_read = &content[0];
-        
+
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
         let feature_value = &content[3].parse::<usize>().unwrap();
