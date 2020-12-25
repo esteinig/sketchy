@@ -207,7 +207,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         
         let current_read = &content[0].parse::<i32>().unwrap();
 
-        if current_read != 0 && this_read != &current_read &&  {
+        if current_read != 0 && this_read != &current_read {
             // not on first, only when read index changes
             println!("Read changed!");
         }
