@@ -221,7 +221,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
 
-        let this_read = &content[0].parse::<i32>().unwrap();
+        let this_read = content[0].parse::<i32>().unwrap();
 
         if raw {
             println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
