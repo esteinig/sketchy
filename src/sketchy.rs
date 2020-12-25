@@ -209,8 +209,6 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             println!("Read changed!");
         }
 
-        let current_read = &content[0];
-
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
         let feature_value = &content[3].parse::<usize>().unwrap();
@@ -220,7 +218,9 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
 
-        println!("{} {} {} {} {} {} {}", &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+        let current_read = content[0];
+
+        println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
 
     }
 
