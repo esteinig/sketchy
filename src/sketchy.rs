@@ -191,17 +191,26 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let reader = BufReader::new(key_file);
 
     // Read the JSON contents of the file
-    let keys: HashMap<String, Value> = serde_json::from_reader(reader)?;
+    let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
     for (_i, line) in stdin_reader.lines().enumerate() {
         let line = line?;
+        
         let content: Vec<String> = line.trim().split("\t").map(
             |x| x.parse::<String>().unwrap()
         ).collect();
         
-        println!("{:?}", content);
+        //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
+        
+        let read = content[0];
+        let feature_key = content[1];
+        let feature_value = content[3];
+
+        let feature = feature_translation[feature_key];
+
+        println!("{:?}", ]feature);
     }
 
     Ok(())
