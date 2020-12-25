@@ -211,7 +211,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
-        let feature_value = &content[3].parse::<usize>().unwrap();
+        let feature_value = &content[2].parse::<usize>().unwrap();
         let feature_key = &content[1];
 
         let feature_data = &feature_translation[feature_key];
