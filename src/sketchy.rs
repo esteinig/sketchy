@@ -208,9 +208,11 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_key = &content[1];
         let feature_value = &content[3];
 
-        let feature = &feature_translation[feature_key];
+        let feature_data = &feature_translation[feature_key];
+        let feature_name = feature_data["name"];
+        let feature_prediction = feature_data["values"][feature_value];
 
-        println!("{:?}", feature);
+        println!("{:?} {:?} {:?}", read, feature_name, feature_prediction);
     }
 
     Ok(())
