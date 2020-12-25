@@ -204,7 +204,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             |x| x.parse::<String>().unwrap()
         ).collect();
         
-        if !current_read.is_empty() && content[0] != current_read {
+        if !current_read.is_empty() && &content[0] != &current_read {
             // not on first, only when read index changes
             println!("Read changed!");
         }
@@ -218,7 +218,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
 
-        let current_read = content[0];
+        let current_read = &content[0];
 
         println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
 
