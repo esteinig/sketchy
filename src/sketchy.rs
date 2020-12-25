@@ -200,11 +200,13 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     for (_i, line) in stdin_reader.lines().enumerate() {
         let line = line?;
         
+        let _current_read = &content[0];
+
         let content: Vec<String> = line.trim().split("\t").map(
             |x| x.parse::<String>().unwrap()
         ).collect();
         
-        if !current_read.is_empty() && &content[0] != &current_read {
+        if !current_read.is_empty() && &_current_read != &current_read {
             // not on first, only when read index changes
             println!("Read changed!");
         }
