@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let current_read: i32 = 0;
-    let this_read: i32 = 0;
+    let previou_read: i32 = 0;
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
@@ -206,12 +206,10 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         ).collect();
         
         let current_read = content[0].parse::<i32>().unwrap();
-        println!("{:?}", this_read);
-        
-        if current_read != 0 as i32 && current_read != this_read {
+
+        if current_read != 0 as i32 && current_read != previous_read {
             // not on first, only when read index changes
-            println!("Read changed!");
-            println!("{:?} {:?}", current_read, this_read);
+            println!("Read changed! Current: {:?} Previous: {:?}", current_read, previous_read);
         }
 
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
@@ -223,8 +221,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
 
-        let this_read = content[0].parse::<i32>().unwrap();
-        println!("{:?}", this_read);
+        let previous_read = content[0].parse::<i32>().unwrap();
+        println!("{:?}", previous_read);
 
         if raw {
             println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
