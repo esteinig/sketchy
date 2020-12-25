@@ -204,11 +204,11 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
-        let read = content[0];
-        let feature_key = content[1];
-        let feature_value = content[3];
+        let read = &content[0];
+        let feature_key = &content[1];
+        let feature_value = &content[3];
 
-        let feature = feature_translation[&feature_key];
+        let feature = &feature_translation[&feature_key];
 
         println!("{:?}", feature);
     }
