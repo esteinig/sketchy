@@ -183,7 +183,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool) -> Result<(), Error>{
+pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -220,7 +220,9 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         let current_read = &content[0];
 
-        println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+        if raw {
+            println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+        }
 
     }
 

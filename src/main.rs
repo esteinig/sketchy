@@ -46,6 +46,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Raw translated scores print on [false]"))
         )
         .get_matches();
         
@@ -104,10 +105,11 @@ fn main() -> Result<(), Error> {
         let mode: String = predict.value_of("MODE").unwrap_or("last").to_string();
         let limit: usize = predict.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = predict.is_present("PRETTY");
-        
+        let raw: bool = predict.is_present("RAW");
+
         let (_, genotypes, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::predict(ssh, mode, genotype_index, genotype_key, genotypes, limit, pretty).map_err(
+        sketchy::predict(ssh, mode, genotype_index, genotype_key, genotypes, limit, pretty, raw).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
