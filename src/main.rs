@@ -37,6 +37,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("SSH").short("s").long("ssh").takes_value(true).help("Ranked sum of shared hashes input [-]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Raw translated scores print on [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nscreen read set against reference sketch with mash")
@@ -46,7 +47,6 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
-            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Raw translated scores print on [false]"))
         )
         .get_matches();
         
