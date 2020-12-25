@@ -205,14 +205,19 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         //read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
         let read = &content[0].parse::<usize>().unwrap();
-        let feature_key = &content[1];
+        let rank = &content[4].parse::<usize>().unwrap();
+        let sssh = &content[5].parse::<usize>().unwrap();
+        let stab = &content[6].parse::<usize>().unwrap();
+        let pref = &content[7].parse::<usize>().unwrap();
+
         let feature_value = &content[3].parse::<usize>().unwrap();
+        let feature_key = &content[1];
 
         let feature_data = &feature_translation[feature_key];
         let feature_name = &feature_data["name"];
         let feature_prediction = &feature_data["values"][feature_value];
 
-        println!("{:?} {:?} {:?}", read, feature_name, feature_prediction);
+        println!("{} {} {} {} {} {} {}", read, feature_name, feature_prediction, rank, sssh, stab, pref);
     }
 
     Ok(())
