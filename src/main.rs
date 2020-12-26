@@ -107,9 +107,9 @@ fn main() -> Result<(), Error> {
         let pretty: bool = predict.is_present("PRETTY");
         let raw: bool = predict.is_present("RAW");
 
-        let (_, genotypes, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (_, _, genotype_index, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::predict(ssh, mode, genotype_index, genotype_key, genotypes, limit, pretty, raw).map_err(
+        sketchy::predict(ssh, mode, genotype_index, genotype_key, limit, pretty, raw).map_err(
             |err| println!("{:?}", err)
         ).ok();
 

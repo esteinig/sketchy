@@ -211,7 +211,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         if !_read_tracker.contains(&read) {
             _read_tracker[0] = read.to_string();
             
-            println!("{:?}", read_prediction)
+            println!("{:?}", read_prediction);
             
             read_prediction.clear();
 
@@ -227,9 +227,9 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
         
         if read_prediction.contains_key(&feature_key){
-            read_prediction[feture_key].push(feature_value);
+            read_prediction[feature_key].push(feature_value);
         } else {
-            read_prediction[feture_key] = vec![feature_value];
+            read_prediction[feature_key] = vec![feature_value];
         }
 
         if raw {
