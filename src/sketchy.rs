@@ -223,8 +223,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_key = &content[1].to_string();
 
         let feature_data = &feature_translation[feature_key];
-        let feature_name = &feature_data["name"].as_str().unwrap();
-        let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
+        let feature_name = feature_data["name"].as_str().unwrap();
+        let feature_prediction = feature_data["values"][feature_value].as_str().unwrap().trim();
         
         if read_prediction.contains_key(feature_key){
             read_prediction[feature_key].push(feature_prediction);
