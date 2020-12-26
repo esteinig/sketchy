@@ -219,14 +219,14 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
-        let feature_value = content[2].parse::<usize>().unwrap();
-        let feature_key = content[1].parse::<String>().unwrap();
+        let feature_value: usize = content[2].parse::<usize>().unwrap();
+        let feature_key: String = content[1].parse::<String>().unwrap();
 
-        let feature_data = &feature_translation[feature_key];
+        let feature_data = &feature_translation[&feature_key];
         let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
         let feature_prediction: String = feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
         
-        if read_prediction.contains_key(feature_key){
+        if read_prediction.contains_key(&feature_key){
             read_prediction[&feature_key].push(feature_prediction);
         } else {
             let pvec: Vec<String> = vec![feature_prediction];
