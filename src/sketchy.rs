@@ -193,21 +193,21 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
-    let current_read: usize = 0;
-    let previous_read: &usize = &0;
+    let reads: Vec<String> = vec!["0"]
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
+
     for (_i, line) in stdin_reader.lines().enumerate() {
-        let line = line?;
         
+        let line = line?;
         let content: Vec<String> = line.trim().split("\t").map(
             |x| x.parse::<String>().unwrap()
         ).collect();
-        
-        let current_read = content[0].parse::<usize>().unwrap();
 
-        if &current_read != previous_read {
+        let read = content[0];
+
+        if read != "0".to_string() && !reads.contains(read) {
             // not on first, only when read index changes
             println!("Read changed! Current: {:?} Previous: {:?}", current_read, previous_read);
         }
@@ -220,11 +220,11 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_data = &feature_translation[feature_key];
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
-
-        let previous_read = &current_read;
+        
+        reads.push(read);
 
         if raw {
-            println!("{} {} {} {} {} {} {} {}", &current_read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+            println!("{} {} {} {} {} {} {} {}", &read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
         }
 
     }
