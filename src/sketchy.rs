@@ -228,7 +228,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         
        
         if raw {
-            println!("{} {} {} {} {} {} {}", &read, &feature_name, &feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+            println!("{} {} {} {} {} {} {}", read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
         }
 
     }
