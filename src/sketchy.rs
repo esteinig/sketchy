@@ -208,15 +208,6 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         let read = &content[0];
 
-        if !_read_tracker.contains(read) {
-            _read_tracker[0] = read.to_string();
-            
-            println!("{:?}", &_read_tracker[0]);
-            
-            read_prediction.clear();
-
-        }
-
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
         let feature_value: usize = content[2].parse::<usize>().unwrap();
@@ -227,6 +218,16 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_prediction: String = feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
         
         read_prediction.entry(feature_key).or_insert(vec![]).push(&feature_prediction);
+        
+        if !_read_tracker.contains(read) {
+            _read_tracker[0] = read.to_string();
+            
+            println!("{:?}", &_read_tracker[0]);
+            
+            read_prediction.clear();
+
+        }
+
        
 
         if raw {
