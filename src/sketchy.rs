@@ -183,7 +183,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, genotypes: String, limit: usize, pretty: bool, raw: bool) -> Result<(), Error>{
+pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, limit: usize, pretty: bool, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -193,7 +193,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     // Read the JSON contents of the file
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
-    let mut reads: Vec<String> = vec!["0".to_string()];
+    let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
+    let mut read_prediction: HashMap<String, Vec<String>> = HashMap::new();
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
@@ -207,11 +208,13 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         let read = &content[0];
 
-        if !reads.contains(&read) {
-            println!("Read changed! Current: {:?} Reads: {:?}", &read, &reads);
-            reads.remove(0);
-            reads.push(read.to_string());
+        if !_read_tracker.contains(&read) {
+            _read_tracker[0] = read.to_string();
             
+            println!("{:?}", read_prediction)
+            
+            read_prediction.clear();
+
         }
 
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
@@ -223,8 +226,14 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name = &feature_data["name"].as_str().unwrap();
         let feature_prediction = &feature_data["values"][feature_value].as_str().unwrap().trim();
         
+        if read_prediction.contains_key(&feature_key){
+            read_prediction[feture_key].push(feature_value);
+        } else {
+            read_prediction[feture_key] = vec![feature_value];
+        }
+
         if raw {
-            println!("{} {} {} {} {} {} {} {}", &read, &content[0], feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+            println!("{} {} {} {} {} {} {}", &read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
         }
 
     }
