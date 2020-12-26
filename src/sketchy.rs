@@ -205,12 +205,12 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             |x| x.parse::<String>().unwrap()
         ).collect();
 
-        let read = content[0];
+        let read = &content[0];
 
         if !reads.contains(&read) {
             println!("Read changed! Current: {:?} Reads: {:?}", &read, &reads);
             reads.remove(0);
-            reads.push(read);
+            reads.push(read.to_string());
             
         }
 
