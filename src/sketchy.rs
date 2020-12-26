@@ -212,6 +212,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             _read_tracker[0] = read.to_string();
             
             println!("{:?}", &read_prediction);
+
+            read_prediction.clear();
             
         }
 
