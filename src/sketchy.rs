@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let current_read: usize = 0;
-    let previous_read: usize = 0;
+    let previous_read: &usize = 0;
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
@@ -207,7 +207,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         
         let current_read = content[0].parse::<usize>().unwrap();
 
-        if current_read != 0 as usize && current_read != previous_read {
+        if &current_read != previous_read {
             // not on first, only when read index changes
             println!("Read changed! Current: {:?} Previous: {:?}", current_read, previous_read);
         }
