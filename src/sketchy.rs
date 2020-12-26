@@ -224,7 +224,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
         let feature_prediction: &String = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
         
-        read_prediction.entry(feature_key).or_insert(vec![]).push(feature_prediction);
+        read_prediction.entry(feature_key).or_insert(vec![]).push(feature_prediction.to_string());
         
        
         if raw {
