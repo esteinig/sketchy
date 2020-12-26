@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
-    let mut read_prediction: HashMap<&String, Vec<String>> = HashMap::new();
+    let mut read_prediction: HashMap<String, Vec<String>> = HashMap::new();
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
@@ -219,8 +219,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
-        let feature_value = &content[2].parse::<usize>().unwrap();
-        let feature_key = &content[1].parse::<String>().unwrap();
+        let feature_value = content[2].parse::<usize>().unwrap();
+        let feature_key = content[1].parse::<String>().unwrap();
 
         let feature_data = &feature_translation[feature_key];
         let feature_name = feature_data["name"].as_str().unwrap();
