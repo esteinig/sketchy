@@ -209,7 +209,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
 
         if !reads.contains(&read) {
             println!("Read changed! Current: {:?} Reads: {:?}", &read, &reads);
-            reads.push(read);
+            reads.push(*read);
         }
 
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
