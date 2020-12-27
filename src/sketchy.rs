@@ -280,7 +280,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     let mut header: Vec<String> = vec![];
     let mut keys: Vec<usize> = feature_translation.cloned().collect().sort();
     for key in keys {
-        header.push(feature_translation[key]["name"].to_string());
+        header.push(feature_translation[&key]["name"].to_string());
     }
 
     println!("{:?}", header.join("\t"));
