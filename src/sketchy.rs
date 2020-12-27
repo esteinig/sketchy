@@ -134,7 +134,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
         let raw = FormatBuilder::new().column_separator('\t').build();
         table.set_format(raw);
     } else {
-        let header_row = get_header_row(genotype_key);
+        let header_row = get_header_row(genotype_key).unwrap();
         table.add_row(header_row);
     }
 
@@ -282,8 +282,8 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
         table.set_format(raw);
     }
 
-    let header_row = get_header_row(genotype_key);
-
+    let header_row = get_header_row(genotype_key).unwrap();
+    
     table.add_row(header_row);
 
     table.printstd();
