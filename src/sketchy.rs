@@ -282,7 +282,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
         table.set_format(raw);
     }
 
-    header_row = get_header_row(genotype_key);
+    let header_row = get_header_row(genotype_key);
 
     table.add_row(header_row);
 
@@ -291,7 +291,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     Ok(())
 }
 
-fn get_header_row(genotype_key: String) -> Row {
+fn get_header_row(genotype_key: String) -> Result<(Row), Error> {
 
     let key_file = File::open(genotype_key)?;
     let reader = BufReader::new(key_file);
@@ -307,7 +307,7 @@ fn get_header_row(genotype_key: String) -> Row {
         );
     }
 
-    header_row
+    Ok(header_row)
 }
 
 fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
