@@ -240,14 +240,15 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
                 } else {
                     println!("{}\t{}\t{}", &read, &rank, &genotype_str);
                 }
+                
+                if rank > limit {
+                    break
+                }
 
             }
             
             read_prediction.clear();
 
-            if rank > limit {
-                break
-            }
             
         }
 
