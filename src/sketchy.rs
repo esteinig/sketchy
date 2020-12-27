@@ -135,7 +135,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
         table.set_format(raw);
     } else {
         let header_row = get_header_row(genotype_key).unwrap();
-        table.add_row(header_row);
+        // table.add_row(header_row); fix at genotype translation update
     }
 
     for (_i, line) in reader.lines().enumerate() {
