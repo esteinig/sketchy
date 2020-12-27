@@ -244,6 +244,10 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
             }
             
             read_prediction.clear();
+
+            if rank > limit {
+                break
+            }
             
         }
 
