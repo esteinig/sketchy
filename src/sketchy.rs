@@ -229,8 +229,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
                     };
                     genotype.push(prediction);
                 }
-                
-                println!("{} {} {:?}", &read, &rank, &genotype);
+
+                println!("{}\t{}\t{}", &read, &rank, &genotype.join("\t"));
                 
             }
             
