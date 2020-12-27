@@ -78,7 +78,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
     Ok(())
 }
 
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -133,6 +133,9 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     if !pretty {
         let raw = FormatBuilder::new().column_separator('\t').build();
         table.set_format(raw);
+    } else {
+        header_row = get_header_row(genotype_key);
+        table.add_row(header_row);
     }
 
     for (_i, line) in reader.lines().enumerate() {
@@ -272,15 +275,6 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
 
 pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
 
-    let key_file = File::open(genotype_key)?;
-    let reader = BufReader::new(key_file);
-    
-    let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
-
-    let mut keys: Vec<usize> = feature_translation.keys().cloned().collect();
-    
-    keys.sort();
-
     let mut table = Table::new();
     
     if !pretty {
@@ -288,17 +282,32 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
         table.set_format(raw);
     }
 
+    header_row = get_header_row(genotype_key);
+
+    table.add_row(header_row);
+
+    table.printstd();
+
+    Ok(())
+}
+
+fn get_header_row(genotype_key: String) -> Row {
+
+    let key_file = File::open(genotype_key)?;
+    let reader = BufReader::new(key_file);
+    
+    let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
+    let mut keys: Vec<usize> = feature_translation.keys().cloned().collect();
+    
+    keys.sort();
     let mut header_row = Row::new(vec![]);
     for key in keys.iter() {
         header_row.add_cell(
             Cell::new(&feature_translation[&key]["name"].to_string())
         );
     }
-    table.add_row(header_row);
 
-    table.printstd();
-
-    Ok(())
+    header_row
 }
 
 fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {

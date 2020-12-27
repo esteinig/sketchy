@@ -91,9 +91,9 @@ fn main() -> Result<(), Error> {
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
+        sketchy::screen(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
