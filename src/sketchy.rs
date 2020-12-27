@@ -290,7 +290,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
 
     let mut header_row = Row::new(vec![]);
     for key in keys.iter() {
-        let _head = feature_translation[&key]["name"];
+        let _head = feature_translation[&key]["name"] as str;
         header_row.add_cell(Cell::new(&_head));
     }
     table.add_row(header_row);
