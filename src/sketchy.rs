@@ -17,6 +17,7 @@ use std::iter::FromIterator;
 use std::collections::HashMap;
 use std::process::{Command, Stdio};
 use prettytable::{Table, Row, Cell};
+use prettytable::{Attr, color};
 use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use serde_json::{Value};
