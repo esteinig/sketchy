@@ -47,11 +47,16 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
+        .subcommand(SubCommand::with_name("head")
+            .about("\ndisplay genotype database header")
+            .version("0.5.0")
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
+            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+        )
         .get_matches();
         
     if let Some(stream) = matches.subcommand_matches("stream") {
         
-
         let db: String = stream.value_of("DB").unwrap_or_else(||
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
@@ -108,6 +113,20 @@ fn main() -> Result<(), Error> {
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
         sketchy::predict(ssh, genotype_key, limit, raw).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+
+    }
+
+    if let Some(head) = matches.subcommand_matches("head") {
+
+        let db: String = predict.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+        let pretty: bool = screen.is_present("PRETTY");
+
+        sketchy::display_header(db, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 

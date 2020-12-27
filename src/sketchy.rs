@@ -183,7 +183,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
+pub fn predict(ssh: String, genotype_key: String, limit: i32, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -220,7 +220,7 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
             let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
-            // iterate over genotype ranks ...
+            // iterate over genotype ranusizeks ...
             for rank in 0..*_max_genotype_ranks {
 
                 if rank > limit-1 {
