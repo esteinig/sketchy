@@ -216,16 +216,19 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
-            for r in 0..*_max_genotype_ranks {
-                println!("Genotype rank {}", r);
+
+            for rank in 0..*_max_genotype_ranks {
+                println!("Genotype rank {}", rrank;
+                let genotype: Vec<&String> = vec![]; 
                 for i in 0..*_max_genotype_categories {
-                    let genotype = &read_prediction[&i];
-                    let prediction = match genotype.get(r) {
+                    let category = &read_prediction[&i];
+                    let prediction = match category.get(rank) {
                         Some(value) => value,
-                        None => &"-".to_string()
+                        None => category.last().unwrap()  // mode: fill with higher ranked genotypes
                     };
-                    println!("Predict: {}", prediction);
+                    genotype.push(prediction);
                 }
+                println!("{} {} {:?}", &read, &rank, &genotype);
                 
             }
             
