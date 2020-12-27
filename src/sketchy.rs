@@ -212,10 +212,18 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             
             let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
             let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
-            let _length: &usize = _lengths.iter().max().unwrap();
+            let _max_genotype_predictions: &usize = _lengths.iter().max().unwrap();
+            let _max_genotype_categories: &usize = read_prediction.keys().cloned().collect().iter().max().unwrap();
             
-            for i in 0..*_length {
-                println!("{:?}", &i);
+            for i in 0..*_max_genotype_categories {
+                let genotype = read_prediction[&i];
+                
+                for g in 0..*_max_genotype_predictions {
+                    let prediction = match genotype.get(g) {
+                        Some(value) => value,
+                        None => genotype.last()
+                    };
+                }
             }
 
             if !raw {
