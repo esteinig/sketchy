@@ -126,9 +126,9 @@ fn main() -> Result<(), Error> {
 
         let pretty: bool = head.is_present("PRETTY");
 
-        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (_, _, _, genotype_key) = sketchy::get_sketch_files(&db, &sketchy_path);
 
-        sketchy::display_header(db, pretty).map_err(
+        sketchy::display_header(&db, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
