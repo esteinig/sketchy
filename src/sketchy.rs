@@ -183,7 +183,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: String, limit: usize, pretty: bool, raw: bool) -> Result<(), Error>{
+pub fn predict(ssh: String, genotype_key: String, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -208,38 +208,41 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         let read = &content[0];
 
         if !_read_tracker.contains(read) {
-            _read_tracker[0] = read.to_string();
+
+            // At the start of a new read:
+
+            _read_tracker[0] = read.to_string(); // reset read tracker vec
             
+            // prepare the variables for genotype reconstruction
             let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
             let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
             let _max_genotype_ranks: &usize = _lengths.iter().max().unwrap();
             let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
-
+            // iterate over genotype ranks ...
             for rank in 0..*_max_genotype_ranks {
-
-                let mut genotype: Vec<String> = vec![];
-
-                for i in 0..*_max_genotype_categories {
+                let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
+                for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
                     let category = &read_prediction[&i];
-                    let prediction = match category.get(rank) {
+                    let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
                         Some(value) => value,
-                        None => category.last().unwrap()  // mode: fill with higher ranked genotypes
+                        None => category.last().unwrap()  // current mode: fill with higher ranked genotypes
                     };
-                    genotype.push(prediction.to_string());
+                    genotype.push(prediction.to_string()); // ... add prediction to genotype
                 }
                 let genotype_str = genotype.join("\t");
 
-                println!("{}\t{}\t{}", &read, &rank, &genotype_str);
-                
+                if rank == 0 && limit < 1 {
+                    println!("{}", &genotype_str);
+                } else if rank == 0 && limit == 1 {
+                    println!("{}\t{}", &read, &genotype_str);
+                } else {
+                    println!("{}\t{}\t{}", &read, &rank, &genotype_str);
+                }
+
             }
             
-
-            if !raw {
-                println!("{:?}", &_max_genotype_categories);
-            }
-
             read_prediction.clear();
             
         }
