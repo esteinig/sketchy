@@ -222,6 +222,11 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
             
             // iterate over genotype ranks ...
             for rank in 0..*_max_genotype_ranks {
+
+                if rank > limit-1 {
+                    break
+                }
+
                 let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
                 for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
                     let category = &read_prediction[&i];
@@ -241,9 +246,6 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
                     println!("{}\t{}\t{}", &read, &rank, &genotype_str);
                 }
                 
-                if rank > limit {
-                    break
-                }
 
             }
             
