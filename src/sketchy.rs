@@ -227,7 +227,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
                         Some(value) => value,
                         None => category.last().unwrap()  // mode: fill with higher ranked genotypes
                     };
-                    genotype.push(prediction);
+                    genotype.push(prediction.to_string());
                 }
                 let genotype_str = genotype.join("\t");
 
