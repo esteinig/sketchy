@@ -236,7 +236,7 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
 
                 println!("{}\t{}", &read, &genotype_str);
                 
-                if rank+1 > limit {
+                if rank+1 >= limit { // prevent negative 
                     break
                 }
             }
