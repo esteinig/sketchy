@@ -107,7 +107,7 @@ fn main() -> Result<(), Error> {
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::predict(ssh, genotype_key, limit, pretty, raw).map_err(
+        sketchy::predict(ssh, genotype_key, limit, raw).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
