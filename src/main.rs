@@ -128,7 +128,7 @@ fn main() -> Result<(), Error> {
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::display_header(&db, pretty).map_err(
+        sketchy::display_header(genotype_key, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
