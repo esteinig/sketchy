@@ -277,12 +277,11 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     
     let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
 
-
     let keys: Vec<usize> = feature_translation.keys().cloned().collect();
     let sorted_keys = keys.sort();
 
     let mut header: Vec<String> = vec![];
-    for key in sorted_keys {
+    for key in sorted_keys.iter() {
         header.push(feature_translation[&key]["name"].to_string());
     }
 
