@@ -194,7 +194,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let feature_translation: HashMap<String, Value> = serde_json::from_reader(reader)?;
     
     let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
-    let mut read_prediction: HashMap<String, Vec<String>> = HashMap::new();
+    let mut read_prediction: HashMap<usize, Vec<String>> = HashMap::new();
 
     let stdin = std::io::stdin();
     let stdin_reader = BufReader::new(stdin);
@@ -213,6 +213,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             
             println!("{:?}", &read_prediction);
 
+            for 
+
             read_prediction.clear();
             
         }
@@ -220,13 +222,15 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         
         let feature_value: usize = content[2].parse::<usize>().unwrap();
-        let feature_key: String = content[1].parse::<String>().unwrap();
+        let feature_key: usize = content[1].parse::<usize>().unwrap();
 
         let feature_data = &feature_translation[&feature_key];
         let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
         let feature_prediction: &String = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
         
-        read_prediction.entry(feature_key).or_insert(vec![]).push(feature_prediction.to_string());
+        read_prediction.entry(feature_key)
+            .or_insert(vec![])
+            .push(feature_prediction.to_string());
         
        
         if raw {
