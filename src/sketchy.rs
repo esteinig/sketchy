@@ -222,7 +222,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
                     let genotype = &read_prediction[&i];
                     let prediction = match genotype.get(r) {
                         Some(value) => value,
-                        None => "-".to_string()
+                        None => &"-".to_string()
                     };
                     println!("Predict: {}", prediction);
                 }
