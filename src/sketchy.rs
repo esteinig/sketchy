@@ -293,7 +293,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
         _head: String = feature_translation[&key]["name"].to_string();
         header_row.add_cell(Cell::new(x));
     }
-    table.add_row(screen_row);
+    table.add_row(header_row);
 
     table.printstd();
 
