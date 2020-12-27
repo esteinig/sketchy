@@ -210,9 +210,10 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         if !_read_tracker.contains(read) {
             _read_tracker[0] = read.to_string();
             
-            let max_length = read_prediction.values().cloned().collect().map(|x| x.len()).collect().iter().max();
+            let _values = read_prediction.values().cloned().collect();
+            let _max_length = _values.map(|x| x.len()).collect().iter().max();
             
-            match max_length {
+            match _max_length {
                 Some(max) => println!( "Max value: {}", max ),
                 None      => println!( "Vector is empty" ),
             };
