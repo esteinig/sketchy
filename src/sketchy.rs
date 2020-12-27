@@ -281,12 +281,21 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     
     keys.sort();
 
-    let mut header: Vec<String> = vec![];
-    for key in keys.iter() {
-        header.push(feature_translation[&key]["name"].to_string());
+    let mut table = Table::new();
+    
+    if !pretty {
+        let raw = FormatBuilder::new().column_separator('\t').build();
+        table.set_format(raw);
     }
 
-    println!("{:?}", header.join("\t"));
+    let mut header_row = Row::new(vec![]);
+    for key in keys.iter() {
+        _head: String = feature_translation[&key]["name"].to_string();
+        header_row.add(.add_cell(Cell::new(x)));
+    }
+    table.add_row(screen_row);
+
+    table.printstd();
 
     Ok(())
 }
