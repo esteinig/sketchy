@@ -270,18 +270,20 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
 
 }
 
-pub fn display_header(genotype_key: String) {
+pub fn display_header(genotype_key: String, pretty: bool) {
 
     let key_file = File::open(genotype_key)?;
     let reader = BufReader::new(key_file);
     
     let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
 
-    let header: Vec<String> = !vec[];
+    let mut header: Vec<String> = vec![];
     for key in feature_translation.keys().sorted(){
         header.push(feature_translation[key]["name"]);
     }
     prinln!("{:?}", header);
+
+    Ok(())
 }
 
 fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
