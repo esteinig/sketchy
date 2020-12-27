@@ -283,7 +283,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     }
 
     let header_row = get_header_row(genotype_key).unwrap();
-    
+
     table.add_row(header_row);
 
     table.printstd();
@@ -291,7 +291,7 @@ pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
     Ok(())
 }
 
-fn get_header_row(genotype_key: String) -> Result<(Row), Error> {
+fn get_header_row(genotype_key: String) -> Result<Row, Error> {
 
     let key_file = File::open(genotype_key)?;
     let reader = BufReader::new(key_file);
