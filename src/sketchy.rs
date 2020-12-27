@@ -174,7 +174,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
         ]);
 
         for x in _genotype_values.iter() {
-            screen_row.add_cell(Cell::new(x).style_spec(if x == "R".to_string() { "r" } else { "w" }))
+            screen_row.add_cell(Cell::new(x).style_spec(if x == "R" { "r" } else { "w" }))
         }; 
         
         table.add_row(screen_row);
