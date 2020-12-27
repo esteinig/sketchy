@@ -213,8 +213,6 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             
             println!("{:?}", &read_prediction);
 
-            for 
-
             read_prediction.clear();
             
         }
