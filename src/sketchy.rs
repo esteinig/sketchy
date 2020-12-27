@@ -210,7 +210,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
         if !_read_tracker.contains(read) {
             _read_tracker[0] = read.to_string();
             
-            let _values = read_prediction.values().cloned().collect();
+            let _values: Vec<String> = read_prediction.values().cloned().collect();
             let _max_length = _values.map(|x| x.len()).collect().iter().max();
             
             match _max_length {
