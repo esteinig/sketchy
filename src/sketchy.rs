@@ -212,11 +212,11 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             
             let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
             let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
-
+            let _length: usize = _lengths.iter().max();
 
 
             if !raw {
-                println!("{:?}", &_values);
+                println!("{:?}", &_length);
             }
 
             read_prediction.clear();
