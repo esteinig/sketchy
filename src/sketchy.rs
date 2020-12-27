@@ -281,7 +281,8 @@ pub fn display_header(genotype_key: String, pretty: bool) {
     for key in feature_translation.keys().sorted(){
         header.push(feature_translation[key]["name"]);
     }
-    prinln!("{:?}", header);
+    
+    println!("{:?}", header);
 
     Ok(())
 }
