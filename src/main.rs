@@ -120,15 +120,15 @@ fn main() -> Result<(), Error> {
 
     if let Some(head) = matches.subcommand_matches("head") {
 
-        let db: String = predict.value_of("DB").unwrap_or_else(||
+        let db: String = head.value_of("DB").unwrap_or_else(||
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        let pretty: bool = screen.is_present("PRETTY");
+        let pretty: bool = head.is_present("PRETTY");
 
-        sketchy::display_header(db, pretty).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
+        // sketchy::display_header(db, pretty).map_err(
+        //     |err| println!("{:?}", err)
+        // ).ok();
 
     }
 
