@@ -211,7 +211,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             _read_tracker[0] = read.to_string();
             
             let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
-            let _lengths: Vec<i32> = _values.iter().len().collect();
+            let _lengths: Vec<i32> = _values.map(|x| x.len()).collect();
 
 
 
