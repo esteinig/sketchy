@@ -270,7 +270,7 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
 
 }
 
-pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
+pub fn display_header(genotype_key: &String, pretty: bool) -> Result<(), Error> {
 
     let key_file = File::open(genotype_key)?;
     let reader = BufReader::new(key_file);
