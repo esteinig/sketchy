@@ -234,13 +234,7 @@ pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Re
                 }
                 let genotype_str = genotype.join("\t");
 
-                if rank == 0 && limit < 1 {
-                    println!("{}", &genotype_str);
-                } else if rank == 0 && limit == 1 {
-                    println!("{}\t{}", &read, &genotype_str);
-                } else {
-                    println!("{}\t{}\t{}", &read, &rank, &genotype_str);
-                }
+                println!("{}\t{}", &read, &genotype_str);
                 
                 if rank+1 > limit {
                     break
