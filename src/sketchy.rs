@@ -190,7 +190,6 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
     let key_file = File::open(genotype_key)?;
     let reader = BufReader::new(key_file);
 
-    // Read the JSON contents of the file
     let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
     
     let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
