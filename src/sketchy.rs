@@ -217,7 +217,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
             for i in 0..*_max_genotype_categories {
-                let genotype = read_prediction[&i];
+                let genotype = &read_prediction[&i];
                 
                 for g in 0..*_max_genotype_predictions {
                     let prediction = match genotype.get(g) {
