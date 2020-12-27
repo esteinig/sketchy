@@ -214,7 +214,7 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
             let _length: &usize = _lengths.iter().max().unwrap();
             
-            for i in 0.._length {
+            for i in 0..*_length {
                 println!("{:?}", &i);
             }
 
