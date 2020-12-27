@@ -221,13 +221,13 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
                 for g in 0..*_max_genotype_predictions {
                     let prediction = match genotype.get(g) {
                         Some(value) => value,
-                        None => genotype.last()
+                        None => genotype.last().unwrap()
                     };
                 }
             }
 
             if !raw {
-                println!("{:?}", &_length);
+                println!("{:?}", &_max_genotype_categories);
             }
 
             read_prediction.clear();
