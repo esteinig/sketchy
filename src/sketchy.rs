@@ -218,8 +218,8 @@ pub fn predict(ssh: String, mode: String, genotype_index: String, genotype_key: 
             
 
             for rank in 0..*_max_genotype_ranks {
-                println!("Genotype rank {}", rrank;
-                let genotype: Vec<&String> = vec![]; 
+                let genotype: Vec<&String> = vec![];
+                 
                 for i in 0..*_max_genotype_categories {
                     let category = &read_prediction[&i];
                     let prediction = match category.get(rank) {
