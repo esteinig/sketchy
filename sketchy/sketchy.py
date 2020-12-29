@@ -701,7 +701,7 @@ class SketchyDatabase(PoreLogger):
                 f"does not match genotypes ({_isolates_in_genotypes})"
             )
 
-        _names_in_sketch = sketch_info['id']
+        _names_in_sketch = sketch_info['ids']
         _names_in_genotypes = genotypes[id_column]
 
         if len(set(_names_in_sketch)) != len(_names_in_sketch):
