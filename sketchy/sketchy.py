@@ -716,8 +716,6 @@ class SketchyDatabase(PoreLogger):
             )
             exit(1)
 
-        print(sketch_info)
-
         indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
@@ -728,6 +726,8 @@ class SketchyDatabase(PoreLogger):
             indexed_genotypes.rename(columns={'id_x': 'id'}, inplace=True)
         else:
             indexed_genotypes.drop(columns=[id_column], inplace=True)
+
+        print(indexed_genotypes)
 
         genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
 
