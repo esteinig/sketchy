@@ -14,8 +14,10 @@ Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected
 
 Species we have validated using ONT sequence reads with matching Illumina data:
 
-* *Staphylococcus aureus* (n = 142)
-* *Klebsiella pneumoniae* (n = 120)
+* [*Staphylococcus aureus*](docs/saureus.md) (n = 142)
+* [*Klebsiella pneumoniae*](docs/kpneumo.md) (n = 120)
+
+**2021**: sketch updates will occur every month and include new quality controlled genomes from the European Nucleotide Archive
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
@@ -148,21 +150,19 @@ Streaming is primarily bottlenecked by sketch queries of each read against the r
 The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
  ```bash
- cat test.fq | head -4000 | sketchy-rs stream -d saureus -t 4 -p > sssh.tsv
+ cat test.fq | sketchy-rs stream -d saureus -t 4 > sssh.tsv
  ```
  
-`Predict` then uses either the final (current) ranked scores at the last read (`-m last`) or the totall over the read stream (`-m total`) to infer the genotype profiles:
+`Predict` then uses the ranked scores at each read to infer the genotype profiles:
 
 ```bash
-cat test.ssh.tsv | sketchy-rs predict -d saureus -m last > predict.tsv
+cat test.ssh.tsv | sketchy-rs predict -d saureus > predict.tsv
 ```
 
-`Stream` and `predict` read from `/dev/stdin` - if limiting the read stream (e.g. with `head`) they can be piped:
+`Stream` and `predict` read from `/dev/stdin` so they can be piped:
 
 ```bash
-cat test.fq | head -4000 | \
-sketchy-rs stream -d saureus -t 4 -p | \
-sketchy-rs predict -d saureus -m last > predict.tsv
+cat test.fq | sketchy-rs stream -d saureus | sketchy-rs predict -d saureus > predict.tsv
 ```
 
 Diagnostic plots and evaluation summaries are handled in the Python client and accessed via the `sketchy plot` task:
@@ -176,7 +176,7 @@ sketchy plot \
     --format png
 ```
 
-Please cite the following when you use `sketchy stream`:
+Please cite the following when using `sketchy stream`:
 
 * Ondov et al. (2016) - `Mash`
 
@@ -213,102 +213,10 @@ cat mobile_test.fq | sketchy-rs stream --db ./saureus.min
 
 TBD.
  
+
 ## Reference sketches
 
-Species-wide reference sketches are available for *S. aureus* and *K. pneumoniae*. 
-
-PE Illumina data from ENA were collected with `pathfinder survey` and run through the `pf-core/pf-survey` pipeline: QC -> species typing with `Kraken2` -> `Skesa` assembly with `Shovill` -> genotyping with `Kleborate`, `SCCion`, `Mykrobe`. Final data was fiiltered and prepared into genotype reference indices and assemblies were used to build reference sketches with `Mash`. 
-
-Sketch names are addressable in the `sketchy run` function and are constructed in the pattern `prefix_{kmer}_{size}`. Prediction ability is not uniform across genotype features, and it is strongly suggested to validate on nanopore reference collections (hybrid assemblies, phenotypes if included). We provide data on validation sets for *S. aureus* and *K. pneumoniae* but lack nanopore data for appropriate validation of other species. If you have such data and are interested in making it available for us to create and validate reference sketches for other pathogens, please let us know.
-
-### :closed_umbrella: Staphylococcus aureus
-
-*S. aureus* sketches will likely be dereplicated in the preprint release to increase speed of predictions. 
-
-Example:
-
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_3.png' align="center" height="400" /></a>
-
-* 38893 genomes from the Euopean Nucleotide Archive
-* 1045 sequence types (MLST)
-* 12 antibiotic susceptibilities
-
-Default collection:
-
-* `saureus_15_1000` (default) - 159 MB
-* `saureus_15_10000` (full) - 1.5 GB
-
-Genotype features from assemblies with `SCCion`:
-
-* MLST
-* SCC*mec* type
-* Panton Valentine leukocidin (PVL)
-* *mecA* gene (MSSA/MRSA)
-
- Mykrobe susceptibility phenotypes:
- 
-* Clindamycin
-* Rifampicin
-* Ciprofloxacin
-* Vancomycin
-* Tetracycline
-* Mupirocin
-* Gentamicin
-* Trimethoprim
-* Penicillin
-* Methicillin
-* Erythromycin
-* FusidicAcid
-
-### :briefcase: Klebsiella pneumoniae
-
-*K. pneumoniae* sketches are from a relatively small collection of less than ten thousand genomes and may be extended in future releases.
-
-Example:
-
-<a href='https://github.com/esteinig'><img src='docs/example_kpneumoniae_1.png' align="center" height="400" /></a>
-
-* 8149 genomes from the European Nucleotide Archive
-* 626 sequence types
-* 16 antimicrobial resistance genes
-
-Default collection:
-
-* `kpneumoniae_15_1000` (default) - 34 MB
-* `kpneumoniae_15_10000` (full) - 313 MB
-
-Genotype features from assemblies with `Kleborate`:
-
-* MLST
-* Virulence score
-* Resistance score
-* Yersiniabactin
-* Hypermucoidy
-* K-locus serotype
-* O-locus serotype
-
-Resistance genes from assemblies with `Kleborate`, presence or absence:
-
-* AGly (aminoglycosides)
-* Bla (beta-lactamases)
-* Bla_broad (broad spectrum beta-lactamases)
-* Bla_Carb (carbapenemase)
-* Bla_ESBL (extended spectrum beta-lactamases)
-* Fcyn (fosfomycin)
-* Flq (fluoroquinolones)
-* Gly (glycopeptides)
-* MLS (macrolides)
-* Ntmdz (nitroimidazole, e.g. metronidazole)
-* Phe (phenicols)
-* Rif (rifampin)
-* Sul (sulfonamides)
-* Tet (tetracyclines)
-* Tmt (trimethoprim)
-* Tgc (tigecycline)
-
-## Constructing reference sketches
-
-Reference sketches can be constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, lineage sub-sketches of a species, or local genome collections, such as from  healthcare providers or surveillance programs that are not publicly accessible. All that is required is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
+Reference sketches can be constructed and prepared for use with `Sketchy`. Custom sketches are useful for prediction on species currently not offered in the default collection, sub-sketches of a species, or local genome collections, such as from healthcare providers or surveillance programs not publicly accessible. All that is required is a set of high-quality assemblies and their associated genotypes. Ultimately, genome and feature representation in the database should be considered carefully, as they define the genomic neighbors that can be typed with `Sketchy`. 
 
 Custom sketches must include a:
 
@@ -332,9 +240,8 @@ sketchy run --fastq test.fq --sketch ref
 
 ### Genome assemblies and sketch construction
 
-Assemblies should be of sufficient quality for genotyping and can produced for example with tools from the [`Torstyverse`](https://github.com/tseemann) like [`Shovill`](https://github.com/tseemann/shovill) or with large-scale public archive surveillance pipelines like [`Pathfinder`](https://github.com/pf-core). 
+Given a set of high-quality assemblies in the format `{id}.fasta`:
 
-Given a set of high-quality assemblies in the current directory:
 
 ```
 DRR083589.fasta
@@ -355,10 +262,10 @@ See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`B
 
 ### Genotype features and index preparation
 
-Genotypes associated with each genome in the reference sketch should be in a tab-delimited table (e.g. `genotypes.tsv`) with appropriate headers. Here the `uuid` column is used to demonstrate that the index **must be in the same order as genomes in the sketch**. We will remove the `uuid` column in the next step when we translate columns into categorical data - which does not make sense for `uuid`.
+Genotypes associated with each genome in the reference sketch should be in a tab-delimited table (`genotypes.tsv`) with appropriate headers. We will remove the `id` column in the next step when we translate columns into genotyping indices for `Sketchy`.
 
 ```
-uuid        st      sccmec  pvl 
+id          st      sccmec  pvl 
 DRR083589   st772   v       +
 DRR083590   st93    iv      +
 DRR119226   st59    v       +
@@ -367,30 +274,28 @@ DRR128207   st772   -       +
 DRR128208   st90    iv      +
 ```
 
-To generate the three reference sketch files use `sketchy feature prepare`:
+To generate the `Sketchy` reference genotypes in `sketchy genotypes create`:
 
 ```
-sketchy feature prepare -i genotypes.tsv --drop uuid --prefix ref
+sketchy genotypes create -i genotypes.tsv -s ref.msh --prefix ref --drop uuid
 ```
 
-together with the `.msh` sketch created above, the final files for use in prediction are:
+This will create a directory with the following files
 
 ```
 ref.msh   # sketch
-ref.tsv   # index
+ref.tsv   # genotypes
+ref.idx   # index
 ref.json  # key 
 ```
 
-See here [how to use custom reference sketches](#custom-sketches) in `sketchy run`.
+## How the streaming algorithm works
 
+`Sketchy` stream computes across three stages and two simple scores: the first is the sum of shared hashes, where it keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. `Mash` queries take the majority of the compute while `Sketchy` siphons off the output: at each read, the indexed scores are ranked and the highest ranking scores are recorded to reduce excessive read-wise output of the reference sketch queries and retain salient hits (default: `--ranks 10`). Raw sum of shared hashes scores can be output for debugging using the `--ssh` scores flag.
 
-### How the online algorithm works: `sketchy stream`
+In the second stage, an evaluation score for genotypes features is computed by aggregating the sum of ranked sums of shared hashes (`sssh`) for each genotype feature in the associated index independently (e.g. *mecA* presence or SCC*mec* type). Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best prediction.
 
-`Sketchy` computes two simple scores: the first is the sum of shared hashes, where it keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. This takes the majority of compute in the `Mash` queries while `Sketchy` siphons off the output which is why it is so frugal to run. At each read, the indexed scores are ranked and the highest ranking scores are recorded (default `--ranks 20`) to reduce excessive read-wise output of the reference sketch queries.
-
-In the second stage, an evaluation score is computed by aggregating the sum of ranked sum of shared hashes (`sssh`) for each genotype feature in the associated genotype index that a prediction is made on (e.g. SCC*mec* type or susceptibility to an antibiotic). Final predictions are made on the highest total `sssh` scores which correspond to the dominant feature value in the `sssh` scores of each feature. 
-
-Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best prediction.
+In the third stage, the sum of ranked sums of shared hashes scores are ranked and translated to genotypes from the database. As each genotype feature is evaluated independently, ranked genotype predictions are combined at each rank to provide a full genotype. For example, it may be that two ranks of sequence types are predicted (e.g. ST1 and ST8), but only one rank of penicillin resistance (R). In this case, the first rank genotype is unambigious (e.g. ST1-R), but penicillin resistance is adopted in the second rank genotype (e.g. ST8-R)
 
 ### Sketchy evaluation outputs
 
