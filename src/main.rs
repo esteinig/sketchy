@@ -47,7 +47,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
-        .subcommand(SubCommand::with_name("head")
+        .subcommand(SubCommand::with_name("head").help_message("")
             .about("\ndisplay genotype database header")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
