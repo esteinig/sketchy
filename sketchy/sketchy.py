@@ -696,30 +696,30 @@ class SketchyDatabase(PoreLogger):
         _isolates_in_genotypes = len(genotypes)
 
         if _isolates_in_sketch != _isolates_in_genotypes:
-            self.logger.warning(
+            self.logger.error(
                 f"Number of isolates in sketch ({_isolates_in_sketch}) "
                 f"does not match genotypes ({_isolates_in_genotypes})"
             )
+            exit(1)
 
         _names_in_sketch = sketch_info['id']
         _names_in_genotypes = genotypes[id_column]
 
         if len(set(_names_in_sketch)) != len(_names_in_sketch):
-            self.logger.error(
-                "Duplicate identifiers in sketch file! Please replace before proceeding"
-            )
+            self.logger.error("Duplicate identifiers in sketch file! Please replace before proceeding")
             exit(1)
 
         if len(set(_names_in_genotypes)) != len(_names_in_genotypes):
-            self.logger.error(
-                "Duplicate identifiers in genotype file! Please replace before proceeding"
-            )
+            self.logger.error("Duplicate identifiers in genotype file! Please replace before proceeding")
             exit(1)
 
+        if set(_names_in_sketch) != len(_names_in_genotypes):
+            self.logger.error("Identifiers in genotypes do not match identifiers (name stem of files) in sketch")
+            exit(1)
+            
         indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
-
 
         print(indexed_genotypes)
 
