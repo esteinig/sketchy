@@ -9,7 +9,7 @@ mod sketchy;
 
 use std::env;
 use std::io::Error;
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App, AppSettings, SubCommand};
 
 fn main() -> Result<(), Error> {
 
