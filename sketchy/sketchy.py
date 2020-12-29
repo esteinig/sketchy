@@ -701,7 +701,7 @@ class SketchyDatabase(PoreLogger):
                 f"does not match genotypes ({_isolates_in_genotypes})"
             )
 
-        _names_in_sketch = sketch_info['ids']
+        _names_in_sketch = sketch_info['id']
         _names_in_genotypes = genotypes[id_column]
 
         if len(set(_names_in_sketch)) != len(_names_in_sketch):
@@ -717,13 +717,15 @@ class SketchyDatabase(PoreLogger):
             exit(1)
 
         indexed_genotypes = genotypes.merge(
-            sketch_info, left_on=id_column, right_on="ids", how='inner'
+            sketch_info, left_on=id_column, right_on="id", how='inner'
         )
 
-        if 'ids_y' in indexed_genotypes.columns:
+        if 'id_y' in indexed_genotypes.columns:
             # If the user column is 'ids'
-            indexed_genotypes.drop(columns=["ids_y"], inplace=True)
-            indexed_genotypes.rename(columns={'ids_x': 'ids'}, inplace=True)
+            indexed_genotypes.drop(columns=["id_y"], inplace=True)
+            indexed_genotypes.rename(columns={'id_x': 'id'}, inplace=True)
+        else:
+            indexed_genotypes.drop(columns=[id_column], inplace=True)
 
         genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
 
@@ -759,7 +761,6 @@ class SketchyDatabase(PoreLogger):
 
         return genotypes, feature_keys
 
-
     def get_sketch_info(self) -> pandas.DataFrame:
 
         run_cmd(f'mash info -t {self.sketch} > info.tmp', shell=True)
@@ -773,13 +774,13 @@ class SketchyDatabase(PoreLogger):
             index_col=0,
             engine='c',
             usecols=[2],
-            names=['id'],
+            names=['name'],
             converters=converters,
         )
         os.remove('info.tmp')
 
         mash_info['idx'] = [i for i in range(0, len(mash_info))]
-        mash_info['ids'] = mash_info.index.tolist()
+        mash_info['id'] = mash_info.index.tolist()
 
         return mash_info
 
