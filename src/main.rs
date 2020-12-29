@@ -144,7 +144,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         sketchy::get_sketch_files(db, &sketchy_path);
-
+        println!("Ok");
     }
 
     Ok(())
