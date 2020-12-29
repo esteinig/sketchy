@@ -143,7 +143,7 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        _ = sketchy::get_sketch_files(db, &sketchy_path);
+        sketchy::get_sketch_files(db, &sketchy_path);
 
     }
 
