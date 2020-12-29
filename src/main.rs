@@ -17,7 +17,7 @@ fn main() -> Result<(), Error> {
     let sketchy_home: String = format!("{}/.sketchy", user_home);
     let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
 
-    let matches = App::new("sketchy")
+    let matches = App::new("sketchy").help_message(None)
         .version("0.5.0")
         .about("\nNanopore lineage calling and genotyping of bacterial pathogens using Mash\n")
         .subcommand(SubCommand::with_name("stream")
@@ -47,7 +47,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
-        .subcommand(SubCommand::with_name("head").help_message("")
+        .subcommand(SubCommand::with_name("head")
             .about("\ndisplay genotype database header")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
