@@ -702,8 +702,8 @@ class SketchyDatabase(PoreLogger):
             )
             exit(1)
 
-        _names_in_sketch = sketch_info['id']
-        _names_in_genotypes = genotypes[id_column]
+        _names_in_sketch = sketch_info['id'].tolist()
+        _names_in_genotypes = genotypes[id_column].tolist()
 
         if len(set(_names_in_sketch)) != len(_names_in_sketch):
             self.logger.error("Duplicate identifiers in sketch file! Please replace before proceeding")
@@ -714,9 +714,11 @@ class SketchyDatabase(PoreLogger):
             exit(1)
 
         if set(_names_in_sketch) != len(_names_in_genotypes):
-            self.logger.error("Identifiers in genotypes do not match identifiers (name stem of files) in sketch")
+            self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
             exit(1)
-            
+
+
+
         indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
