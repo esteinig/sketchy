@@ -17,7 +17,9 @@ fn main() -> Result<(), Error> {
     let sketchy_home: String = format!("{}/.sketchy", user_home);
     let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
 
-    let matches = App::new("sketchy").help_message(None)
+    let matches = App::new("sketchy")
+        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .setting(AppSettings::DisableHelpSubcommand)
         .version("0.5.0")
         .about("\nNanopore lineage calling and genotyping of bacterial pathogens using Mash\n")
         .subcommand(SubCommand::with_name("stream")
