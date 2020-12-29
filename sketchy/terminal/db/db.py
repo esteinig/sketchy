@@ -9,6 +9,5 @@ def db():
     pass
 
 
-online.add_command(monitor)
-online.add_command(simulate)
-online.add_command(watch)
+db.add_command(create)
+db.add_command(inspect)
