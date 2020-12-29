@@ -379,9 +379,8 @@ fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tai
                     
                     if raw {
                         println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
-                    } else {
                         continue;
-                    }
+                    } 
                     
                     let ssh: usize = **ssh as usize;
 
