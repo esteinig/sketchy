@@ -725,6 +725,8 @@ class SketchyDatabase(PoreLogger):
 
         genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
 
+        print(indexed_genotypes)
+        
         genotype_index['id'] = indexed_genotypes['id']
         genotype_index['idx'] = indexed_genotypes['idx']
 
