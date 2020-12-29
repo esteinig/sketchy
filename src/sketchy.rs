@@ -22,7 +22,7 @@ use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use serde_json::{Value};
 
-pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -72,7 +72,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
     let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
-    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress).map_err(
+    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, ranks, stability, progress, raw).map_err(
         |err| println!("{:?}", err)
     ).ok();
 
@@ -187,7 +187,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
     Ok(())
 }
 
-pub fn predict(ssh: String, genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
+pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -312,7 +312,7 @@ fn get_header_row(genotype_key: String) -> Result<Row, Error> {
     Ok(header_row)
 }
 
-fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool) -> Result<(), Error> {
+fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, ranks: usize, stability: usize, progress: bool, raw: bool) -> Result<(), Error> {
     
     /* Sum of shared hashes core function */ 
 
@@ -377,7 +377,11 @@ fn sum_of_shared_hashes<R: BufRead>(reader: R, data_reader: BufReader<File>, tai
                 // write ranked ssh block for this read
                 for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
                     
-                    // println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores for heatmaps
+                    if raw {
+                        println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
+                    } else {
+                        continue;
+                    }
                     
                     let ssh: usize = **ssh as usize;
 

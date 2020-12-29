@@ -21,7 +21,7 @@ fn main() -> Result<(), Error> {
         .version("0.5.0")
         .about("\nNanopore lineage calling and genotyping of bacterial pathogens using Mash\n")
         .subcommand(SubCommand::with_name("stream")
-            .about("\ncompute sum of shared hashes from fasta/q stream")
+            .about("\ncompute sum of ranked sum of shared hashes from fasta/q stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
             .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).help("Fasta/q path or STDIN [-]"))
@@ -29,13 +29,14 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("STABILITY").short("s").long("stability").takes_value(true).help("Reads to stable breakpoint [100]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
+            .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw sum of shared hashes scores [false]"))
         )
         .subcommand(SubCommand::with_name("predict")
             .about("\npredict genotypes from sum of shared hashes stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
-            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Raw translated scores print on [false]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [10]"))
+            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Print raw translated genotypes and scores [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nscreen read set against reference sketch with mash")
@@ -70,11 +71,12 @@ fn main() -> Result<(), Error> {
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
+        let raw: bool = stream.is_present("RAW");
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, &sketchy_path);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, ranks, stability, progress, sketch_index, sketch_size).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, ranks, stability, progress, raw, sketch_index, sketch_size).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
