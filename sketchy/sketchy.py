@@ -742,7 +742,7 @@ class SketchyDatabase(PoreLogger):
 
         transform = genotypes.select_dtypes(dtypes).columns
 
-        transform  = [_ for _ in transform if _ not in ('id', 'idx')]
+        transform = [_ for _ in transform if _ not in ('id', 'idx')]
 
         genotypes.drop(columns=[
             c for c in genotypes.columns if c not in transform
