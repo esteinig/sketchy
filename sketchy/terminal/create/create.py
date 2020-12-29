@@ -8,19 +8,19 @@ from sketchy.sketchy import LineageIndex
 @click.command()
 @click.option(
     '--index', '-i', type=Path, required=True,
-    help='Path to genotypes index input file'
+    help='Path to create index input file'
 )
 @click.option(
-    '--drop', '-d', type=str, required=False, default=None,
-    help='Comma separated string of columns to drop'
+    '--db_drop', '-d', type=str, required=False, default=None,
+    help='Comma separated string of columns to db_drop'
 )
 @click.option(
     '--prefix', '-p', type=Path, required=False, default="index",
-    help='Prefix for prepared genotypes index output files'
+    help='Prefix for prepared create index output files'
 )
-def prepare(index, drop, prefix):
+def create(index, drop, prefix):
 
-    """ Prepare a genotypes index file for evaluation in Rust """
+    """ Create a create index database for Sketchy """
 
     idx = LineageIndex(index_file=index)
 

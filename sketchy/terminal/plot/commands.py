@@ -11,14 +11,14 @@ from sketchy.sketchy import Evaluation
     '-i',
     type=Path,
     required=True,
-    help='Path to genotype genotypes index used in: sketchy evaluate',
+    help='Path to genotype create index used in: sketchy evaluate',
 )
 @click.option(
     '--key',
     '-k',
     type=Path,
     required=True,
-    help='Path to genotype genotypes index key for translation from numeric.',
+    help='Path to genotype create index key for translation from numeric.',
 )
 @click.option(
     '--sssh',

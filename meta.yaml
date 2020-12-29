@@ -1,4 +1,4 @@
-{% set version = "0.4.5" %}
+{% set version = "0.5.0" %}
 
 # conda build -c esteinig -c bioconda -c conda-forge .
 
@@ -52,5 +52,5 @@ about:
   home: 'https://github.com/esteinig/sketchy'
   license: MIT
   license_file: LICENSE
-  summary: 'Real-time lineage hashing and genotyping of bacterial pathogens'
+  summary: 'Real-time db_lineage hashing and genotyping of bacterial pathogens'
 

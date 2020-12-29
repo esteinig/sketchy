@@ -31,10 +31,9 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
         )
         .subcommand(SubCommand::with_name("predict")
-            .about("\npredict genotypes from sum of shared hashes")
+            .about("\npredict genotypes from sum of shared hashes stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
-            .arg(Arg::with_name("SSH").short("s").long("ssh").takes_value(true).help("Ranked sum of shared hashes input [-]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Raw translated scores print on [false]"))
         )
@@ -53,6 +52,11 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
         )
+        .subcommand(SubCommand::with_name("check")
+            .about("\ncheck genotype database format")
+            .version("0.5.0")
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
+        )
         .get_matches();
         
     if let Some(stream) = matches.subcommand_matches("stream") {
@@ -69,7 +73,6 @@ fn main() -> Result<(), Error> {
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, &sketchy_path);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
-        
 
         sketchy::stream(fastx, sketch_msh, genotype_index, threads, ranks, stability, progress, sketch_index, sketch_size).map_err(
             |err| println!("{:?}", err)
@@ -105,14 +108,12 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        let ssh: String = predict.value_of("SSH").unwrap_or("-").to_string();
-        let mode: String = predict.value_of("MODE").unwrap_or("fill").to_string();
         let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
         let raw: bool = predict.is_present("RAW");
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
-        sketchy::predict(ssh, genotype_key, limit, raw).map_err(
+        sketchy::predict(genotype_key, limit, raw).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
@@ -131,6 +132,16 @@ fn main() -> Result<(), Error> {
         sketchy::display_header(genotype_key, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
+
+    }
+
+    if let Some(check) = matches.subcommand_matches("check") {
+
+        let db: String = check.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+        _ = sketchy::get_sketch_files(db, &sketchy_path);
 
     }
 

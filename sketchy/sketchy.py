@@ -191,8 +191,8 @@ class Evaluation(PoreLogger):
         self.logger.info(f"Loading data for evaluations from Sketchy Rust")
         self.logger.info(f"Ranked sum of shared hashes: {sssh}")
         self.logger.info(f"Sum of shared hashes: {ssh}")
-        self.logger.info(f"Genotype genotypes index: {index}")
-        self.logger.info(f"Genotype genotypes key: {key}")
+        self.logger.info(f"Genotype create index: {index}")
+        self.logger.info(f"Genotype create key: {key}")
 
         self.feature_key = self.read_feature_key(file=key)  # key to headers and categories
         self.feature_index, self.feature_data = self.read_feature_index(file=index)
@@ -203,7 +203,7 @@ class Evaluation(PoreLogger):
         self.features = self.feature_index.columns.tolist()
 
         if self.ssh is not None:
-            # Merge ssh and genotypes index for heatmap
+            # Merge ssh and create index for heatmap
             self.ssh_features = self.ssh \
                 .join(self.feature_data, how='inner') \
                 .sort_values(['read', 'rank'])
@@ -226,7 +226,7 @@ class Evaluation(PoreLogger):
         break_point: bool = False
     ):
 
-        self.logger.info(f"Compute and plot genotypes evaluations")
+        self.logger.info(f"Compute and plot create evaluations")
         self.logger.info(f"Plot break point: {break_point}")
         self.logger.info(f"Color palette: {color}")
         self.logger.info(f"Output predictions to file: {break_file}")
@@ -254,7 +254,7 @@ class Evaluation(PoreLogger):
 
         data = {}
         for (i, (feature, feature_data)) in enumerate(
-            self.sssh.groupby('genotypes')
+            self.sssh.groupby('create')
         ):
 
             feature_data, feature_name = self.translate_feature_data(
@@ -309,13 +309,13 @@ class Evaluation(PoreLogger):
                     ax=axes[i, 1 if self.ssh is None else 2]
                 )
 
-                self.logger.info(f"Constructed plots for genotypes: {feature_name}")
+                self.logger.info(f"Constructed plots for create: {feature_name}")
 
         break_data = pandas.DataFrame(data).T
         break_data = break_data[['prediction', 'stability', 'preference']]
 
         break_data.stability = break_data.stability.astype(int)+1
-        break_data.to_csv(break_file, sep='\t', index=True, index_label="genotypes")
+        break_data.to_csv(break_file, sep='\t', index=True, index_label="create")
 
         if plot:
             plt.tight_layout()
@@ -363,7 +363,7 @@ class Evaluation(PoreLogger):
             try:
                 column_name = self.feature_key[str(name)]['name']
             except KeyError:
-                raise KeyError(f'Could not get column name from genotypes {name}')
+                raise KeyError(f'Could not get column name from create {name}')
 
             column = column.astype('category')
 
@@ -374,7 +374,7 @@ class Evaluation(PoreLogger):
                     column.cat.categories = self.feature_key[str(name)]['values']
             except KeyError:
                 raise KeyError(
-                    f'Could not find {name} or associated values in genotypes index key.'
+                    f'Could not find {name} or associated values in create index key.'
                 )
 
             df[name] = column
@@ -437,7 +437,7 @@ class Evaluation(PoreLogger):
             index_col=False,  # reads as first column rather than index
             names=[
                 'read',
-                'genotypes',
+                'create',
                 'feature_value',
                 'feature_rank',
                 'sssh',
@@ -446,7 +446,7 @@ class Evaluation(PoreLogger):
             ],
             dtype={
                 'read': int,
-                'genotypes': int,
+                'create': int,
                 'feature_value': int,
                 'feature_rank': int,
                 'sssh': int,
@@ -617,7 +617,7 @@ class Evaluation(PoreLogger):
             feature_dict = self.feature_key[feature]
         except KeyError:
             raise KeyError(
-                f'Could not find translation data for genotypes {feature}'
+                f'Could not find translation data for create {feature}'
             )
 
         try:
@@ -629,7 +629,7 @@ class Evaluation(PoreLogger):
             }
         except KeyError:
             raise KeyError(
-                f"Could not find name or value keys for genotypes: {feature}"
+                f"Could not find name or value keys for create: {feature}"
             )
 
         # Feature column
@@ -692,18 +692,18 @@ class LineageIndex(PoreLogger):
 
     def get_lineage(self, lineage: str) -> pandas.DataFrame:
 
-        """" Get a subset of the genotype index for the given lineage """
+        """" Get a subset of the genotype index for the given db_lineage """
 
         if self.has_lineage(lineage):
             return self.index[self.index[self.lineage_column] == lineage]
         else:
-            raise ValueError(f'Could not detect lineage in index: {lineage}')
+            raise ValueError(f'Could not detect db_lineage in index: {lineage}')
 
     def get_key_index(
         self, lineage: str, key_file: Path = None,
     ) -> pandas.DataFrame:
 
-        """ Access lineage data by legacy key index file from Pathfinder Survey """
+        """ Access db_lineage data by legacy key index file from Pathfinder Survey """
 
         df = self.get_lineage(lineage=lineage)
 
@@ -761,13 +761,13 @@ class LineageIndex(PoreLogger):
 
     def get_summary(self, lineage: str) -> pandas.DataFrame or None:
 
-        """ Generate a genotype summary for the given lineage """
+        """ Generate a genotype summary for the given db_lineage """
 
         ignore_columns = ['uuid', 'idx', 'id', 'plasmid', 'resistance']  # TODO check these
 
         if self.has_lineage(lineage):
 
-            # Get frequency summary of genotypes values
+            # Get frequency summary of create values
 
             df = self.get_lineage(lineage)
 
@@ -782,12 +782,12 @@ class LineageIndex(PoreLogger):
             return pandas.concat(feature_data)
 
         else:
-            raise ValueError(f'Could not detect lineage in index: {lineage}')
+            raise ValueError(f'Could not detect db_lineage in index: {lineage}')
 
     @staticmethod
     def _build_summary_str(feature_counts: pandas.Series):
 
-        """ Build a summary string from value counts of a genotypes """
+        """ Build a summary string from value counts of a create """
 
         feature_str = f"\n{G}{feature_counts.name.upper()}{RE}\n\n"
 
@@ -811,7 +811,7 @@ class LineageIndex(PoreLogger):
             )
 
         df = pandas.DataFrame(
-            summary_data, columns=['genotypes', 'genotype', 'count', 'percent']
+            summary_data, columns=['create', 'genotype', 'count', 'percent']
         )
 
         return feature_str, df

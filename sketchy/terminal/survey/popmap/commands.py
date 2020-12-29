@@ -45,7 +45,7 @@ from sketchy.utils import MutuallyExclusiveOption
     default=None,
     type=Path,
     required=True,
-    help='Path to lineage index file to use as validation population [required]'
+    help='Path to db_lineage index file to use as validation population [required]'
 )
 @click.option(
     '--column',

@@ -15,10 +15,10 @@ from sketchy.utils import run_cmd
 )
 @click.option(
     '--index', '-i', default=None, type=Path, required=True,
-    help='Path to lineage index file [required]'
+    help='Path to db_lineage index file [required]'
 )
 @click.option(
-    '--output', '-o', default="lineage.dist.tsv", type=Path, required=False,
+    '--output', '-o', default="db_lineage.dist.tsv", type=Path, required=False,
     help='Path to output file [required]'
 )
 @click.option(
@@ -39,15 +39,15 @@ def mashdist(fasta, index, output, kmer_size, sketch_size):
         dirpath = Path(dirname)
         run_cmd(
             f'mash sketch -l -k {kmer_size} -s {sketch_size} '
-            f'{fasta} -o {dirpath / "lineage"}'
+            f'{fasta} -o {dirpath / "db_lineage"}'
         )
 
         run_cmd(
-            f'mash dist {dirpath / "lineage.msh"} {dirpath / "lineage.msh"}'
-            f' > {dirpath / "lineage.tsv"}', shell=True
+            f'mash dist {dirpath / "db_lineage.msh"} {dirpath / "db_lineage.msh"}'
+            f' > {dirpath / "db_lineage.tsv"}', shell=True
         )
 
-        df = read_mash_pairwise(dirpath / "lineage.tsv")
+        df = read_mash_pairwise(dirpath / "db_lineage.tsv")
 
     matrix = [
         genome_data.dist.values for g2, genome_data in df.groupby('genome2', sort=False)

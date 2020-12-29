@@ -468,7 +468,7 @@ class SketchySurvey(PoreLogger):
         """ Construct genotype meta data for species-sketches in Sketchy
 
         :param config: dictionary in data: [columns] format to construct
-            a dataframe with index: iids, columns: genotypes
+            a dataframe with index: iids, columns: create
 
         :param binary: dictionary of columns to treat as binary data
             where keys are columns and values are character to treat
@@ -476,12 +476,12 @@ class SketchySurvey(PoreLogger):
 
         :raises: ValueError if genotype column not in selected data
 
-        :return: dataframe of genotypes with genotype indices
+        :return: dataframe of create with genotype indices
 
         """
 
         genotypes = dict()
-        genotype_index = None  # filled with last common index of genotypes parsed
+        genotype_index = None  # filled with last common index of create parsed
         for attr, columns in config.items():
             data = getattr(self.survey_data, attr)
             if merge:
@@ -526,7 +526,7 @@ class SketchySurvey(PoreLogger):
                     genotypes[genotype] = genotype_data
 
         if genotype_index is None:
-            raise ValueError('No genotypes could be parsed.')
+            raise ValueError('No create could be parsed.')
 
         return pandas.DataFrame(genotypes, genotype_index)
 

@@ -11,7 +11,7 @@ VERSION = "0.4.4"
 @click.group()
 @click.version_option(version=VERSION)
 def survey():
-    """ Tasks for: creating genotypes index files from Pathfinder Survey """
+    """ Tasks for: creating create index files from Pathfinder Survey """
     pass
 
 

@@ -14,7 +14,7 @@ from sketchy.utils import run_cmd, PoreLogger
 )
 @click.option(
     '--features', '-f', type=Path, required=True,
-    help='Path to genotype genotypes file to merge indices with sketch'
+    help='Path to genotype create file to db_merge indices with sketch'
 )
 @click.option(
     '--key', '-k', type=Path, required=False,
@@ -22,11 +22,11 @@ from sketchy.utils import run_cmd, PoreLogger
 )
 @click.option(
     '--index_column', '-i', type=str, default='idx',
-    help='Feature index column to merge indices on [idx]'
+    help='Feature index column to db_merge indices on [idx]'
 )
 @click.option(
     '--mash_column', '-m', type=str, default='ids',
-    help='Mash index column to merge indices on [ids]'
+    help='Mash index column to db_merge indices on [ids]'
 )
 @click.option(
     '--prefix', '-p', type=str, default='sketchy.info',
@@ -34,11 +34,11 @@ from sketchy.utils import run_cmd, PoreLogger
 )
 @click.option(
     '--verbose', '-v', is_flag=True,
-    help='Enable verbose output for merge operations'
+    help='Enable verbose output for db_merge operations'
 )
-def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
+def db_merge(sketch, features, key, prefix, index_column, mash_column, verbose):
 
-    """ Merge sketch and genotypes data by common indices """
+    """ Merge sketch and create data by common indices """
 
     pl = PoreLogger(level=logging.INFO if verbose else logging.ERROR).logger
 
@@ -65,7 +65,7 @@ def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
 
     nsketch = len(mash_info)
 
-    pl.info(f'Ordered merge on column {index_column} with genotypes file {features}')
+    pl.info(f'Ordered db_merge on column {index_column} with create file {features}')
     d = pandas.read_csv(features, sep='\t')
 
     ndata = len(d)
@@ -102,7 +102,7 @@ def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
         mash_info.rename(columns={'id': 'key'}, inplace=True)
 
     print(mash_info)
-    pl.info(f'Writing merged genotypes index to: {prefix}.tsv')
+    pl.info(f'Writing merged create index to: {prefix}.tsv')
     mash_info.to_csv(
         f'{prefix}.tsv',
         sep='\t',
@@ -110,8 +110,8 @@ def merge(sketch, features, key, prefix, index_column, mash_column, verbose):
         index=True,
     )
 
-    pl.info(f'Merged sketch data ({nsketch}) and genotypes data ({ndata})')
-    pl.info(f'Final sketch and genotypes size is {len(mash_info)}')
+    pl.info(f'Merged sketch data ({nsketch}) and create data ({ndata})')
+    pl.info(f'Final sketch and create size is {len(mash_info)}')
     pl.info(f'Removed features not present in sketch: {len(mash_info) - ndata}')
     pl.info(f'Removing temporary file {prefix}.mashinfo')
     os.remove(f'{prefix}.mashinfo')

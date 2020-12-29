@@ -101,7 +101,7 @@ DEFAULTS = {
                 'Capreomycin'
             ],
             mykrobe_lineage=[
-                'lineage'
+                'db_lineage'
             ]
         ),
         merge=dict(),
@@ -117,7 +117,7 @@ DEFAULTS = {
 )
 @click.option(
     '--output', '-o', default='survey.tsv', type=Path,
-    help='Tab-delimited genotype genotypes index for Sketchy'
+    help='Tab-delimited genotype create index for Sketchy'
 )
 @click.option(
     '--template', '-t', default=None, type=str,
@@ -133,7 +133,7 @@ DEFAULTS = {
 )
 def construct(directory, output, template, intersect, missing):
 
-    """ Construct genotype genotypes data from Pathfinder Survey """
+    """ Construct genotype create data from Pathfinder Survey """
 
     survey = SketchySurvey(
         survey_directory=directory
@@ -151,7 +151,7 @@ def construct(directory, output, template, intersect, missing):
     data = survey.construct(
         config=DEFAULTS[template]['config'],
         binary=DEFAULTS[template]['binary'],
-        merge=DEFAULTS[template]['merge']
+        merge=DEFAULTS[template]['db_merge']
     )
 
     # All columns should be lower-case

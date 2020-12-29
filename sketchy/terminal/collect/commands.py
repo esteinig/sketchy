@@ -23,7 +23,7 @@ import seaborn as sns
 )
 @click.option(
     '--reference', '-r', type=Path, default=None,
-    help='Genotype matrix in same format as output containing genotypes truths'
+    help='Genotype matrix in same format as output containing create truths'
 )
 @click.option(
     '--heatmap', '-m', is_flag=True,
@@ -372,7 +372,7 @@ def get_data(data: list, columns: list):
 
     all_data = pandas.concat(data, axis=1)
 
-    features = all_data[['genotypes']]
+    features = all_data[['create']]
     new_index = features.iloc[:, 0]
 
     predictions = all_data[['prediction']]

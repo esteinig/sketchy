@@ -7,7 +7,7 @@ setup(
     author_email="eikejoachim.steinig@my.jcu.edu.au",
     packages=find_packages(),
     include_package_data=True,
-    version="0.4.5",
+    version="0.5.0",
     license="MIT",
     entry_points="""
     [console_scripts]
@@ -34,7 +34,7 @@ setup(
         'psutil',
         'dendropy'
     ],
-    description="Real-time lineage calling and genotyping of bacterial"
+    description="Real-time db_lineage calling and genotyping of bacterial"
                 "pathogens from uncorrected nanopore reads using "
                 "genomic neighbor typing and MinHash",
 )

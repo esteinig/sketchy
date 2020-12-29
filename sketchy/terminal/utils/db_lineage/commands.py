@@ -12,16 +12,16 @@ from sketchy.utils import get_files
     help='Path to data file to summarize trait data from [required]'
 )
 @click.option(
-    '--lineage', '-l', default="ST93", type=str, required=False,
+    '--db_lineage', '-l', default="ST93", type=str, required=False,
     help='Trait to show summary for; columns in data file [required]'
 )
 @click.option(
-    '--output', '-o', default=f'lineage.index.tsv', type=Path, required=False,
+    '--output', '-o', default=f'db_lineage.index.tsv', type=Path, required=False,
     help='Path to legacy key file to extract identifiers [lineage.index.tsv]'
 )
 @click.option(
     '--summary', '-s', is_flag=True,
-    help='Print summary of lineage features to terminal [false]'
+    help='Print summary of db_lineage features to terminal [false]'
 )
 @click.option(
     '--file_path', '-f', default=None, type=Path, required=False,
@@ -39,7 +39,7 @@ from sketchy.utils import get_files
     '--reindex', '-r', is_flag=True,
     help='Reindex the lineage table [none]'
 )
-def lineage(data, lineage, summary, key, output, file_path, pattern, reindex):
+def db_lineage(data, lineage, summary, key, output, file_path, pattern, reindex):
 
     """ Show a summary of a lineage from the reference sketch data """
 

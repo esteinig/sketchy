@@ -1,14 +1,14 @@
 FROM continuumio/miniconda3
 
 LABEL name="sketchy"
-LABEL version="0.4.5"
+LABEL version="0.5.0"
 LABEL author="esteinig"
 
 RUN apt-get update && apt-get install curl build-essential -y
 
 ARG FULL_SKETCH=""
 
-ENV SKETCHY_VERSION=0.4.5
+ENV SKETCHY_VERSION=0.5.0
 ENV MASH_VERSION=2.2
 ENV CONDA_DIR=/opt/conda
 ENV SKETCHY_PATH=/sketchy
