@@ -717,8 +717,6 @@ class SketchyDatabase(PoreLogger):
             self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
             exit(1)
 
-
-
         indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
@@ -726,6 +724,9 @@ class SketchyDatabase(PoreLogger):
         print(indexed_genotypes)
 
         genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
+
+        genotype_index['id'] = indexed_genotypes['id']
+        genotype_index['idx'] = indexed_genotypes['idx']
 
         print(genotype_index)
 
@@ -747,11 +748,12 @@ class SketchyDatabase(PoreLogger):
         for (i, (name, column_data)) in enumerate(
             genotypes.iteritems()
         ):
-            self.logger.info(f"Processing genotype: {name}")
-            feature_keys[i] = {
-                'name': name,
-                'values': column_data.astype('category').cat.categories.tolist()
-            }
+            if name not in ('id', 'idx'):
+                self.logger.info(f"Processing genotype: {name}")
+                feature_keys[i] = {
+                    'name': name,
+                    'values': column_data.astype('category').cat.categories.tolist()
+                }
 
         genotypes[transform] = genotypes[transform].apply(
             lambda x: x.astype('category').cat.codes
