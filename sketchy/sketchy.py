@@ -767,7 +767,7 @@ class SketchyDatabase(PoreLogger):
 
         run_cmd(f'mash info -t {self.sketch} > info.tmp', shell=True)
 
-        converters = {'name': lambda x: Path(x).stem}
+        converters = {'fname': lambda x: Path(x).stem}
         mash_info = pandas.read_csv(
             f'info.tmp',
             sep='\t',
@@ -776,7 +776,7 @@ class SketchyDatabase(PoreLogger):
             index_col=0,
             engine='c',
             usecols=[2],
-            names=['name'],
+            names=['fname'],
             converters=converters,
         )
         os.remove('info.tmp')
