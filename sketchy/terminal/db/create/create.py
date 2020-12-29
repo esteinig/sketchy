@@ -19,14 +19,14 @@ from sketchy.sketchy import SketchyDatabase
     help='Name and prefix of database files [db]'
 )
 @click.option(
-    '--ids', '-i', type=str, required=False, default="uuid",
-    help='Column name containing genome identifiers matching sketch [uuid]'
+    '--id_column', '-i', type=str, required=False, default="uuid",
+    help='Column name containing genome identifiers matching file stems used in sketch construction [uuid]'
 )
 @click.option(
     '--drop', '-d', type=str, required=False, default=None,
     help='Comma separated string of column names to drop [none]'
 )
-def create(sketch, genotypes, outdir, drop):
+def create(sketch, genotypes, outdir, id_column, drop):
 
     """ Create a reference database for Sketchy """
 
@@ -34,7 +34,7 @@ def create(sketch, genotypes, outdir, drop):
         sketch=sketch, genotypes=genotypes
     )
 
-    db.create_database(id_column=ids, outdir=outdir, drop=drop)
+    db.create_database(id_column=id_column, outdir=outdir, drop=drop)
 
     if drop is not None:
         db.drop_columns(columns=drop.split(','))
