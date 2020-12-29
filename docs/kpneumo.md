@@ -5,7 +5,7 @@
 
 Example:
 
-<a href='https://github.com/esteinig'><img src='docs/example_kpneumoniae_1.png' align="center" height="400" /></a>
+<a href='https://github.com/esteinig'><img src='example_kpneumoniae_1.png' align="center" height="400" /></a>
 
 * 8149 genomes from the European Nucleotide Archive
 * 626 sequence types
