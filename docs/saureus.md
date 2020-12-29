@@ -5,7 +5,7 @@
 
 Example:
 
-<a href='https://github.com/esteinig'><img src='docs/example_saureus_3.png' align="center" height="400" /></a>
+<a href='https://github.com/esteinig'><img src='example_saureus_3.png' align="center" height="400" /></a>
 
 * 38893 genomes from the Euopean Nucleotide Archive
 * 1045 sequence types (MLST)
