@@ -305,7 +305,7 @@ fn get_header_row(genotype_key: String) -> Result<Row, Error> {
 
     let mut header_row = Row::new(vec![]);
     for key in keys.iter() {
-        let feature_name: &str = &feature_translation[&key]["name"].from_value();
+        let feature_name: &str = &feature_translation[&key]["name"].to_string());
         header_row.add_cell(
             Cell::new(feature_name)
         );
