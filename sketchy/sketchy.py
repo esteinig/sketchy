@@ -716,16 +716,14 @@ class SketchyDatabase(PoreLogger):
             )
             exit(1)
 
-        print(sketch_info)
-        print(genotypes)
-
         indexed_genotypes = genotypes.merge(
-            sketch_info, left_on=id_column, right_on="id", how='inner'
+            sketch_info, left_on=id_column, right_on="ids", how='inner'
         )
 
-        if 'id_y' in indexed_genotypes.columns:
-            indexed_genotypes.drop(columns=["id_y"], inplace=True)
-            indexed_genotypes.rename(columns={'id_x': 'id'}, inplace=True)
+        if 'ids_y' in indexed_genotypes.columns:
+            # If the user column is 'ids'
+            indexed_genotypes.drop(columns=["ids_y"], inplace=True)
+            indexed_genotypes.rename(columns={'ids_x': 'ids'}, inplace=True)
 
         genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
 
@@ -781,7 +779,7 @@ class SketchyDatabase(PoreLogger):
         os.remove('info.tmp')
 
         mash_info['idx'] = [i for i in range(0, len(mash_info))]
-        mash_info['id'] = mash_info.index.tolist()
+        mash_info['ids'] = mash_info.index.tolist()
 
         return mash_info
 
