@@ -716,6 +716,9 @@ class SketchyDatabase(PoreLogger):
             )
             exit(1)
 
+        print(sketch_info)
+        print(genotypes)
+
         indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
