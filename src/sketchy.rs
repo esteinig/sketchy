@@ -299,12 +299,15 @@ fn get_header_row(genotype_key: String) -> Result<Row, Error> {
     
     let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
     let mut keys: Vec<usize> = feature_translation.keys().cloned().collect();
-    
+
     keys.sort();
+    
+    let feature_name: &str = &feature_translation[&key]["name"];
+
     let mut header_row = Row::new(vec![]);
     for key in keys.iter() {
         header_row.add_cell(
-            Cell::new(&feature_translation[&key]["name"].to_string())
+            Cell::new(feature_name)
         );
     }
 
