@@ -717,19 +717,20 @@ class SketchyDatabase(PoreLogger):
             self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
             exit(1)
 
-        igeno = genotypes.merge(
+        indexed_genotypes = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
 
-        print(igeno)
+        print(indexed_genotypes)
 
-        genotype_index, genotype_keys = self.transform_columns(genotypes=igeno, numeric=numeric)
+        genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
 
-        print(igeno)
+        print(indexed_genotypes)
 
-        genotype_index['id'] = igeno['id']
-        genotype_index['idx'] = igeno['idx']
+        genotype_index['id'] = indexed_genotypes['id']
+        genotype_index['idx'] = indexed_genotypes['idx']
 
+        print(genotype_index)
 
     def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
 
@@ -741,6 +742,8 @@ class SketchyDatabase(PoreLogger):
 
         transform = genotypes.select_dtypes(dtypes).columns
 
+        transform  = [_ for _ in transform if _ not in ('id', 'idx')]
+
         genotypes.drop(columns=[
             c for c in genotypes.columns if c not in transform
         ], inplace=True)
@@ -749,12 +752,11 @@ class SketchyDatabase(PoreLogger):
         for (i, (name, column_data)) in enumerate(
             genotypes.iteritems()
         ):
-            if name not in ('id', 'idx'):
-                self.logger.info(f"Processing genotype: {name}")
-                feature_keys[i] = {
-                    'name': name,
-                    'values': column_data.astype('category').cat.categories.tolist()
-                }
+            self.logger.info(f"Processing genotype: {name}")
+            feature_keys[i] = {
+                'name': name,
+                'values': column_data.astype('category').cat.categories.tolist()
+            }
 
         genotypes[transform] = genotypes[transform].apply(
             lambda x: x.astype('category').cat.codes
