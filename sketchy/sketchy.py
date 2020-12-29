@@ -717,20 +717,19 @@ class SketchyDatabase(PoreLogger):
             self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
             exit(1)
 
-        indexed_genotypes = genotypes.merge(
+        igeno = genotypes.merge(
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
 
-        print(indexed_genotypes)
+        print(igeno)
 
-        genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
+        genotype_index, genotype_keys = self.transform_columns(genotypes=igeno, numeric=numeric)
 
-        print(indexed_genotypes)
-        
-        genotype_index['id'] = indexed_genotypes['id']
-        genotype_index['idx'] = indexed_genotypes['idx']
+        print(igeno)
 
-        print(genotype_index)
+        genotype_index['id'] = igeno['id']
+        genotype_index['idx'] = igeno['idx']
+
 
     def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
 
