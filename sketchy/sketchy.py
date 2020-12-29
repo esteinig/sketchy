@@ -713,9 +713,8 @@ class SketchyDatabase(PoreLogger):
             self.logger.error("Duplicate identifiers in genotype file! Please replace before proceeding")
             exit(1)
 
-        if set(_names_in_sketch) != len(_names_in_genotypes):
+        if set(_names_in_sketch) != set(_names_in_genotypes):
             self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
-            print(set(_names_in_sketch).difference(_names_in_genotypes))
             exit(1)
 
 
