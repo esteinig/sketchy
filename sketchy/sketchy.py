@@ -720,12 +720,6 @@ class SketchyDatabase(PoreLogger):
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
 
-        if 'id_y' in indexed_genotypes.columns:
-            # If the user column is 'ids'
-            indexed_genotypes.drop(columns=["id_y"], inplace=True)
-            indexed_genotypes.rename(columns={'id_x': 'id'}, inplace=True)
-        else:
-            indexed_genotypes.drop(columns=[id_column], inplace=True)
 
         print(indexed_genotypes)
 
