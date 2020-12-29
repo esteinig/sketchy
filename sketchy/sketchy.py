@@ -727,7 +727,7 @@ class SketchyDatabase(PoreLogger):
             genotypes=indexed_genotypes.copy(), numeric=numeric
         )
 
-        print(indexed_genotypes)
+        print(genotype_keys)
 
         genotype_index['id'] = indexed_genotypes['id']
         genotype_index['idx'] = indexed_genotypes['idx']
