@@ -717,6 +717,7 @@ class SketchyDatabase(PoreLogger):
             self.logger.error("Genotype identifiers do not match identifiers in sketch (stem of assembly names)")
             exit(1)
 
+        print(set(_names_in_sketch).difference(_names_in_genotypes))
 
 
         indexed_genotypes = genotypes.merge(
