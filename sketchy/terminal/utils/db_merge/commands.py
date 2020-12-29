@@ -43,7 +43,6 @@ def db_merge(sketch, features, key, prefix, index_column, mash_column, verbose):
     pl = PoreLogger(level=logging.INFO if verbose else logging.ERROR).logger
 
     pl.info(f'Extracting data from sketch: {sketch}')
-    run_cmd(f'mash info -t {sketch} > {prefix}.mashinfo', shell=True)
 
     pl.info(f'Reading and converting data indices from sketch')
     converters = {'id': lambda x: Path(x).stem}

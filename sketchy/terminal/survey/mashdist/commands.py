@@ -4,7 +4,7 @@ import tempfile
 import numpy as np
 
 from pathlib import Path
-from sketchy.sketchy import LineageIndex
+from sketchy.sketchy import SketchyDatabase
 from sketchy.utils import run_cmd
 
 
@@ -33,7 +33,7 @@ def mashdist(fasta, index, output, kmer_size, sketch_size):
 
     """ Experimental: compute a population graph with NetView and Mash """
 
-    li = LineageIndex(index_file=index)
+    li = SketchyDatabase(genotypes=index)
 
     with tempfile.TemporaryDirectory() as dirname:
         dirpath = Path(dirname)

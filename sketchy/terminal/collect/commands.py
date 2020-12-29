@@ -23,7 +23,7 @@ import seaborn as sns
 )
 @click.option(
     '--reference', '-r', type=Path, default=None,
-    help='Genotype matrix in same format as output containing create truths'
+    help='Genotype matrix in same format as output containing feature truths'
 )
 @click.option(
     '--heatmap', '-m', is_flag=True,
@@ -68,7 +68,7 @@ def collect(
     image_format
 ):
 
-    """ Collect predictions and summarize results """
+    """ Collect Sketchy predictions and summarize results from Nextflow """
 
     if subset:
         subset = subset.split(',')
@@ -372,7 +372,7 @@ def get_data(data: list, columns: list):
 
     all_data = pandas.concat(data, axis=1)
 
-    features = all_data[['create']]
+    features = all_data[['feature']]
     new_index = features.iloc[:, 0]
 
     predictions = all_data[['prediction']]

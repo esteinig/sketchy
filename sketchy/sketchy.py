@@ -1,5 +1,6 @@
-__version__ = '0.4.5'
+__version__ = '0.5.0'
 
+import os
 import logging
 import pandas
 import json
@@ -191,8 +192,8 @@ class Evaluation(PoreLogger):
         self.logger.info(f"Loading data for evaluations from Sketchy Rust")
         self.logger.info(f"Ranked sum of shared hashes: {sssh}")
         self.logger.info(f"Sum of shared hashes: {ssh}")
-        self.logger.info(f"Genotype create index: {index}")
-        self.logger.info(f"Genotype create key: {key}")
+        self.logger.info(f"Genotype feature index: {index}")
+        self.logger.info(f"Genotype feature key: {key}")
 
         self.feature_key = self.read_feature_key(file=key)  # key to headers and categories
         self.feature_index, self.feature_data = self.read_feature_index(file=index)
@@ -203,7 +204,7 @@ class Evaluation(PoreLogger):
         self.features = self.feature_index.columns.tolist()
 
         if self.ssh is not None:
-            # Merge ssh and create index for heatmap
+            # Merge ssh and fature index for heatmap
             self.ssh_features = self.ssh \
                 .join(self.feature_data, how='inner') \
                 .sort_values(['read', 'rank'])
@@ -226,7 +227,7 @@ class Evaluation(PoreLogger):
         break_point: bool = False
     ):
 
-        self.logger.info(f"Compute and plot create evaluations")
+        self.logger.info(f"Compute and plot feature evaluations")
         self.logger.info(f"Plot break point: {break_point}")
         self.logger.info(f"Color palette: {color}")
         self.logger.info(f"Output predictions to file: {break_file}")
@@ -254,7 +255,7 @@ class Evaluation(PoreLogger):
 
         data = {}
         for (i, (feature, feature_data)) in enumerate(
-            self.sssh.groupby('create')
+            self.sssh.groupby('feature')
         ):
 
             feature_data, feature_name = self.translate_feature_data(
@@ -309,13 +310,13 @@ class Evaluation(PoreLogger):
                     ax=axes[i, 1 if self.ssh is None else 2]
                 )
 
-                self.logger.info(f"Constructed plots for create: {feature_name}")
+                self.logger.info(f"Constructed plots for feature: {feature_name}")
 
         break_data = pandas.DataFrame(data).T
         break_data = break_data[['prediction', 'stability', 'preference']]
 
         break_data.stability = break_data.stability.astype(int)+1
-        break_data.to_csv(break_file, sep='\t', index=True, index_label="create")
+        break_data.to_csv(break_file, sep='\t', index=True, index_label="feature")
 
         if plot:
             plt.tight_layout()
@@ -363,7 +364,7 @@ class Evaluation(PoreLogger):
             try:
                 column_name = self.feature_key[str(name)]['name']
             except KeyError:
-                raise KeyError(f'Could not get column name from create {name}')
+                raise KeyError(f'Could not get column name from feature {name}')
 
             column = column.astype('category')
 
@@ -374,7 +375,7 @@ class Evaluation(PoreLogger):
                     column.cat.categories = self.feature_key[str(name)]['values']
             except KeyError:
                 raise KeyError(
-                    f'Could not find {name} or associated values in create index key.'
+                    f'Could not find {name} or associated values in feature index key.'
                 )
 
             df[name] = column
@@ -437,7 +438,7 @@ class Evaluation(PoreLogger):
             index_col=False,  # reads as first column rather than index
             names=[
                 'read',
-                'create',
+                'feature',
                 'feature_value',
                 'feature_rank',
                 'sssh',
@@ -446,7 +447,7 @@ class Evaluation(PoreLogger):
             ],
             dtype={
                 'read': int,
-                'create': int,
+                'feature': int,
                 'feature_value': int,
                 'feature_rank': int,
                 'sssh': int,
@@ -617,7 +618,7 @@ class Evaluation(PoreLogger):
             feature_dict = self.feature_key[feature]
         except KeyError:
             raise KeyError(
-                f'Could not find translation data for create {feature}'
+                f'Could not find translation data for feature {feature}'
             )
 
         try:
@@ -629,7 +630,7 @@ class Evaluation(PoreLogger):
             }
         except KeyError:
             raise KeyError(
-                f"Could not find name or value keys for create: {feature}"
+                f"Could not find name or value keys for feature: {feature}"
             )
 
         # Feature column
@@ -649,11 +650,12 @@ class Evaluation(PoreLogger):
         return df, feature_name
 
 
-class LineageIndex(PoreLogger):
+class SketchyDatabase(PoreLogger):
 
     def __init__(
         self,
-        index_file: Path = None,
+        sketch: Path = None,
+        genotypes: Path = None,
         lineage_column: str = 'mlst',
         verbose: bool = True
     ):
@@ -662,40 +664,138 @@ class LineageIndex(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-        if index_file:
-            self.index = pandas.read_csv(
-                index_file, sep='\t', header=0
+        self.sketch = sketch
+
+        if genotypes:
+            self.genotypes = pandas.read_csv(
+                genotypes, sep='\t', header=0
             )
-            if 'idx' not in self.index.columns:
-                self.logger.info('Adding Mash index column "idx" to genotype index')
-                self.index.index = [i for i in range(
-                    len(self.index)
-                )]
-                self.index.index.name = 'idx'
-            else:
-                self.logger.info('Using column "idx" as Mash index column in genotype index')
-                self.index.index = self.index.set_index('idx')
         else:
-            self.index = None
+            self.genotypes = None
 
         self.lineage_column = lineage_column
 
+    def create_database(
+        self, id_column: str = 'id', outdir: Path = "sketchy-db", drop: str = None, numeric: bool = False
+    ):
+
+        outdir.mkdir(parents=True, exist_ok=True)
+
+        # Drop columns from genotypes
+
+        if drop:
+            genotypes = self.genotypes.drop(columns=drop.split(','))
+        else:
+            genotypes = self.genotypes.copy()
+
+        # Read sketch index and extract genome identifiers:
+
+        sketch_info = self.get_sketch_info()
+
+        _isolates_in_sketch = len(sketch_info)
+        _isolates_in_genotypes = len(genotypes)
+
+        self.logger.warning(
+            f"Number of isolates in sketch ({_isolates_in_sketch}) does not match genotypes ({_isolates_in_genotypes}"
+        )
+
+        _names_in_sketch = sketch_info['id']
+        _names_in_genotypes = genotypes[id_column]
+
+        if len(set(_names_in_sketch)) != len(_names_in_sketch):
+            self.logger.error(
+                "Duplicate identifiers in sketch file! Please replace before proceeding"
+            )
+            exit(1)
+
+        if len(set(_names_in_genotypes)) != len(_names_in_genotypes):
+            self.logger.error(
+                "Duplicate identifiers in genotype file! Please replace before proceeding"
+            )
+            exit(1)
+
+        indexed_genotypes = genotypes.merge(
+            sketch_info, left_on=id_column, right_on="id", how='inner'
+        )
+
+        if 'id_y' in indexed_genotypes.columns:
+            indexed_genotypes.drop(columns=["id_y"], inplace=True)
+            indexed_genotypes.rename(columns={'id_x': 'id'}, inplace=True)
+
+        genotype_index, genotype_keys = self.transform_columns(genotypes=indexed_genotypes, numeric=numeric)
+
+        print(genotype_index)
+
+    def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
+
+        """ Transform into categorical numeric data for evaluation in Rust """
+
+        dtypes = ['category', 'bool', 'object']
+        if numeric:  # also transform numeric values of type int64 (to categorical)
+            dtypes += ['int64']
+
+        transform = genotypes.select_dtypes(dtypes).columns
+
+        genotypes.drop(columns=[
+            c for c in genotypes.columns if c not in transform
+        ], inplace=True)
+
+        feature_keys = OrderedDict()
+        for (i, (name, column_data)) in enumerate(
+            genotypes.iteritems()
+        ):
+            self.logger.info(f"Processing genotype: {name}")
+            feature_keys[i] = {
+                'name': name,
+                'values': column_data.astype('category').cat.categories.tolist()
+            }
+
+        genotypes[transform] = genotypes[transform].apply(
+            lambda x: x.astype('category').cat.codes
+        )
+
+        return genotypes, feature_keys
+
+
+    def get_sketch_info(self) -> pandas.DataFrame:
+
+        run_cmd(f'mash info -t {self.sketch} > info.tmp', shell=True)
+
+        converters = {'id': lambda x: Path(x).stem}
+        mash_info = pandas.read_csv(
+            f'info.tmp',
+            sep='\t',
+            header=None,
+            skiprows=1,
+            index_col=0,
+            engine='c',
+            usecols=[2],
+            names=['id'],
+            converters=converters,
+        )
+        os.remove('info.tmp')
+
+        mash_info['idx'] = [i for i in range(0, len(mash_info))]
+        mash_info['id'] = mash_info.index.tolist()
+
+        return mash_info
+
     def write(self, file: Path, idx: bool = True, header: bool = True):
 
-        self.index.sort_values('idx', ascending=True).to_csv(
+        self.genotypes.sort_values('idx', ascending=True).to_csv(
             file, sep='\t', header=header, index=idx
         )
 
     def has_lineage(self, lineage: str) -> bool:
 
-        return lineage in self.index[self.lineage_column].values
+        return lineage in self.genotypes[self.lineage_column].values
 
     def get_lineage(self, lineage: str) -> pandas.DataFrame:
 
         """" Get a subset of the genotype index for the given db_lineage """
 
         if self.has_lineage(lineage):
-            return self.index[self.index[self.lineage_column] == lineage]
+            return self.genotypes[self.genotypes[self.lineage_column] == lineage]
         else:
             raise ValueError(f'Could not detect db_lineage in index: {lineage}')
 
@@ -703,7 +803,7 @@ class LineageIndex(PoreLogger):
         self, lineage: str, key_file: Path = None,
     ) -> pandas.DataFrame:
 
-        """ Access db_lineage data by legacy key index file from Pathfinder Survey """
+        """ Access feature data by legacy key index file from Pathfinder Survey """
 
         df = self.get_lineage(lineage=lineage)
 
@@ -719,45 +819,13 @@ class LineageIndex(PoreLogger):
 
     def drop_columns(self, columns: list = None):
 
-        if columns is None:
-            columns = ['uuid', 'id']
-
         for column in columns:
             try:
-                self.index.drop(columns=column, inplace=True)
+                self.genotypes.drop(columns=column, inplace=True)
             except KeyError:
                 print(f'Could not find column: {column} - skipping')
 
-        return self.index
-
-    def prepare_columns(self, integers: bool = True):
-
-        """ Transform into categorical numeric data for evaluation in Rust """
-
-        dtypes = ['category', 'bool', 'object']
-        if integers:
-            dtypes += ['int64']
-
-        transform = self.index.select_dtypes(dtypes).columns
-
-        self.index.drop(columns=[
-            c for c in self.index.columns if c not in transform
-        ], inplace=True)
-
-        feature_keys = OrderedDict()
-        for (i, (name, column_data)) in enumerate(
-            self.index.iteritems()
-        ):
-            feature_keys[i] = {
-                'name': name,
-                'values': column_data.astype('category').cat.categories.tolist()
-            }
-
-        self.index[transform] = self.index[transform].apply(
-            lambda x: x.astype('category').cat.codes
-        )
-
-        return self.index, feature_keys
+        return self.genotypes
 
     def get_summary(self, lineage: str) -> pandas.DataFrame or None:
 
@@ -787,7 +855,7 @@ class LineageIndex(PoreLogger):
     @staticmethod
     def _build_summary_str(feature_counts: pandas.Series):
 
-        """ Build a summary string from value counts of a create """
+        """ Build a summary string from value counts of a feature """
 
         feature_str = f"\n{G}{feature_counts.name.upper()}{RE}\n\n"
 
@@ -811,7 +879,7 @@ class LineageIndex(PoreLogger):
             )
 
         df = pandas.DataFrame(
-            summary_data, columns=['create', 'genotype', 'count', 'percent']
+            summary_data, columns=['feature', 'genotype', 'count', 'percent']
         )
 
         return feature_str, df

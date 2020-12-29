@@ -6,7 +6,7 @@ import networkx as nx
 
 from pathlib import Path
 
-from sketchy.sketchy import LineageIndex
+from sketchy.sketchy import SketchyDatabase
 from sketchy.utils import MutuallyExclusiveOption
 
 
@@ -68,7 +68,7 @@ def popmap(ssh, tree, index, column, graph, output):
 
     """ Experimental: map reference sketch hits against population structures """
 
-    lix = LineageIndex(index_file=index)
+    lix = SketchyDatabase(genotypes=index)
 
     if tree:
         t = dendropy.Tree.get(path=tree, schema="newick")

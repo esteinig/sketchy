@@ -117,7 +117,7 @@ DEFAULTS = {
 )
 @click.option(
     '--output', '-o', default='survey.tsv', type=Path,
-    help='Tab-delimited genotype create index for Sketchy'
+    help='Tab-delimited genotype feature index for Sketchy'
 )
 @click.option(
     '--template', '-t', default=None, type=str,

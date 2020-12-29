@@ -526,7 +526,7 @@ class SketchySurvey(PoreLogger):
                     genotypes[genotype] = genotype_data
 
         if genotype_index is None:
-            raise ValueError('No create could be parsed.')
+            raise ValueError('No feature could be parsed.')
 
         return pandas.DataFrame(genotypes, genotype_index)
 

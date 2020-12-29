@@ -2,7 +2,7 @@ import click
 
 from pathlib import Path
 from braceexpand import braceexpand
-from sketchy.sketchy import LineageIndex
+from sketchy.sketchy import SketchyDatabase
 from sketchy.utils import get_files
 
 
@@ -39,11 +39,11 @@ from sketchy.utils import get_files
     '--reindex', '-r', is_flag=True,
     help='Reindex the lineage table [none]'
 )
-def db_lineage(data, lineage, summary, key, output, file_path, pattern, reindex):
+def inspect(data, lineage, summary, key, output, file_path, pattern, reindex):
 
-    """ Show a summary of a lineage from the reference sketch data """
+    """ Interrogate the reference database """
 
-    li = LineageIndex(index_file=data)
+    li = SketchyDatabase(genotypes=data)
 
     if summary:
         df = li.get_summary(lineage)

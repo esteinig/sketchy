@@ -4,11 +4,8 @@ from .simulate import simulate
 from .watch import watch
 from .monitor import monitor
 
-VERSION = "0.4.4"
-
 
 @click.group()
-@click.version_option(version=VERSION)
 def online():
     """ Tasks for: online sequence run monitoring and simulation """
     pass
