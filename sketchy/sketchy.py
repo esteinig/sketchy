@@ -695,9 +695,11 @@ class SketchyDatabase(PoreLogger):
         _isolates_in_sketch = len(sketch_info)
         _isolates_in_genotypes = len(genotypes)
 
-        self.logger.warning(
-            f"Number of isolates in sketch ({_isolates_in_sketch}) does not match genotypes ({_isolates_in_genotypes}"
-        )
+        if _isolates_in_sketch != _isolates_in_genotypes:
+            self.logger.warning(
+                f"Number of isolates in sketch ({_isolates_in_sketch}) "
+                f"does not match genotypes ({_isolates_in_genotypes})"
+            )
 
         _names_in_sketch = sketch_info['id']
         _names_in_genotypes = genotypes[id_column]

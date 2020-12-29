@@ -34,7 +34,7 @@ def create(sketch, genotypes, outdir, id_column, drop):
         sketch=sketch, genotypes=genotypes
     )
 
-    db.create_database(id_column=id_column, outdir=outdir, drop=drop)
+    db.create_database(id_column=id_column, outdir=outdir, drop=drop, numeric=False)
 
     if drop is not None:
         db.drop_columns(columns=drop.split(','))
