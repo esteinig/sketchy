@@ -38,6 +38,6 @@ def create(sketch, genotypes, outdir, id_column, drop, numeric):
         sketch_file=sketch, genotype_file=genotypes
     )
 
-    db.create_database(id_column=id_column, outdir=outdir, drop=drop, numeric=False)
+    db.create_database(id_column=id_column, outdir=outdir, drop=drop, numeric=numeric)
 
 
