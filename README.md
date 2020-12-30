@@ -105,7 +105,7 @@ Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for ta
 
 ## Sketchy usage
 
-See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. For an evaluation of genomic neighbor typing using `mash screen` and a comparison to the online implemention of `mash dist` on comprehensive and dereplicated strain-level sketches, please see the preprint. 
+See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. Please cite `Mash` (`sketchy-rs cite`) as its core functionality is wrapped into the genomic neighbor typing with `Sketchy`. For a comparison between screening, streaming and distancing, please see the preprint.
 
 Setup environment variable to databases (or specify database paths in `--db` arguments)
 
