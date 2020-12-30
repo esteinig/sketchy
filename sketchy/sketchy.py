@@ -678,6 +678,11 @@ class SketchyDatabase(PoreLogger):
         self, id_column: str = 'id', outdir: Path = "sketchy-db", drop: str = None, numeric: bool = False
     ):
 
+        self.logger.info(f"Database directory: {outdir}")
+        self.logger.info(f"Genotype identifier column: {id_column}")
+        self.logger.info(f"Drop columns: {drop}")
+        self.logger.info(f"Include numeric columns: {drop}")
+
         outdir.mkdir(parents=True, exist_ok=True)
 
         # Drop columns from genotypes
@@ -722,6 +727,8 @@ class SketchyDatabase(PoreLogger):
 
         genotypes_reference = indexed_genotypes.sort_values('idx').set_index('idx')
 
+        self.logger.info(f"Transforming genotype columns for numeric index for Sketchy")
+
         genotype_index, genotype_keys = self.transform_columns(
             genotypes=indexed_genotypes.copy(), numeric=numeric
         )
@@ -732,6 +739,8 @@ class SketchyDatabase(PoreLogger):
         genotype_index = genotype_index.sort_values('idx').set_index('idx')
 
         _path = outdir / outdir.name
+
+        self.logger.info(f"Writing database files to: {outdir}")
 
         genotype_index.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=False)
         genotypes_reference.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=True)
