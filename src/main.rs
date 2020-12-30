@@ -69,6 +69,11 @@ fn main() -> Result<(), Error> {
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
         )
+        .subcommand(SubCommand::with_name("cite")
+            .about("\noutput citations for sketchy")
+            .version("0.5.0")
+            .arg(Arg::with_name("FILES").short("f").long("files").takes_value(false).help("Output citation files (.bib)"))
+        )
         .get_matches();
         
     if let Some(stream) = matches.subcommand_matches("stream") {
@@ -178,6 +183,19 @@ fn main() -> Result<(), Error> {
 
         sketchy::get_sketch_files(db, &sketchy_path);
         println!("Ok");
+    }
+
+    if let Some(cite) = matches.subcommand_matches("cite") {
+
+        
+        let files: bool = cite.is_present("FILES");
+        
+        println!("Please cite the following papers in addition to Sketchy when using substasks:\n");
+        println!("sketchy stream: Ondov et al. (2016) - Mash - Genome Biology");
+        println!("sketchy dist:   Ondov et al. (2016) - Mash - Genome Biology");
+        println!("sketchy screen: Ondov et al. (2019) - Mash Screen - Genome Biology\n");
+        
+
     }
 
     Ok(())

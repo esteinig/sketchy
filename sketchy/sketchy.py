@@ -760,7 +760,7 @@ class SketchyDatabase(PoreLogger):
         genotype_index.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=False)
         genotypes_reference.to_csv(_path.with_suffix('.tsv'), index=False, sep="\t", header=True)
 
-        with _path.with_suffix('.json').open('w') as fout:
+        with _path.with_suffix('.key').open('w') as fout:
             json.dump(genotype_keys, fout, sort_keys=False)
 
         shutil.copyfile(self.sketch_file, str(_path.with_suffix('.msh')))
@@ -804,7 +804,7 @@ class SketchyDatabase(PoreLogger):
         sketch_file = self.db_path / (db_name + ".msh")
         genotype_file = self.db_path / (db_name + ".tsv")
         genotype_index = self.db_path / (db_name + ".idx")
-        genotype_key = self.db_path / (db_name + ".json")
+        genotype_key = self.db_path / (db_name + ".key")
 
         for f in (sketch_file, genotype_file, genotype_index, genotype_key):
             if not f.exists():
