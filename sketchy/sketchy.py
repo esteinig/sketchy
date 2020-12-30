@@ -653,8 +653,8 @@ class SketchyDatabase(PoreLogger):
 
     def __init__(
         self,
-        sketch: Path = None,
-        genotypes: Path = None,
+        sketch_file: Path = None,
+        genotype_file: Path = None,
         lineage_column: str = 'mlst',
         verbose: bool = True
     ):
@@ -663,11 +663,11 @@ class SketchyDatabase(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-        self.sketch = sketch
+        self.sketch = sketch_file
 
-        if genotypes:
+        if genotype_file:
             self.genotypes = pandas.read_csv(
-                genotypes, sep='\t', header=0
+                genotype_file, sep='\t', header=0
             )
         else:
             self.genotypes = None
