@@ -213,7 +213,7 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
 
 
     let mash_args = [
-        "dist", "-t", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
+        "dist", "-p", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
     println!("{:?}", mash_args);
