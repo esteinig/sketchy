@@ -124,7 +124,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH"))?;
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from SORT"))?;
 
 
     let reader = BufReader::new(screen_sorted);
@@ -171,6 +171,114 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
         let mut screen_row = Row::new(vec![
             Cell::new(_screen_rank),
             Cell::new(_identity),
+            Cell::new(_shared_hashes)
+        ]);
+
+        for x in _genotype_values.iter() {
+            screen_row.add_cell(Cell::new(x).with_style(Attr::ForegroundColor(if x == &"R" { color::RED } else { color::WHITE } )));
+        }; 
+        
+        table.add_row(screen_row);
+            
+    };
+
+    table.printstd();
+
+    Ok(())
+}
+
+pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
+    
+    /* Sketchy screening of species-wide reference sketches using `mash dist` and genomic neighbor inference
+
+    Arguments
+    =========
+
+    fastx:
+        fasta/q reads input path for mash screen
+
+    sketch:
+        path to input sketch database file in Sketchy created with MASH
+    
+    features:
+        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
+
+    index_size: 
+        size of sketch index, required for continuous parsing of reads from MASH
+    
+    sketch_size: 
+        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
+
+    */
+
+
+    let mash_args = [
+        "dist", "-t", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
+    ];
+
+    let screen_out = Command::new("mash") // system call to MASH   
+        .args(&mash_args)
+        .stderr(Stdio::null())
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(
+            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
+        )?;
+    
+    let screen_sorted = Command::new("sort")
+        .arg("-k5nr")
+        .stdin(screen_out)
+        .stdout(Stdio::piped())
+        .spawn()?
+        .stdout
+        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from SORT"))?;
+
+
+    let reader = BufReader::new(screen_sorted);
+    
+    let mut table = Table::new();
+    
+    if !pretty {
+        let raw = FormatBuilder::new().column_separator('\t').build();
+        table.set_format(raw);
+    } else {
+        let header_row = get_header_row(genotype_key).unwrap();
+        // table.add_row(header_row); fix at genotype translation update
+    }
+
+    for (_i, line) in reader.lines().enumerate() {
+
+        if _i >= limit {
+             break   
+        }
+
+        let line = line?;
+        let values: Vec<&str> = line.split_whitespace().collect();   
+                
+        let _sketch_id: &str = values[0];
+        
+        let _dist: &str = values[2];
+        let _shared_hashes: &str = values[5];
+
+        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
+        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
+
+        let _id_values: Vec<&str> = _name.split(".").collect();
+        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
+        
+        let contents = std::fs::read_to_string(&genotypes)?;
+
+        let _grep_results = grep(&_id, &contents); 
+        let _genotype_str = _grep_results[0]; // there is only ever one unique id
+
+        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
+
+        let _screen_rank: &str = &(_i+1).to_string();
+
+        let mut screen_row = Row::new(vec![
+            Cell::new(_screen_rank),
+            Cell::new(_dist),
             Cell::new(_shared_hashes)
         ]);
 

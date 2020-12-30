@@ -41,7 +41,16 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Print raw translated genotypes [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
-            .about("\nscreen read set against reference sketch with mash")
+            .about("\nscreen read set against reference db with mash")
+            .version("0.5.0")
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
+            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("Fasta/q input path [required]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
+            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
+            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+        )
+        .subcommand(SubCommand::with_name("dist")
+            .about("\ndist read set against reference db with mash")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
             .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("Fasta/q input path [required]"))
@@ -101,6 +110,28 @@ fn main() -> Result<(), Error> {
         let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
 
         sketchy::screen(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+
+    }
+    
+    if let Some(dist) = matches.subcommand_matches("dist") {
+        
+        let db: String = dist.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+        
+        let fastx: String = dist.value_of("FASTX").unwrap_or_else(||
+            clap::Error::with_description("Could not find input read file", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+        let threads: i32 = dist.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
+        let limit: usize = dist.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
+        let pretty: bool = dist.is_present("PRETTY");
+
+        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+
+        sketchy::dist(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
