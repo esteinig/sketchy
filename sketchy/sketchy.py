@@ -682,7 +682,7 @@ class SketchyDatabase(PoreLogger):
 
         if self.genotype_file:
             self.genotypes = pandas.read_csv(
-                genotype_file, sep='\t', header=0
+                self.genotype_file, sep='\t', header=0
             )
         else:
             self.genotypes = None
