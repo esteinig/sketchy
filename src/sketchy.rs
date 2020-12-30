@@ -557,8 +557,10 @@ fn sum_of_shared_hashes<R: BufRead>(
 
     };
 
-    // Last read in stream if not limited by reads
-    if reads == 0 {
+    // Last read in stream if not limited by reads 
+    // or raw output (without sssh mapping)
+    
+    if reads == 0 && !raw {
         // repeat the sorted feature output block  
         for (feature, fm) in sssh.iter(){
             // Get a sorted feature map as vector
