@@ -527,8 +527,7 @@ fn sum_of_shared_hashes<R: BufRead>(
                             for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
                                 println!(
                                     "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-                                        read-1, feature, feat_value, feat_rank,
-                                        sssh_score, stable, preference_score
+                                    read-1, feature, feat_value, feat_rank,sssh_score, stable, preference_score
                                 )
                             }
                         }
@@ -560,28 +559,27 @@ fn sum_of_shared_hashes<R: BufRead>(
 
     // Last read in stream, repeat the sorted feature output block:  
 
-    // for (feature, fm) in sssh.iter(){
+    for (feature, fm) in sssh.iter(){
         
-    //     // Get a sorted feature map as vector
-    //     let sorted_feature_map = get_sorted_feature_map(&fm);
-    //     // Compute Brinda et al. (2019) preference score on SSSH
-    //     let preference_score = compute_preference_score_sssh(&sorted_feature_map);
+        // Get a sorted feature map as vector
+        let sorted_feature_map = get_sorted_feature_map(&fm);
+        // Compute Brinda et al. (2019) preference score on SSSH
+        let preference_score = compute_preference_score_sssh(&sorted_feature_map);
 
-    //     // Add top feature value to feature vector map:
-    //     top_predictions.entry(*feature)
-    //                     .or_insert_with(Vec::new)  // prevented by init of vecmap above
-    //                     .push(*sorted_feature_map[0].0);
+        // Add top feature value to feature vector map:
+        top_predictions.entry(*feature)
+                        .or_insert_with(Vec::new)  // prevented by init of vecmap above
+                        .push(*sorted_feature_map[0].0);
         
-    //     let stable = evaluate_stability(&top_predictions[feature], stability);
+        let stable = evaluate_stability(&top_predictions[feature], stability);
 
-    //     for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
-    //         println!(
-    //             "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-    //                 read-1, feature, feat_value, feat_rank,
-    //                 sssh_score, stable, preference_score
-    //         )
-    //     }
-    // }
+        for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
+            println!(
+                "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}", 
+                read-1, feature, feat_value, feat_rank, sssh_score, stable, preference_score
+            )
+        }
+    }
 
     let duration = start.elapsed();
     let msg = read.to_string() + " reads / " + &(duration.as_millis()/1000).to_string() + " seconds";
