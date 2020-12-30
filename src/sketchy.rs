@@ -607,7 +607,7 @@ pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, 
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
     }  else {
-        Path::new(&db)
+        *Path::new(&db)
     };
     
     if !db_path.exists() {
