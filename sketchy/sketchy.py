@@ -663,7 +663,8 @@ class SketchyDatabase(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-        self.sketch = sketch_file
+        self.sketch_file = sketch_file
+        self.genotype_file = genotype_file
 
         if genotype_file:
             self.genotypes = pandas.read_csv(
@@ -678,8 +679,8 @@ class SketchyDatabase(PoreLogger):
         self, id_column: str = 'id', outdir: Path = "sketchy-db", drop: str = None, numeric: bool = False
     ):
 
-        self.logger.info(f"Database sketch: {self.sketch}")
-        self.logger.info(f"Genotype file: {self.genotypes}")
+        self.logger.info(f"Database sketch: {self.sketch_file}")
+        self.logger.info(f"Genotype file: {self.genotype_file}")
         self.logger.info(f"Database directory: {outdir}")
         self.logger.info(f"Genotype identifier column: {id_column}")
         self.logger.info(f"Drop columns: {drop}")
@@ -750,7 +751,7 @@ class SketchyDatabase(PoreLogger):
         with _path.with_suffix('.idx').open('w') as fout:
             json.dump(genotype_keys, fout, sort_keys=False)
 
-        shutil.copyfile(self.sketch, str(_path.with_suffix('.msh')))
+        shutil.copyfile(self.sketch_file, str(_path.with_suffix('.msh')))
 
     def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
 
