@@ -4,13 +4,13 @@
 ![](https://img.shields.io/badge/version-0.5.0-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-1.0-blue.svg)
 
-Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing with `Mash`
+Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected nanopore reads using genomic neighbor typing with [`Mash`](https://doi.org/10.1186/s13059-016-0997-x)
 
 ## Overview
 
 **`v0.5.0: preprint`**
 
-`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming version of `mash dist` (the sum of shared hashes) for real-time analysis. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming implementation of `mash dist` (the sum of shared hashes) for real-time analysis. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
 
 Species we have validated using ONT sequence reads with matching Illumina data:
 
@@ -133,7 +133,7 @@ Because streaming is slower than screening for completed sequence runs, I tend t
 
 Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and tens of thousands of reads runtime can be excruciating. However, we generally do not need that many reads to make predictions. When using the streaming utility on a completed read set use `--reads` to stop the stream after the provided number of reads. Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
+The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sum of sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
 From stream:
 
