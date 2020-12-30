@@ -22,7 +22,7 @@ use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use serde_json::{Value};
 
-pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: usize, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -556,7 +556,7 @@ fn sum_of_shared_hashes<R: BufRead>(
         
         } else { idx += 1; } // in sketch index
 
-    });
+    };
 
     let duration = start.elapsed();
     let msg = read.to_string() + " reads / " + &(duration.as_millis()/1000).to_string() + " seconds";
