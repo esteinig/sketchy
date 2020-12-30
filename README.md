@@ -17,7 +17,7 @@ Species we have validated using ONT sequence reads with matching Illumina data:
 * [*Staphylococcus aureus*](docs/saureus.md) (n = 142)
 * [*Klebsiella pneumoniae*](docs/kpneumo.md) (n = 120)
 
-**2021**: sketch updates will occur every month and include new quality controlled genomes from the European Nucleotide Archive
+Sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
@@ -115,54 +115,44 @@ SKETCHY_PATH=$HOME/.sketchy
 
 ### Screening function
 
-`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` then simply links the best match with the genotype data provided with the reference sketches. 
-
-In the Python client:
+`Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` simply links the matches with the genotype data provided in the reference database. 
 
 ```
-sketchy screen --fastx test.fastq --db saureus --limit 10 --pretty
-```
-
-In the Rust client:
-
-```
-sketchy-rs screen -f test.fastq -d saureus -l 10 -p
+sketchy-rs screen -f test.fastq -d saureus -p
 ```
 
 Please cite the following when using `sketchy screen`:
 
-* Ondov et al. (2016) - `Mash`
 * Ondov et al. (2019) - `Mash Screen`
 
 ### Streaming function
 
-Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fbrosis patient from < 27 reads and diagnostic plots, which was not possible with the `screen` implementation.
+Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fibrosis patient from less than ten reads and diagnostic plots.
 
-`Sketchy's` streaming algorithm can be run through a wrapper in the Python client which is only suitable for completed read files (`sketchy run`). Read streams and online sequencing runs should be served with the Rust client (see below). 
-
-```bash
-sketchy run --fastq test.fq --limit 1000 --ranks 10 --outdir test
-```
-
-Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `head` or `--limit` options in the command line clients to predict on the first few thousands reads (`sketchy run --limit 1000` or `cat test.fq | head -4000 | sketchy-rs compute`) which should be sufficient for initial analysis. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
-
+Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `--reads` in the command line client. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
 The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
  ```bash
- cat test.fq | sketchy-rs stream -d saureus -t 4 > sssh.tsv
+ head -400 test.fq | sketchy-rs stream -d saureus > sssh.tsv
+ ```
+ 
+ From file stopping at `--reads`:
+ 
+  ```bash
+sketchy-rs stream -f test.fq --reads 100 -d saureus > sssh.tsv
  ```
  
 `Predict` then uses the ranked scores at each read to infer the genotype profiles:
 
 ```bash
-cat test.ssh.tsv | sketchy-rs predict -d saureus > predict.tsv
+cat sssh.tsv | sketchy-rs predict -d saureus > predictions.tsv
 ```
 
 `Stream` and `predict` read from `/dev/stdin` so they can be piped:
 
 ```bash
-cat test.fq | sketchy-rs stream -d saureus | sketchy-rs predict -d saureus > predict.tsv
+cat test.fq | sketchy-rs stream -d saureus | sketchy-rs predict -d saureus > predictions.tsv
 ```
 
 Diagnostic plots and evaluation summaries are handled in the Python client and accessed via the `sketchy plot` task:
@@ -177,6 +167,18 @@ sketchy plot \
 ```
 
 Please cite the following when using `sketchy stream`:
+
+* Ondov et al. (2016) - `Mash`
+
+### Distance function
+
+We also implemented a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
+
+```
+sketchy-rs dist -f test.fastq -d saureus -p
+```
+
+Please cite the following when using `sketchy dist`:
 
 * Ondov et al. (2016) - `Mash`
 
