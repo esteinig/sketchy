@@ -1,12 +1,11 @@
 __version__ = '0.5.0'
 
 import os
+import shutil
 import logging
 import pandas
 import json
-
 import seaborn as sns
-
 import matplotlib.pyplot as plt
 
 from numpy import nan
@@ -721,20 +720,26 @@ class SketchyDatabase(PoreLogger):
             sketch_info, left_on=id_column, right_on="id", how='inner'
         )
 
-        print(indexed_genotypes)
+        genotypes_reference = indexed_genotypes.sort_values('idx').set_index('idx')
 
         genotype_index, genotype_keys = self.transform_columns(
             genotypes=indexed_genotypes.copy(), numeric=numeric
         )
-
-        print(genotype_keys)
 
         genotype_index['id'] = indexed_genotypes['id']
         genotype_index['idx'] = indexed_genotypes['idx']
 
         genotype_index = genotype_index.sort_values('idx').set_index('idx')
 
-        print(genotype_index)
+        _path = outdir / outdir.name
+
+        genotype_index.write(_path.with_suffix('.idx'), index=False, sep="\t", header=False)
+        genotypes_reference.write(_path.with_suffix('.idx'), index=False, sep="\t", header=True)
+
+        with _path.with_suffix('.idx').open('w') as fout:
+            json.dump(genotype_index, fout, sort_keys=False)
+
+        shutil.copyfile(self.sketch, _path.with_suffix('.msh'))\
 
     def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
 
