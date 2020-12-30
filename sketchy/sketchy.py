@@ -733,8 +733,8 @@ class SketchyDatabase(PoreLogger):
 
         _path = outdir / outdir.name
 
-        genotype_index.write(_path.with_suffix('.idx'), index=False, sep="\t", header=False)
-        genotypes_reference.write(_path.with_suffix('.idx'), index=False, sep="\t", header=True)
+        genotype_index.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=False)
+        genotypes_reference.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=True)
 
         with _path.with_suffix('.idx').open('w') as fout:
             json.dump(genotype_index, fout, sort_keys=False)
