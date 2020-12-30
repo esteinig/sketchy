@@ -216,6 +216,8 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
         "dist", "-t", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
+    println!("{:?}", mash_args);
+
     let dist_out = Command::new("mash") // system call to MASH   
         .args(&mash_args)
         .stderr(Stdio::null())
@@ -254,9 +256,9 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
         }
 
         let line = line?;
+
         let values: Vec<&str> = line.split_whitespace().collect();   
 
-        println!("{:?}", values);
                 
         let _sketch_id: &str = values[0];
         
