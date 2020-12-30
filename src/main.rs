@@ -190,10 +190,11 @@ fn main() -> Result<(), Error> {
         
         let files: bool = cite.is_present("FILES");
         
-        println!("Please cite the following papers in addition to Sketchy when using substasks:\n");
-        println!("sketchy stream: Ondov et al. (2016) - Mash - Genome Biology");
-        println!("sketchy dist:   Ondov et al. (2016) - Mash - Genome Biology");
-        println!("sketchy screen: Ondov et al. (2019) - Mash Screen - Genome Biology\n");
+        println!("\nPlease cite the following papers in addition to Sketchy when using substasks:\n");
+        
+        println!("sketchy screen: Ondov et al. (2019) - Genome Biology: https://doi.org/10.1186/s13059-019-1841-x");
+        println!("sketchy stream: Ondov et al. (2016) - Genome Biology: https://doi.org/10.1186/s13059-016-0997-x");
+        println!("sketchy dist:   Ondov et al. (2016) - Genome Biology: https://doi.org/10.1186/s13059-016-0997-x\n");
         
 
     }
