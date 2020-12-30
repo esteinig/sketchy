@@ -27,7 +27,8 @@ fn main() -> Result<(), Error> {
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Reference sketch DB [required]"))
             .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).help("Fasta/q path or STDIN [-]"))
-            .arg(Arg::with_name("RANKS").short("r").long("ranks").takes_value(true).help("Ranked sum of shared hashes [10]"))
+            .arg(Arg::with_name("READS").short("r").long("reads").takes_value(true).help("Limit reads to prediction [none]"))
+            .arg(Arg::with_name("RANKS").short("n").long("ranks").takes_value(true).help("Ranked sum of shared hashes [10]"))
             .arg(Arg::with_name("STABILITY").short("s").long("stability").takes_value(true).help("Reads to stable breakpoint [100]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
@@ -83,6 +84,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         let fastx: String = stream.value_of("FASTX").unwrap_or("-").to_string();
+        let reads: usize = stream.value_of("READS").unwrap_or("0").parse::<usize>().unwrap();
         let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
@@ -92,7 +94,7 @@ fn main() -> Result<(), Error> {
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, &sketchy_path);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, ranks, stability, progress, raw, sketch_index, sketch_size).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
