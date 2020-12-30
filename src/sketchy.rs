@@ -216,7 +216,7 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
         "dist", "-t", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
     ];
 
-    let screen_out = Command::new("mash") // system call to MASH   
+    let dist_out = Command::new("mash") // system call to MASH   
         .args(&mash_args)
         .stderr(Stdio::null())
         .stdout(Stdio::piped())
@@ -226,16 +226,16 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
             || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
         )?;
     
-    let screen_sorted = Command::new("sort")
+    let dist_sorted = Command::new("sort")
         .arg("-k5nr")
-        .stdin(screen_out)
+        .stdin(dist_out)
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
         .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from SORT"))?;
 
 
-    let reader = BufReader::new(screen_sorted);
+    let reader = BufReader::new(dist_sorted);
     
     let mut table = Table::new();
     
@@ -255,6 +255,8 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: Stri
 
         let line = line?;
         let values: Vec<&str> = line.split_whitespace().collect();   
+
+        println!("{:?}", values);
                 
         let _sketch_id: &str = values[0];
         
@@ -602,8 +604,6 @@ pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, 
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
     
-    println!("{:?}", db_path.exists());
-
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
     }  else {
