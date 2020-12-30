@@ -787,7 +787,7 @@ class SketchyDatabase(PoreLogger):
 
     def get_sketch_info(self) -> pandas.DataFrame:
 
-        run_cmd(f'mash info -t {self.sketch} > info.tmp', shell=True)
+        run_cmd(f'mash info -t {self.sketch_file} > info.tmp', shell=True)
 
         converters = {'fname': lambda x: Path(x).stem}
         mash_info = pandas.read_csv(
