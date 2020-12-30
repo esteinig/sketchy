@@ -43,11 +43,11 @@ from sketchy.utils import get_files
     '--lineage_column', '-lc',  default='mlst', type=str, required=False,
     help='DB lineage column [mlst]'
 )
-def inspect(data, lineage, summary, output, file_path, pattern, reindex, id_column, lineage_column):
+def inspect(db, lineage, summary, output, file_path, pattern, reindex, id_column, lineage_column):
 
     """ Interrogate the reference database """
 
-    li = SketchyDatabase(genotype_file=data, lineage_column=lineage_column)
+    li = SketchyDatabase(db_path=db, lineage_column=lineage_column)
 
     if summary:
         df = li.get_summary(lineage)

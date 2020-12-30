@@ -653,6 +653,7 @@ class SketchyDatabase(PoreLogger):
 
     def __init__(
         self,
+        db_path: Path = None,
         sketch_file: Path = None,
         genotype_file: Path = None,
         lineage_column: str = 'mlst',
@@ -663,10 +664,14 @@ class SketchyDatabase(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
+        self.db_path = db_path
         self.sketch_file = sketch_file
         self.genotype_file = genotype_file
 
-        if genotype_file:
+        if db_path:
+            self.sketch_file, self.genotype_file, self.genotype_index, self.genotype_key = self.get_sketch_files()
+
+        if self.genotype_file:
             self.genotypes = pandas.read_csv(
                 genotype_file, sep='\t', header=0
             )
@@ -783,6 +788,22 @@ class SketchyDatabase(PoreLogger):
 
         return genotypes, feature_keys
 
+    def get_sketch_files(self):
+
+        db_name = self.db_path.name
+
+        sketch_file = self.db_path / (db_name + ".msh")
+        genotype_file = self.db_path / (db_name + ".tsv")
+        genotype_index = self.db_path / (db_name + ".idx")
+        genotype_key = self.db_path / (db_name + ".json")
+
+        for f in (sketch_file, genotype_file, genotype_index, genotype_key):
+            if not f.exists():
+                self.logger.error(f"Database file does not exist: {f}")
+
+        return sketch_file, genotype_file, genotype_index, genotype_key
+
+
     def get_sketch_info(self) -> pandas.DataFrame:
 
         run_cmd(f'mash info -t {self.sketch_file} > info.tmp', shell=True)
@@ -876,7 +897,8 @@ class SketchyDatabase(PoreLogger):
             return pandas.concat(feature_data)
 
         else:
-            raise ValueError(f'Could not detect db_lineage in index: {lineage}')
+            self.logger.error(f'Could not detect lineage in index: {lineage}')
+            exit(1)
 
     @staticmethod
     def _build_summary_str(feature_counts: pandas.Series):
