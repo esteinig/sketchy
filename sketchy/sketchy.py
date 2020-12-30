@@ -669,6 +669,15 @@ class SketchyDatabase(PoreLogger):
         self.genotype_file = genotype_file
 
         if db_path:
+            db_name = db_path.name
+            if not db_path.exists():
+                # Try with env variable SKETCHY_PATH
+                try:
+                    self.db_path = os.environ['SKETCHY_PATH'] / db_name
+                except KeyError:
+                    self.logger.error("Could not find database path")
+                    exit(1)
+
             self.sketch_file, self.genotype_file, self.genotype_index, self.genotype_key = self.get_sketch_files()
 
         if self.genotype_file:
