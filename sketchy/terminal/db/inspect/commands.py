@@ -8,12 +8,12 @@ from sketchy.utils import get_files
 
 @click.command()
 @click.option(
-    '--data', '-d', default=None, type=Path, required=True,
-    help='Path to data file to summarize trait data from [required]'
+    '--db', '-d', default=None, type=Path, required=True,
+    help='Path to Sketchy database [required]'
 )
 @click.option(
-    '--db_lineage', '-l', default="ST93", type=str, required=False,
-    help='Trait to show summary for; columns in data file [required]'
+    '--lineage', '-l', default="ST93", type=str, required=False,
+    help='Lineage to show summary for [required]'
 )
 @click.option(
     '--output', '-o', default=f'db_lineage.index.tsv', type=Path, required=False,
@@ -32,28 +32,27 @@ from sketchy.utils import get_files
     help='Pattern to match files with their name identifier [*.fastq.gz]'
 )
 @click.option(
-    '--key', '-k', default=None, type=Path, required=False,
-    help='Path to legacy key file to extract identifiers [none]'
-)
-@click.option(
     '--reindex', '-r', is_flag=True,
     help='Reindex the lineage table [none]'
 )
-def inspect(data, lineage, summary, key, output, file_path, pattern, reindex):
+@click.option(
+    '--id_column', '-ic',  default='id', type=str, required=False,
+    help='DB identifier column [id]'
+)
+@click.option(
+    '--lineage_column', '-lc',  default='mlst', type=str, required=False,
+    help='DB lineage column [mlst]'
+)
+def inspect(data, lineage, summary, output, file_path, pattern, reindex, id_column, lineage_column):
 
     """ Interrogate the reference database """
 
-    li = SketchyDatabase(genotypes=data)
+    li = SketchyDatabase(genotype_file=data, lineage_column=lineage_column)
 
     if summary:
         df = li.get_summary(lineage)
     else:
-        if key:
-            df = li.get_key_index(
-                lineage=lineage, key_file=key
-            )
-        else:
-            df = li.get_lineage(lineage=lineage)
+        df = li.get_lineage(lineage=lineage)
 
         if summary:
             li.get_summary(lineage)
@@ -62,19 +61,14 @@ def inspect(data, lineage, summary, key, output, file_path, pattern, reindex):
             fnames = get_files(
                 path=file_path,
                 patterns=braceexpand(pattern),
-                names=df.id.tolist() if key else df.uuid.tolist()
+                names=df[id_column].tolist()
             )
 
-            df = df[df.id.isin(fnames) if key else df.uuid.isin(fnames)]
+            df = df[df[id_column].isin(fnames)]
 
-            if key:
-                df.id = df.id.astype("category")
-                df.id.cat.set_categories(fnames, inplace=True)
-                df.sort_values("id", inplace=True)
-            else:
-                df.uuid = df.uuid.astype("category")
-                df.uuid.cat.set_categories(fnames, inplace=True)
-                df.sort_values("uuid", inplace=True)
+            df[id_column] = df[id_column].astype("category")
+            df[id_column].cat.set_categories(fnames, inplace=True)
+            df.sort_values(id_column, inplace=True)
 
     if reindex:
         df.reset_index(inplace=True)
