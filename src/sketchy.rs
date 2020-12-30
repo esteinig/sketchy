@@ -187,7 +187,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: St
     Ok(())
 }
 
-pub fn screen(fastx: String, sketch: String, genotypes: String, genotype_key: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
+pub fn dist(fastx: String, sketch: String, genotypes: String, genotype_key: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash dist` and genomic neighbor inference
 
