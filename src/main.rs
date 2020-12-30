@@ -84,7 +84,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         let fastx: String = stream.value_of("FASTX").unwrap_or("-").to_string();
-        let reads: usize = stream.value_of("READS").unwrap_or("0").parse::<usize>().unwrap();
+        let reads: usize = stream.value_of("READS").unwrap_or("0").parse::<u32>().unwrap();
         let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
         let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
