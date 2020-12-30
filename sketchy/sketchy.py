@@ -853,7 +853,7 @@ class SketchyDatabase(PoreLogger):
         if self.has_lineage(lineage):
             return self.genotypes[self.genotypes[self.lineage_column] == lineage]
         else:
-            raise ValueError(f'Could not detect db_lineage in index: {lineage}')
+            raise ValueError(f'Could not detect lineage in index: {lineage}')
 
     def get_key_index(
         self, lineage: str, key_file: Path = None,
@@ -887,7 +887,7 @@ class SketchyDatabase(PoreLogger):
 
         """ Generate a genotype summary for the given db_lineage """
 
-        ignore_columns = ['uuid', 'idx', 'id', 'plasmid', 'resistance']  # TODO check these
+        ignore_columns = ['id']
 
         if self.has_lineage(lineage):
 
