@@ -737,7 +737,7 @@ class SketchyDatabase(PoreLogger):
         genotypes_reference.to_csv(_path.with_suffix('.idx'), index=False, sep="\t", header=True)
 
         with _path.with_suffix('.idx').open('w') as fout:
-            json.dump(genotype_index, fout, sort_keys=False)
+            json.dump(genotype_keys, fout, sort_keys=False)
 
         shutil.copyfile(self.sketch, str(_path.with_suffix('.msh')))
 
