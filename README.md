@@ -34,13 +34,13 @@ Sketchy implements a Rust command-line interface (`sketchy-rs`) for computation 
 
 **`Cargo`**
 
-Rust client only where the `compute` subtask requires `Mash` in host `$PATH`
+Rust client only - this does not install the Python database and plotting client!
 
 ```bash
 cargo install sketchy-rs
 ```
 
-On Linux systems one should be able to install `Mash` conveniently e.g.
+`Mash` needs to be in `$PATH`. On Linux systems one should be able to install `Mash` conveniently e.g.
 
 ```bash
 sudo apt-get install mash
