@@ -477,8 +477,8 @@ fn sum_of_shared_hashes<R: BufRead>(
         if idx == index_size-1 {
             
             bar.tick();
-            
-            if read > reads && reads > 0 {
+
+            if reads > 0 && read > reads {
                 break;  // break at read limit if defined, otherwise read limit = 0
             }
 
