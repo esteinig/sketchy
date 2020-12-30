@@ -193,7 +193,7 @@ fn main() -> Result<(), Error> {
         println!("\nPlease cite the following papers in addition to Sketchy:\n");
         
         println!("Ondov et al. (2019) - Genome Biology: https://doi.org/10.1186/s13059-019-1841-x");
-        println!("Ondov et al. (2016) - Genome Biology: https://doi.org/10.1186/s13059-016-0997-x");
+        println!("Ondov et al. (2016) - Genome Biology: https://doi.org/10.1186/s13059-016-0997-x\n");
         
 
     }
