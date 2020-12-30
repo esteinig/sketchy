@@ -739,7 +739,7 @@ class SketchyDatabase(PoreLogger):
         with _path.with_suffix('.idx').open('w') as fout:
             json.dump(genotype_index, fout, sort_keys=False)
 
-        shutil.copyfile(self.sketch, _path.with_suffix('.msh'))\
+        shutil.copyfile(self.sketch, str(_path.with_suffix('.msh')))
 
     def transform_columns(self, genotypes: pandas.DataFrame, numeric: bool = True):
 
