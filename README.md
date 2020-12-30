@@ -105,7 +105,7 @@ Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for ta
 
 ## Sketchy usage
 
-See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. Please cite `Mash` (`sketchy-rs cite`) as its core functionality is wrapped into the genomic neighbor typing with `Sketchy`. For a comparison between screening, streaming and distancing, please see the preprint.
+See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. Please cite `Mash` (`sketchy cite`) as its core functionality is wrapped into the genomic neighbor typing with `Sketchy`. For a comparison between screening, streaming and distancing, please see the preprint.
 
 Setup environment variable to databases (or specify database paths in `--db` arguments)
 
@@ -118,7 +118,7 @@ SKETCHY_PATH=$HOME/.sketchy
 `Sketchy` primarily uses a screening of the reference sketch containment in the provided read set wrapping `Mash`. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` simply links the matches with the genotype data provided in the reference database. 
 
 ```
-sketchy-rs screen -f test.fastq -d saureus -p
+sketchy screen -f test.fastq -d saureus -p
 ```
 
 Please cite the following when using `sketchy screen`:
@@ -138,31 +138,31 @@ The `Rust` command line interface implements two subtasks: `sketchy-rs stream` w
 From stream:
 
  ```bash
- head -400 test.fq | sketchy-rs stream -d saureus > sssh.tsv
+ head -400 test.fq | sketchy stream -d saureus > sssh.tsv
  ```
  
  From file stopping at `--reads`:
  
   ```bash
-sketchy-rs stream -f test.fq --reads 100 -d saureus > sssh.tsv
+sketchy stream -f test.fq --reads 100 -d saureus > sssh.tsv
  ```
  
 `Predict` then uses the ranked scores at each read to infer the genotype profiles:
 
 ```bash
-cat sssh.tsv | sketchy-rs predict -d saureus > predictions.tsv
+cat sssh.tsv | sketchy predict -d saureus > predictions.tsv
 ```
 
 `Stream` and `predict` read from `/dev/stdin` so they can be piped:
 
 ```bash
-cat test.fq | sketchy-rs stream -d saureus | sketchy-rs predict -d saureus > predictions.tsv
+cat test.fq | sketchy stream -d saureus | sketchy predict -d saureus > predictions.tsv
 ```
 
-Diagnostic plots and evaluation summaries are handled in the Python client and accessed via the `sketchy plot` task:
+Diagnostic plots and evaluation summaries including are handled in the Python `sketchy-db` client:
 
 ```
-sketchy plot \
+sketchy-db plot \
     --sssh sssh.tsv \
     --db saureus \
     --palette YnGnBu \
@@ -179,7 +179,7 @@ Please cite the following when using `sketchy stream`:
 We also implement a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
 
 ```
-sketchy-rs dist -f test.fastq -d saureus -p
+sketchy dist -f test.fastq -d saureus -p
 ```
 
 Please cite the following when using `sketchy dist`:
@@ -191,7 +191,7 @@ Please cite the following when using `sketchy dist`:
 In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client:
 
 ```
-sketchy online watch -d /live/fastq | cat - | sketchy-rs stream --db saureus > test.sssh.tsv
+sketchy-db online watch -d /live/fastq | cat - | sketchy stream --db saureus > test.sssh.tsv
 ```
 
 ### Android mobile phones
@@ -238,12 +238,6 @@ ref.tsv   # index
 ref.json  # key 
 ```
 
-Custom collections can be used with reference to the path and file name in the `--sketch` option:
-
-```bash
-sketchy run --fastq test.fq --sketch ref
-```
-
 ### Genome assemblies and sketch construction
 
 Given a set of high-quality assemblies in the format `{id}.fasta`:
@@ -283,7 +277,7 @@ DRR128208   st90    iv      +
 To generate the `Sketchy` reference genotypes in `sketchy genotypes create`:
 
 ```
-sketchy genotypes create -i genotypes.tsv -s ref.msh --prefix ref --drop uuid
+sketchy-db create -i genotypes.tsv -s ref.msh --outdir ref --drop id
 ```
 
 This will create a directory with the following files
@@ -292,7 +286,7 @@ This will create a directory with the following files
 ref.msh   # sketch
 ref.tsv   # genotypes
 ref.idx   # index
-ref.json  # key 
+ref.key   # key 
 ```
 
 ## How the streaming algorithm works
@@ -328,7 +322,7 @@ Debugging plots for evaluation are the more salient outputs - the following imag
 
 In the heatmap, the highest-ranking (descending) raw sum of shared hashes queries against the database sketch are shown and colored. Gray colors represent feature values not in the ultimate highest-ranking five and demonstrate uncertainty in the initial predictions. On the other hand, homogenous color represents certainty in the prediction which may increase as the scores are updated.
 
-In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `--stable` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to `0`) as the prediction was limited to 1000 reads total; breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as homogenous color in the heatmap.
+In the middle plot, the ranked sum of shared hashes (`ssh`) are evaluated by aggregating the sum of their ranked sum of shared hashes (`sssh`) by feature value, from which stability breakpoints are calculated (vertical lines) i.e. where the highest scoring feature value remains the highest scoring for `--stability` reads. In the example this defaults to 1000 reads, so no breakpoints were detected (set to `0`) as the prediction was limited to 1000 reads total; breakpoints are included in the `prefix.data.tsv` output file. Legend items and colors are ordered according to rank; a straight, uncontested line for a dominant feature value score indicates certainty the same as homogenous color in the heatmap.
 
 In the plot on the right, the preference score from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) is computed on the sum of ranked sums of shared hashes (`sssh`) scores from the middle plot. As in the original a threshold of `p = 0.6` (horizontal line) indicates when a prediction should be trusted and when it should not. Note that the preference is always computed on the feature value with the highest score over the feature value with the second highest score, regardless of whether it is the right prediction. In fact, the score is susceptible to 'switches' in predictions, especially using lower resolution sketches, where a prediction is updated and flips to another more likely prediction as more evidence is gathered. 
 
