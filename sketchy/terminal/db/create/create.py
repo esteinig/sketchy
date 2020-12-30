@@ -35,7 +35,7 @@ def create(sketch, genotypes, outdir, id_column, drop, numeric):
     """ Create a reference database for Sketchy """
 
     db = SketchyDatabase(
-        sketch=sketch, genotypes=genotypes
+        sketch_file=sketch, genotype_file=genotypes
     )
 
     db.create_database(id_column=id_column, outdir=outdir, drop=drop, numeric=False)
