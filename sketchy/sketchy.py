@@ -678,6 +678,8 @@ class SketchyDatabase(PoreLogger):
         self, id_column: str = 'id', outdir: Path = "sketchy-db", drop: str = None, numeric: bool = False
     ):
 
+        self.logger.info(f"Database sketch: {self.sketch}")
+        self.logger.info(f"Genotype file: {self.genotypes}")
         self.logger.info(f"Database directory: {outdir}")
         self.logger.info(f"Genotype identifier column: {id_column}")
         self.logger.info(f"Drop columns: {drop}")

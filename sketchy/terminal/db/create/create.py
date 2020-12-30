@@ -26,7 +26,11 @@ from sketchy.sketchy import SketchyDatabase
     '--drop', '-d', type=str, required=False, default=None,
     help='Comma separated string of column names to drop [none]'
 )
-def create(sketch, genotypes, outdir, id_column, drop):
+@click.option(
+    '--numeric', '-n', is_flag=True,
+    help='Include columns with numeric formats [false]'
+)
+def create(sketch, genotypes, outdir, id_column, drop, numeric):
 
     """ Create a reference database for Sketchy """
 
@@ -36,12 +40,4 @@ def create(sketch, genotypes, outdir, id_column, drop):
 
     db.create_database(id_column=id_column, outdir=outdir, drop=drop, numeric=False)
 
-    if drop is not None:
-        db.drop_columns(columns=drop.split(','))
 
-    db, index_key = db.prepare_columns(integers=True)
-
-    db.write(file=outdir , idx=False, header=False)
-
-    with Path(f"{prefix}.json").open('w') as fout:
-        json.dump(index_key, fout, sort_keys=False)
