@@ -127,11 +127,15 @@ Please cite the following when using `sketchy screen`:
 
 ### Streaming function
 
-Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch. Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a *S. aureus* re-infection of the same strain in a cystic fibrosis patient from less than ten reads and diagnostic plots.
+Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch.
 
-Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and analyses over tens of thousands of reads total runtime can be excruciating. Fortunately, we generally do not need that many reads to make predictions. When using species-wise reference sketches with tens of thousands of genomes on large read sets use `--reads` in the command line client. Smaller reference sketches by lineage or created from local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
+Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a re-infection of the same strain in a cystic fibrosis patient from less than ten reads and the diagnostic plots.
+
+Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches and tens of thousands of reads runtime can be excruciating. However, we generally do not need that many reads to make predictions. When using the streaming utility on a completed read set use `--reads` to stop the stream after the provided number of reads. Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
 The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
+
+From stream:
 
  ```bash
  head -400 test.fq | sketchy-rs stream -d saureus > sssh.tsv
@@ -172,7 +176,7 @@ Please cite the following when using `sketchy stream`:
 
 ### Distance function
 
-We also implemented a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
+We also implement a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
 
 ```
 sketchy-rs dist -f test.fastq -d saureus -p
