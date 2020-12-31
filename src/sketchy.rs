@@ -329,7 +329,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
             let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
-            // iterate over genotype ranusizeks ...
+            // iterate over genotype ranks ...
             for rank in 0..*_max_genotype_ranks {
 
                 let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
@@ -337,7 +337,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
                     let category = &read_prediction[&i];
                     let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
                         Some(value) => value,
-                        None => category.last().unwrap()  // current mode: fill with higher ranked genotypes
+                        None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
                     genotype.push(prediction.to_string()); // ... add prediction to genotype
                 }
@@ -345,7 +345,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
                 println!("{}\t{}", &read, &genotype_str);
                 
-                if rank+1 >= limit { // prevent negative 
+                if rank+1 >= limit {
                     break
                 }
             }
@@ -358,7 +358,6 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
         let feature_value: usize = content[2].parse::<usize>().unwrap();
         let feature_key: usize = content[1].parse::<usize>().unwrap();
 
-        // translate features for raw output
         let feature_data = &feature_translation[&feature_key];
         let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
         let feature_prediction: &String = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
@@ -627,20 +626,22 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
-    let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
-    let sketchy_home: String = format!("{}/.sketchy", user_home);
-    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
-
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
+    let sketchy_home: String = format!("{}/.sketchy", user_home);
+    let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
+    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
+
     
     // Check if database is in SKETCHY_PATH ENV
 
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
-    }  else {
-        Path::new(&sketchy_path).join(db_name)
+    } else {
+        Path::new(&db)
     };
+
+    println!("{:?}", db_path);
 
     // Check if database is in relative path, since relative paths are not resolved
 
@@ -650,6 +651,8 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     }  else {
         Path::new(&cwd).join(db_name)
     };
+
+    println!("{:?}", db_path);
 
     // Fail if not suitable database path exists
     
