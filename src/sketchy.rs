@@ -376,7 +376,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
     // Output last genotype in stream
     if !raw {
         
-        let read = &_read_tracker[0];
+        let read: i32 = &_read_tracker[0].parse::<i32>().unwrap();
 
         // prepare the variables for genotype reconstruction
         let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
@@ -399,7 +399,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
             }
             let genotype_str = genotype.join("\t");
 
-            println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
+            println!("{}\t{}", read+1, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
             
             if rank+1 >= limit {
                 break
