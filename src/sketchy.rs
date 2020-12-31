@@ -628,7 +628,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
 
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
-    
+
     let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
 
     let sketchy_home: String = format!("{}/.sketchy", user_home);
@@ -643,7 +643,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
         Path::new(&db).to_path_buf()
     };
 
-    println!("{:?}", db_path);
+    println!("{:?} {}", db_path, db_path.exists());
 
     // Check if database is in relative path, since relative paths are not resolved
 
