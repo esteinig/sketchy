@@ -641,13 +641,10 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let db_path = if !_db_path.exists() {
         Path::new(&sketchy_path).join(_db_name)
     } else {
+        // Check if database is in relative path, since relative paths are not resolved    
         let cwd: String = env::current_dir().unwrap().to_str().unwrap().to_string();
         Path::new(&cwd).join(_db_name)
     };
-
-    println!("{:?} {}", db_path, db_path.exists());
-
-    // Check if database is in relative path, since relative paths are not resolved
 
     // Fail if not suitable database path exists
     
@@ -680,8 +677,6 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     if !db_key.exists(){
         clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
     };
-
-    println!("{:?}", db_sketch);
 
     (
         db_sketch.to_str().unwrap().to_string(),
