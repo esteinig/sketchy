@@ -39,7 +39,7 @@ process SketchyScreen {
     _read_limit = 4*read_limit
 
     """
-    head -$_read_limit $fx | sketchy screen --fastx - --db $db --limit $params.limit --threads $task.cpu > ${id}.tsv
+    head -$_read_limit $fx | sketchy screen --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
     """
 
 }
@@ -64,7 +64,7 @@ process SketchyDist {
     _read_limit = 4*read_limit
 
     """
-    head -$_read_limit $fx | sketchy dist --fastx - --db $db --limit $params.limit --threads $task.cpu > ${id}.tsv
+    head -$_read_limit $fx | sketchy dist --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
     """
 
 }
