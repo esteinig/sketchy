@@ -149,7 +149,7 @@ fn main() -> Result<(), Error> {
 
         let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
         let raw: bool = predict.is_present("RAW");
-        let pretty: bool = screen.is_present("PRETTY");
+        let pretty: bool = predict.is_present("PRETTY");
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
