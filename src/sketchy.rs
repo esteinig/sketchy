@@ -9,7 +9,6 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 use cute::c;
 use std::env;
-use colored::*;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
@@ -293,7 +292,7 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, threads: i32, limi
     Ok(())
 }
 
-pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> Result<(), Error>{
+pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -332,24 +331,19 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> R
             
             // iterate over genotype ranks ...
             for rank in 0..*_max_genotype_ranks {
-                
-                let mut genotype = "".white(); // ... start a new genotype at this rank ...
-                
+
+                let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
                 for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
                     let category = &read_prediction[&i];
                     let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
                         Some(value) => value,
                         None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
-                    if pretty {
-                        genotype.push_str(if prediction == &"R" { &prediction.red() } else { &prediction.white() } ); // ... add prediction to genotype
-                    } else {
-                        genotype.push_str(&prediction.white());
-                    }
-                    
+                    genotype.push(prediction.to_string()); // ... add prediction to genotype
                 }
+                let genotype_str = genotype.join("\t");
 
-                println!("{}\t{}", &read, &genotype); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
+                println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
                 
                 if rank+1 >= limit {
                     break
