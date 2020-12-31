@@ -626,8 +626,6 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
-    let db_path = Path::new(&db);
-    let db_name = db_path.file_name().unwrap().to_str().unwrap();
 
     let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
 
@@ -635,26 +633,23 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
 
     
+    let _db_path = Path::new(&db);
+    let _db_name = _db_path.file_name().unwrap().to_str().unwrap();
+
+    println!("{:?}", _db_path);
+
     // Check if database is in SKETCHY_PATH ENV
 
-    let db_path = if !db_path.exists() {
-        Path::new(&sketchy_path).join(db_name)
+    let db_path = if !_db_path.exists() {
+        Path::new(&sketchy_path).join(_db_name)
     } else {
-        Path::new(&db).to_path_buf()
+        let cwd: String = env::current_dir().unwrap().to_str().unwrap().to_string();
+        Path::new(&cwd).join(_db_name)
     };
 
     println!("{:?} {}", db_path, db_path.exists());
 
     // Check if database is in relative path, since relative paths are not resolved
-
-    let cwd: String = env::current_dir().unwrap().to_str().unwrap().to_string();
-    let db_path = if !db_path.exists() {
-        Path::new(&cwd).join(db_name)
-    }  else {
-        Path::new(&db).to_path_buf()
-    };
-
-    println!("{:?}", db_path);
 
     // Fail if not suitable database path exists
     
@@ -663,16 +658,16 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     };
 
     let db_sketch = db_path.join(
-        format!("{}.msh", db_name)
+        format!("{}.msh", _db_name)
     );
     let db_genotypes = db_path.join(
-        format!("{}.tsv", db_name)
+        format!("{}.tsv", _db_name)
     );
     let db_index = db_path.join(
-        format!("{}.idx", db_name)
+        format!("{}.idx", _db_name)
     );
     let db_key = db_path.join(
-        format!("{}.key", db_name)
+        format!("{}.key", _db_name)
     );
 
     if !db_sketch.exists(){
