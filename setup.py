@@ -32,6 +32,7 @@ setup(
         'pyfastx',
         'watchdog',
         'psutil',
+        'dendropy'
     ],
     description="Real-time lineage calling and genotyping of bacterial"
                 "pathogens from uncorrected nanopore reads using "
