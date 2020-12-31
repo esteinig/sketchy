@@ -3,7 +3,7 @@ process SketchyStream {
     label "sketchy"
     tag { id }
 
-    publishDir "${params.outdir}/stream/${db.baseName}", mode: "copy", pattern: "${id}.tsv"
+    publishDir "${params.outdir}/stream/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
 
     input:
     tuple val(id), file(fx)
@@ -24,7 +24,7 @@ process SketchyScreen {
     label "sketchy"
     tag { id }
 
-    publishDir "${params.outdir}/screen/${db.baseName}", mode: "copy", pattern: "${id}.tsv"
+    publishDir "${params.outdir}/screen/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
 
     input:
     tuple val(id), file(fx)
@@ -45,7 +45,7 @@ process SketchyDist {
     label "sketchy"
     tag { id }
 
-    publishDir "${params.outdir}/dist/${db.baseName}", mode: "copy", pattern: "${id}.tsv"
+    publishDir "${params.outdir}/dist/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
 
     input:
     tuple val(id), file(fx)

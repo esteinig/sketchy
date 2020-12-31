@@ -90,8 +90,8 @@ workflow {
 
     ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
 
-    SketchyStream(ont, dbs)
-    SketchyScreen(ont, dbs)
-    SketchyDist(ont, dbs)
+    SketchyStream(ont, reads, dbs)
+    SketchyScreen(ont, reads, dbs)
+    SketchyDist(ont, reads, dbs)
 
 }
