@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [10]"))
-            .arg(Arg::with_name("RAW").short("r").long("raw").takes_value(false).help("Print raw translated genotypes [false]"))
+            .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw translated genotypes [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
