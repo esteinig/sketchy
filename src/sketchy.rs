@@ -301,7 +301,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
     let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
     
-    let mut _read_tracker: Vec<String> = vec!["-1".to_string()]; // read change tracker
+    let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
     let mut read_prediction: HashMap<usize, Vec<String>> = HashMap::new();
 
     let stdin = std::io::stdin();
