@@ -293,7 +293,7 @@ pub fn dist(fastx: String, sketch: String, genotypes: String, threads: i32, limi
     Ok(())
 }
 
-pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
+pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> Result<(), Error>{
 
     /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
 
@@ -340,7 +340,12 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
                         Some(value) => value,
                         None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
-                    genotype.push(if prediction == &"R" { prediction.red() } else { prediction.white() } ); // ... add prediction to genotype
+                    if pretty {
+                        genotype.push(if prediction == &"R" { prediction.to_string().red() } else { prediction.to_string().white() } ); // ... add prediction to genotype
+                    } else {
+                        genotype.push(prediction.to_string());
+                    }
+                    
                 }
                 let genotype_str = genotype.join("\t");
 
