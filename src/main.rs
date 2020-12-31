@@ -109,9 +109,9 @@ fn main() -> Result<(), Error> {
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db);
+        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
 
-        sketchy::screen(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
+        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
@@ -131,9 +131,9 @@ fn main() -> Result<(), Error> {
         let limit: usize = dist.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = dist.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db);
+        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
 
-        sketchy::dist(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
+        sketchy::dist(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
@@ -182,7 +182,7 @@ fn main() -> Result<(), Error> {
         println!("Ok");
     }
 
-    if let Some(cite) = matches.subcommand_matches("cite") {
+    if let Some(_cite) = matches.subcommand_matches("cite") {
                 
         println!("\nPlease cite the following authors whose work we used for Sketchy:\n");
         
