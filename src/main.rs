@@ -69,7 +69,6 @@ fn main() -> Result<(), Error> {
         .subcommand(SubCommand::with_name("cite")
             .about("\noutput citations for sketchy")
             .version("0.5.0")
-            .arg(Arg::with_name("FILES").short("f").long("files").takes_value(false).help("Output citation files (.bib)"))
         )
         .get_matches();
         
@@ -184,9 +183,7 @@ fn main() -> Result<(), Error> {
     }
 
     if let Some(cite) = matches.subcommand_matches("cite") {
-        
-        let files: bool = cite.is_present("FILES");
-        
+                
         println!("\nPlease cite the following authors whose work we used for Sketchy:\n");
         
         println!("Ondov  et al. (2016) : https://doi.org/10.1186/s13059-016-0997-x");
