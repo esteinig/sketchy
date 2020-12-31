@@ -9,7 +9,7 @@ process SketchyStream {
     tuple val(id), file(fx)
     each file(db)
     each read_limit
-    
+
     output:
     file("${id}.tsv")
 
@@ -34,8 +34,12 @@ process SketchyScreen {
     output:
     file("${id}.tsv")
 
+    script:
+
+    _read_limit = 4*read_limit
+
     """
-    sketchy screen --fastx $fx --db $db --limit $limit --threads $task.cpu > ${id}.tsv
+    head -$_read_limit $fx | sketchy screen --fastx - --db $db --limit $limit --threads $task.cpu > ${id}.tsv
     """
 
 }
@@ -55,8 +59,12 @@ process SketchyDist {
     output:
     file("${id}.tsv")
 
+    script:
+
+    _read_limit = 4*read_limit
+    
     """
-    sketchy dist --fastx $fx --db $db --limit $limit --threads $task.cpu > ${id}.tsv
+    head -$_read_limit $fx | sketchy dist --fastx - --db $db --limit $limit --threads $task.cpu > ${id}.tsv
     """
 
 }
