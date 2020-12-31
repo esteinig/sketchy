@@ -343,7 +343,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
                 }
                 let genotype_str = genotype.join("\t");
 
-                println!("{}\t{}", &read, &genotype_str);
+                println!("{}\t{}", &read-1, &genotype_str);
                 
                 if rank+1 >= limit {
                     break
