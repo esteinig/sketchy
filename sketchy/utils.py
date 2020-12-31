@@ -23,7 +23,7 @@ class PoreLogger:
         )
 
         self.logger = logging.getLogger(name)
-        
+
 class SketchySimulator:
 
     """ Simulator utility to run a live read simulation / rerun for Sketchy """
