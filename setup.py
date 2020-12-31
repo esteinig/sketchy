@@ -11,7 +11,7 @@ setup(
     license="MIT",
     entry_points="""
     [console_scripts]
-    sketchy-db=sketchy.terminal.client:terminal_client
+    sketchy-utils=sketchy.terminal.client:terminal_client
     """,
     install_requires=[
         'tqdm',

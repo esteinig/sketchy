@@ -43,7 +43,7 @@ test:
   imports:
     - sketchy
   commands:
-    - sketchy-db --help
+    - sketchy-utils --help
     - sketchy -h
 
 about:
