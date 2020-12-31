@@ -342,9 +342,9 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> R
                         None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
                     if pretty {
-                        genotype.push_str(if prediction == &"R" { prediction.red() } else { prediction.white() } ); // ... add prediction to genotype
+                        genotype.push_str(if prediction == &"R" { &prediction.red() } else { &prediction.white() } ); // ... add prediction to genotype
                     } else {
-                        genotype.push_str(prediction.white());
+                        genotype.push_str(&prediction.white());
                     }
                     
                 }
