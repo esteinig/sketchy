@@ -316,7 +316,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
         let read = &content[0];
 
-        if !_read_tracker.contains(read) {
+        if !raw && !_read_tracker.contains(read) {
 
             // At the start of a new read:
 
@@ -343,7 +343,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
                 }
                 let genotype_str = genotype.join("\t");
 
-                println!("{}\t{}", &read-1, &genotype_str);
+                println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
                 
                 if rank+1 >= limit {
                     break
@@ -361,18 +361,48 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
         let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
         let feature_prediction: &String = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
         
-        read_prediction.entry(feature_key)
-            .or_insert(vec![])
-            .push(feature_prediction.to_string());
-        
-       
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         if raw {
             println!("{} {} {} {} {} {} {}", read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+        } else {
+            // Add this to enable genotype reconstruction for each read
+            read_prediction.entry(feature_key)
+            .or_insert(vec![])
+            .push(feature_prediction.to_string());
         }
 
     }
 
+    // Output last genotype in stream
+    if !raw {
+        // prepare the variables for genotype reconstruction
+        let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
+        let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
+        let _max_genotype_ranks: &usize = _lengths.iter().max().unwrap();
+        let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
+        let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
+
+        // iterate over genotype ranks ...
+        for rank in 0..*_max_genotype_ranks {
+
+            let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
+            for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
+                let category = &read_prediction[&i];
+                let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
+                    Some(value) => value,
+                    None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
+                };
+                genotype.push(prediction.to_string()); // ... add prediction to genotype
+            }
+            let genotype_str = genotype.join("\t");
+
+            println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
+            
+            if rank+1 >= limit {
+                break
+            }
+        }
+    }
     
 
     Ok(())
