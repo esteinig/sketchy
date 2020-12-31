@@ -638,7 +638,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
     } else {
-        Path::new(&db)
+        Path::new(&db).to_path_buf()
     };
 
     println!("{:?}", db_path);
@@ -649,7 +649,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let db_path = if !db_path.exists() {
         Path::new(&cwd).join(db_name)
     }  else {
-        Path::new(&cwd).join(db_name)
+        Path::new(&db).to_path_buf()
     };
 
     println!("{:?}", db_path);
