@@ -76,7 +76,7 @@ if (params.db) {
 }
 
 if (params.reads) {
-    read_limits = params.reads.split(",").collect()
+    read_limits = params.reads.split(",").collect { it.toInteger() }
 } else {
     println("You need to specify one or multiple prediction end points (--reads)")
     println("Example: nextflow run esteinig/sketchy --reads 100,500")
