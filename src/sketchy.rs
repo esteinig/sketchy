@@ -9,6 +9,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 use cute::c;
 use std::env;
+use colored::*;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
@@ -339,7 +340,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
                         Some(value) => value,
                         None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
-                    genotype.push(prediction.to_string()); // ... add prediction to genotype
+                    genotype.push(if prediction == &"R" { prediction.red() } else { prediction.white() } ); // ... add prediction to genotype
                 }
                 let genotype_str = genotype.join("\t");
 
