@@ -1,8 +1,8 @@
 [package]
 name = "sketchy-rs"
 version = "0.5.0"
-authors = ["esteinig <eikejoachim.steinig@my.jcu.edu.au>"]
-description = "Rust core command line client for Sketchy"
+authors = ["esteinig <eike.steinig@unimelb.edu.au>"]
+description = "Rust command line client for Sketchy"
 documentation = "https://github.com/esteinig/sketchy"
 homepage = "https://github.com/esteinig/sketchy"
 repository = "https://github.com/esteinig/sketchy"
@@ -14,7 +14,7 @@ edition = "2018"
 include = [
     "**/*.rs",
     "src/data/*",
-    "Cargo.toml",
+    "Cargo.toml"
 ]
 
 [dependencies]

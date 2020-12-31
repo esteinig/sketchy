@@ -11,7 +11,7 @@ setup(
     license="MIT",
     entry_points="""
     [console_scripts]
-    sketchy=sketchy.terminal.client:terminal_client
+    sketchy-db=sketchy.terminal.client:terminal_client
     """,
     install_requires=[
         'tqdm',
@@ -32,9 +32,8 @@ setup(
         'pyfastx',
         'watchdog',
         'psutil',
-        'dendropy'
     ],
-    description="Real-time db_lineage calling and genotyping of bacterial"
+    description="Real-time lineage calling and genotyping of bacterial"
                 "pathogens from uncorrected nanopore reads using "
                 "genomic neighbor typing and MinHash",
 )

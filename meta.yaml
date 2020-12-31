@@ -1,7 +1,5 @@
 {% set version = "0.5.0" %}
 
-# conda build -c esteinig -c bioconda -c conda-forge .
-
 package:
   name: sketchy
   version: {{ version }}
@@ -45,12 +43,12 @@ test:
   imports:
     - sketchy
   commands:
-    - sketchy --help
-    - sketchy-rs -h
+    - sketchy-db --help
+    - sketchy -h
 
 about:
   home: 'https://github.com/esteinig/sketchy'
   license: MIT
   license_file: LICENSE
-  summary: 'Real-time db_lineage hashing and genotyping of bacterial pathogens'
+  summary: 'Genomic neighbor typing of bacterial pathogens using MinHash'
 

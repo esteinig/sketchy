@@ -25,59 +25,6 @@ class PoreLogger:
         self.logger = logging.getLogger(name)
 
 
-class SketchySimulator:
-
-    """ Simulator utility to run a live read simulation / rerun for Sketchy """
-
-    def __init__(
-        self,
-        fastx: Path,
-        fastx_index: Path = None,
-        reads_per_file: int = 500,
-        barcodes: list = None,
-    ):
-        self.fastx = fastx
-        self.fai, self.build_read = create_fastx_index(fastx)
-
-        # TODO: Remove when comments are fixed in Pyfastx: since v0.6
-
-        if fastx_index:
-            self.fastx_index = pandas.read_csv(fastx_index, sep='\t')
-        else:
-            self.fastx_index = None
-
-        self.reads_per_file = reads_per_file
-        self.barcodes = barcodes
-
-    def get_run_index(self, fout: bool = False, sort_by: str = 'start_time'):
-
-        self.fastx_index = pandas.DataFrame(
-            [extract_read_data(read) for read in FastxFile(self.fastx)]
-        )
-
-        if sort_by:
-            self.fastx_index = self.fastx_index.sort_values(sort_by)
-
-        if fout:
-            self.fastx_index.to_csv(
-                fout, sep='\t', index=False
-            )
-
-        return self.fastx_index
-
-    @staticmethod
-    def create_header_comment(row):
-
-        """ Recreate the header comment from an index row """
-
-        comment = ''
-        for name in row.index.values:
-            if name != 'name' and row[name] is not None:
-                comment += f'{name}={row[name]} '
-
-        return comment
-
-
 def run_cmd(cmd, callback=None, watch=False, background=False, shell=False):
 
     """Runs the given command and gathers the output.
