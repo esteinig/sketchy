@@ -8,6 +8,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 */
 
 use cute::c;
+use std::env;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
@@ -15,12 +16,13 @@ use std::time::Instant;
 use indicatif::ProgressBar;
 use std::iter::FromIterator;
 use std::collections::HashMap;
+
+use serde_json::{Value};
+use prettytable::{Attr, color};
 use std::process::{Command, Stdio};
 use prettytable::{Table, Row, Cell};
-use prettytable::{Attr, color};
 use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
-use serde_json::{Value};
 
 pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
     

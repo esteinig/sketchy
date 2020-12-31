@@ -7,7 +7,6 @@ extern crate prettytable;
 
 mod sketchy;
 
-use std::env;
 use std::io::Error;
 use clap::{Arg, App, AppSettings, SubCommand};
 
