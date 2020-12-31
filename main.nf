@@ -70,14 +70,16 @@ params.stability = 100
 if (params.db) {
     dbs = params.db.split(",").collect { file(it) }
 } else {
-    println("You need to specify one or multiple databases with argument: --db")
+    println("You need to specify one or multiple database paths (--db)")
+    println("Example  nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
     System.exit(1)
 }
 
 if (params.reads) {
     reads = params.reads.split(",").collect { file(it) }
 } else {
-    println("You need to specify one or multiple prediction end points with argument: --reads")
+    println("You need to specify one or multiple prediction end points (--reads)")
+    println("Example: nextflow run esteinig/sketchy --reads 100,500")
     System.exit(1)
 }
 
