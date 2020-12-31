@@ -375,6 +375,9 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
     // Output last genotype in stream
     if !raw {
+        
+        let read = &content[0];
+        
         // prepare the variables for genotype reconstruction
         let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
         let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
