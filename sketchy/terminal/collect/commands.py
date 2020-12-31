@@ -68,7 +68,7 @@ def collect(
     image_format
 ):
 
-    """ Collect Sketchy predictions and summarize results from Nextflow """
+    """ Collect predictions and summarize results from Nextflow """
 
     if subset:
         subset = subset.split(',')

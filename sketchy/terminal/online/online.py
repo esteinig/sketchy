@@ -6,7 +6,7 @@ from .monitor import monitor
 
 @click.group()
 def online():
-    """ Tasks for: online sequence run monitoring and simulation """
+    """ Tasks for online sequence run monitoring """
     pass
 
 

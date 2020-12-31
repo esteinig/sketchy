@@ -8,7 +8,7 @@ from .mashdist import mashdist
 
 @click.group()
 def survey():
-    """ Tasks for: creating create index files from Pathfinder Survey """
+    """ Tasks for public database surveillance and sketch updates """
     pass
 
 

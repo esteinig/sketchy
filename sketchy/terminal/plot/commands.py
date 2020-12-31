@@ -78,7 +78,7 @@ from sketchy.sketchy import Evaluation
 )
 def plot(sssh, ssh, index, key, stable, color, prefix, format, mpl_backend, verbose):
 
-    """ Plot output from Sketchy Rust pipeline """
+    """ Diagnostic plots for output from stream client """
 
     eve = Evaluation(
         sssh=sssh,
