@@ -30,17 +30,16 @@ Please see our preprint for guidance on the limitations of `Sketchy`.
 
 ## Install
 
-Sketchy implements a Rust command-line interface (`sketchy-rs`) for computation and evaluation on read streams and a Python command-line interface (`sketchy`) for evaluation plots and database utilities.
+Sketchy implements a Rust command-line interface (`sketchy`) for computation and evaluation on read streams and a Python command-line interface (`sketchy-utils`) for database utilities and diagnostic plots.
 
 **`Cargo`**
 
-Rust client only - this does not install the Python database and plotting client!
+Rust client only - this does not install the Python utilities! `Mash` needs to be in `$PATH`.
 
 ```bash
 cargo install sketchy-rs
 ```
-
-`Mash` needs to be in `$PATH`. On Linux systems one should be able to install `Mash` conveniently e.g.
+On Linux systems one should be able to install `Mash` conveniently e.g.
 
 ```bash
 sudo apt-get install mash
