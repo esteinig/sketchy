@@ -636,8 +636,6 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     let _db_path = Path::new(&db);
     let _db_name = _db_path.file_name().unwrap().to_str().unwrap();
 
-    println!("{:?}", _db_path);
-
     // Check if database is in SKETCHY_PATH ENV
 
     let db_path = if !_db_path.exists() {
@@ -682,6 +680,8 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     if !db_key.exists(){
         clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
     };
+
+    println!("{:?}", db_sketch);
 
     (
         db_sketch.to_str().unwrap().to_string(),
