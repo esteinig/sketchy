@@ -76,7 +76,7 @@ if (params.db) {
 }
 
 if (params.reads) {
-    reads = params.reads.split(",").collect { file(it) }
+    read_limits = params.reads.split(",").collect { file(it) }
 } else {
     println("You need to specify one or multiple prediction end points (--reads)")
     println("Example: nextflow run esteinig/sketchy --reads 100,500")
@@ -92,8 +92,8 @@ workflow {
 
     ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
 
-    SketchyStream(ont, reads, dbs)
-    SketchyScreen(ont, reads, dbs)
-    SketchyDist(ont, reads, dbs)
+    SketchyStream(ont, dbs, read_limits)
+    SketchyScreen(ont, reads, read_limits)
+    SketchyDist(ont, reads, read_limits)
 
 }

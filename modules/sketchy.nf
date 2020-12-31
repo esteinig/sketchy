@@ -7,9 +7,9 @@ process SketchyStream {
 
     input:
     tuple val(id), file(fx)
-    each val(read_limit)
     each file(db)
-
+    each read_limit
+    
     output:
     file("${id}.tsv")
 
@@ -28,8 +28,8 @@ process SketchyScreen {
 
     input:
     tuple val(id), file(fx)
-    each val(read_limit)
     each file(db)
+    each read_limit
 
     output:
     file("${id}.tsv")
@@ -49,8 +49,8 @@ process SketchyDist {
 
     input:
     tuple val(id), file(fx)
-    each val(read_limit)
     each file(db)
+    each read_limit
 
     output:
     file("${id}.tsv")
