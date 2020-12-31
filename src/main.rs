@@ -13,9 +13,6 @@ use clap::{Arg, App, AppSettings, SubCommand};
 
 fn main() -> Result<(), Error> {
 
-    let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
-    let sketchy_home: String = format!("{}/.sketchy", user_home);
-    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
 
     let matches = App::new("sketchy")
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -91,7 +88,7 @@ fn main() -> Result<(), Error> {
         let progress: bool = stream.is_present("PROGRESS");
         let raw: bool = stream.is_present("RAW");
 
-        let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
         sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size).map_err(
@@ -114,7 +111,7 @@ fn main() -> Result<(), Error> {
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db);
 
         sketchy::screen(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
@@ -136,7 +133,7 @@ fn main() -> Result<(), Error> {
         let limit: usize = dist.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = dist.is_present("PRETTY");
 
-        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (sketch_msh, genotypes, _, genotype_key) = sketchy::get_sketch_files(db);
 
         sketchy::dist(fastx, sketch_msh, genotypes, genotype_key, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
@@ -153,7 +150,7 @@ fn main() -> Result<(), Error> {
         let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
         let raw: bool = predict.is_present("RAW");
 
-        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
         sketchy::predict(genotype_key, limit, raw).map_err(
             |err| println!("{:?}", err)
@@ -169,7 +166,7 @@ fn main() -> Result<(), Error> {
 
         let pretty: bool = head.is_present("PRETTY");
 
-        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db, &sketchy_path);
+        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
         sketchy::display_header(genotype_key, pretty).map_err(
             |err| println!("{:?}", err)
@@ -183,7 +180,7 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        sketchy::get_sketch_files(db, &sketchy_path);
+        sketchy::get_sketch_files(db);
         println!("Ok");
     }
 
