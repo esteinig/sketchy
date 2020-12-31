@@ -6,7 +6,7 @@ LABEL author="esteinig"
 
 RUN apt-get update && apt-get install curl build-essential git -y
 
-ENV SKETCHY_BRANCH=0.5.0
+ENV SKETCHY_BRANCH=v0.5.0
 ENV MASH_VERSION=2.2.2
 ENV CONDA_DIR=/opt/conda
 ENV SKETCHY_PATH=/sketchy
