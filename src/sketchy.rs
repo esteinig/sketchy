@@ -627,19 +627,19 @@ pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
-pub fn get_sketch_files(db: String, sketchy_path: &String)  -> (String, String, String, String) {
+pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     
     /* Get sketch files from database path and perform checks */
 
     let user_home: String = dirs::home_dir().unwrap().to_str().unwrap_or("").to_string();
     let sketchy_home: String = format!("{}/.sketchy", user_home);
+    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
 
     let db_path = Path::new(&db);
     let db_name = db_path.file_name().unwrap().to_str().unwrap();
     
     // Check if database is in SKETCHY_PATH ENV
 
-    let sketchy_path: String = env::var("SKETCHY_PATH").unwrap_or(sketchy_home).to_string();
     let db_path = if !db_path.exists() {
         Path::new(&sketchy_path).join(db_name)
     }  else {
