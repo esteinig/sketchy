@@ -333,7 +333,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> R
             // iterate over genotype ranks ...
             for rank in 0..*_max_genotype_ranks {
                 
-                let mut genotype: Vec<colored::ColoredString> = vec![]; // ... start a new genotype at this rank ...
+                let mut genotype = "".to_string(); // ... start a new genotype at this rank ...
                 
                 for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
                     let category = &read_prediction[&i];
@@ -342,15 +342,14 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool, pretty: bool) -> R
                         None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
                     };
                     if pretty {
-                        genotype.push(if prediction == &"R" { prediction.red() } else { prediction.white() } ); // ... add prediction to genotype
+                        genotype.push_str(if prediction == &"R" { prediction.red() } else { prediction.white() } ); // ... add prediction to genotype
                     } else {
-                        genotype.push(prediction.white());
+                        genotype.push_str(prediction.white());
                     }
                     
                 }
-                let genotype_str = genotype.join("\t");
 
-                println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
+                println!("{}\t{}", &read, &genotype); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
                 
                 if rank+1 >= limit {
                     break
