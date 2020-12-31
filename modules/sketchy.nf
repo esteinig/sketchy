@@ -35,7 +35,7 @@ process SketchyScreen {
     file("${id}.tsv")
 
     """
-    sketchy screen --fastx $fx --db $db --limit $read_limit --threads $task.cpu > ${id}.tsv
+    sketchy screen --fastx $fx --db $db --limit $limit --threads $task.cpu > ${id}.tsv
     """
 
 }
@@ -56,7 +56,7 @@ process SketchyDist {
     file("${id}.tsv")
 
     """
-    sketchy dist --fastx $fx --db $db --limit $read_limit --threads $task.cpu > ${id}.tsv
+    sketchy dist --fastx $fx --db $db --limit $limit --threads $task.cpu > ${id}.tsv
     """
 
 }
