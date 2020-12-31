@@ -57,7 +57,7 @@ def helpMessage() {
     """.stripIndent()
 }
 
-params.outrdir = "nxf-sketchy"
+params.outdir = "nxf-sketchy"
 
 params.fastq = "*.fq"
 params.db = ""                               // must be actual path
@@ -70,14 +70,14 @@ params.stability = 100
 if (params.db) {
     dbs = params.db.split(",").collect { file(it) }
 } else {
-    println("You need to specify one or multiple databases")
+    println("You need to specify one or multiple databases with argument: --db")
     System.exit(1)
 }
 
 if (params.reads) {
     reads = params.reads.split(",").collect { file(it) }
 } else {
-    println("You need to specify one or multiple prediction end points")
+    println("You need to specify one or multiple prediction end points with argument: --reads")
     System.exit(1)
 }
 

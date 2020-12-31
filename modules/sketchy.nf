@@ -7,13 +7,14 @@ process SketchyStream {
 
     input:
     tuple val(id), file(fx)
+    each val(read_limit)
     each file(db)
 
     output:
     file("${id}.tsv")
 
     """
-    sketchy stream --fastx $fx --db $db --reads $params.reads --ranks $params.ranks --stability $params.stability --threads $task.cpus | sketchy-rs predict --db $db --limit $params.limit > ${id}.tsv
+    sketchy stream --fastx $fx --db $db --reads $read_limit --ranks $params.ranks --stability $params.stability --threads $task.cpus | sketchy predict --db $db --limit $params.limit > ${id}.tsv
     """
 
 }
@@ -27,13 +28,14 @@ process SketchyScreen {
 
     input:
     tuple val(id), file(fx)
+    each val(read_limit)
     each file(db)
 
     output:
     file("${id}.tsv")
 
     """
-    sketchy screen --fastx $fx --db $db --limit $params.limit --threads $task.cpu > ${id}.tsv
+    sketchy screen --fastx $fx --db $db --limit $read_limit --threads $task.cpu > ${id}.tsv
     """
 
 }
@@ -47,13 +49,14 @@ process SketchyDist {
 
     input:
     tuple val(id), file(fx)
+    each val(read_limit)
     each file(db)
 
     output:
     file("${id}.tsv")
 
     """
-    sketchy dist --fastx $fx --db $db --limit $params.limit --threads $task.cpu > ${id}.tsv
+    sketchy dist --fastx $fx --db $db --limit $read_limit --threads $task.cpu > ${id}.tsv
     """
 
 }
