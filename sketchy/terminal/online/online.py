@@ -1,6 +1,5 @@
 import click
 
-from .simulate import simulate
 from .watch import watch
 from .monitor import monitor
 
@@ -12,5 +11,4 @@ def online():
 
 
 online.add_command(monitor)
-online.add_command(simulate)
 online.add_command(watch)
