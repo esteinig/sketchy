@@ -4,7 +4,7 @@ from .fastx import fastx
 from .db import db
 from .online import online
 from .survey import survey
-from .plot import plot
+from .diagnostics import plot
 from .collect import collect
 
 VERSION = '0.5.0'
