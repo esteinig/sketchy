@@ -17,7 +17,7 @@ process SketchyStream {
     """
     sketchy stream --fastx $fx --db $db --reads $read_limit --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh.tsv
     cat  ${id}.sssh.tsv | sketchy predict --db $db --limit $params.limit > predict.tsv
-    tail -$limit predict.tsv > ${id}.tsv
+    tail -$params.limit predict.tsv > ${id}.tsv
     """
 
 }
