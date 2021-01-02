@@ -10,14 +10,14 @@ Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected
 
 **`v0.5.0: preprint`**
 
-`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming implementation of `mash dist` (the sum of shared hashes) for real-time analysis. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming implementation of `mash dist` for real-time analysis (the sum of shared hashes). It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
 
 Species we have validated using ONT sequence reads with matching Illumina data:
 
 * [*Staphylococcus aureus*](docs/saureus.md) (n = 142)
 * [*Klebsiella pneumoniae*](docs/kpneumo.md) (n = 120)
 
-Sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
+Automated sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
@@ -294,7 +294,7 @@ ref.key   # key
 
 `Sketchy` stream computes across three stages and two simple scores: the first is the sum of shared hashes, where it keeps a cumulative sum of shared hashes (`ssh`) computed against each index in the reference sketch for each consecutive read. `Mash` queries take the majority of the compute while `Sketchy` siphons off the output: at each read, the indexed scores are ranked and the highest ranking scores are recorded to reduce excessive read-wise output of the reference sketch queries and retain salient hits (default: `--ranks 10`). Raw sum of shared hashes scores can be output for debugging using the `--ssh` scores flag.
 
-In the second stage, an evaluation score for genotypes features is computed by aggregating the sum of ranked sums of shared hashes (`sssh`) for each genotype feature in the associated index independently (e.g. *mecA* presence or SCC*mec* type). Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best prediction.
+In the second stage, an evaluation score for genotypes features is computed by aggregating the sum of ranked sums of shared hashes (`sssh`) for each genotype feature in the associated index independently (e.g. *mecA* presence or SCC*mec* type). In essence, this step makes consensus decision on the feature over the top `--ranks` by aggregating (summing) the ranked sums of shared hashes, thus accounting for uncertainty in the raw `Mash` queries and resulting sums of shared hashes at each read. Evaluations are plotted for visual confirmation, along with a preference score adopted from [Brinda and colleagues](https://www.biorxiv.org/content/10.1101/403204v2) that indicates the degree of confidence in the best prediction over the second-best predictions.
 
 In the third stage, the sum of ranked sums of shared hashes scores are ranked and translated to genotypes from the database. As each genotype feature is evaluated independently, ranked genotype predictions are combined at each rank to provide a full genotype. For example, it may be that two ranks of sequence types are predicted (e.g. ST1 and ST8), but only one rank of penicillin resistance (R). In this case, the first rank genotype is unambigious (e.g. ST1-R), but penicillin resistance is adopted in the second rank genotype (e.g. ST8-R)
 
