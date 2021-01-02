@@ -34,7 +34,7 @@ def collect(
                 read_limit_data = []
                 for read_limit_path in read_limit_paths:
                     result_files = read_limit_path.glob("*.tsv")
-
+                    print(read_limit_path)
                     result_data = []
                     for file in result_files:
                         print(file)
@@ -57,6 +57,7 @@ def collect(
                             continue
 
                         result_data.append(df)
+
                     print(result_data)
                     results = pandas.concat(result_data)
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
