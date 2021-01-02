@@ -26,7 +26,7 @@ def collect(
             database_data = []
             for db_path in database_paths:
                 db_header = pandas.read_csv(
-                    db_path / 'header.txt', sep="\t", header=None, index=False
+                    db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
 
                 read_limit_paths = db_path.glob("*/")
