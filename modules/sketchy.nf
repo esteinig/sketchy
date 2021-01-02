@@ -14,6 +14,8 @@ process SketchyStream {
 
     output:
     file("${id}.tsv")
+    file("${id}.sssh")
+    file("header.txt")
     
     script:
 
@@ -43,7 +45,8 @@ process SketchyScreen {
 
     output:
     file("${id}.tsv")
-
+    file("header.txt")
+    
     script:
 
     _read_limit = 4*read_limit
@@ -70,6 +73,7 @@ process SketchyDist {
 
     output:
     file("${id}.tsv")
+    file("header.txt")
 
     script:
 
