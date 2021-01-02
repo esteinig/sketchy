@@ -658,6 +658,7 @@ class SketchyDiagnostics(PoreLogger):
     ):
 
         self.outdir = outdir
+        self.outdir.mkdir(parents=True, exist_ok=True)
 
         PoreLogger.__init__(
             self, level=logging.INFO if verbose else logging.ERROR
@@ -686,9 +687,10 @@ class SketchyDiagnostics(PoreLogger):
                 feature_data, mode=mode, max_ranks=max_ranks
             )
 
+            print(feature_prediction, feature_values)
+
             feature_data.to_csv(self.outdir / f"{feature}.tsv", sep="\t", index=False, header=True)
 
-            print(feature_prediction, feature_values)
 
     @staticmethod
     def get_feature_prediction(
