@@ -3,6 +3,7 @@ import pandas
 
 from pathlib import Path
 
+
 @click.command()
 @click.option(
     '--directory', '-d', required=True, type=Path, help='Path to output directory from Nextflow'
@@ -18,12 +19,8 @@ def collect(
 
     if workflow == "comparison":
 
-        stream = directory / 'stream'
-        dist = directory / 'dist'
-        screen = directory / 'screen'
-
         comparison_data = []
-        for path in (stream, dist, screen):
+        for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
             read_limit_paths = path.glob("*")
 
             read_limit_data = []
