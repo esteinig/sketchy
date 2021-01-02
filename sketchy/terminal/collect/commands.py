@@ -35,7 +35,7 @@ def collect(
                     result_data = []
                     for file in result_files:
                         result_data.append(
-                            pandas.read_csv(file, sep="\t")
+                            pandas.read_csv(file, sep="\t", header=None)
                         )
                     results = pandas.concat(result_data)
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
