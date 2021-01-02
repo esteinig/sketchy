@@ -28,6 +28,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Color palette for output plots [YlGnBu]'
 )
 @click.option(
+    '--max_ranks',
+    '-m',
+    type=int,
+    default=5,
+    help='In the SSSH plots, show max feature values / prediction ranks [5]'
+)
+@click.option(
     '--verbose',
     '-v',
     is_flag=True,
@@ -39,11 +46,11 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def plot_stream(sssh, stable, color, mpl_backend, verbose):
+def plot_stream(sssh, stable, max_ranks, color, mpl_backend, verbose):
 
     """ Diagnostic plots for output from stream client """
 
     sd = SketchyDiagnostics()
 
-    sd.process_sssh(sssh_file=sssh, stable=stable)
+    sd.process_sssh(sssh_file=sssh, stable=stable, max_ranks=max_ranks)
 

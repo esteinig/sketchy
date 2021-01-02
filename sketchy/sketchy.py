@@ -653,8 +653,11 @@ class SketchyDiagnostics(PoreLogger):
 
     def __init__(
         self,
+        outdir: Path = Path("sketchy_diagnostics"),
         verbose: bool = True
     ):
+
+        self.outdir = outdir
 
         PoreLogger.__init__(
             self, level=logging.INFO if verbose else logging.ERROR
@@ -663,9 +666,10 @@ class SketchyDiagnostics(PoreLogger):
     def plot_heatmap(self):
 
         """ Main access function for comparative feature heatmaps"""
+
         pass
 
-    def process_sssh(self, sssh_file: Path, stable: int = None, mode: str = "last"):
+    def process_sssh(self, sssh_file: Path, stable: int = None, mode: str = "last", max_ranks: int = 5):
 
         """ Process the raw output of the predict subcommand """
 
@@ -673,14 +677,22 @@ class SketchyDiagnostics(PoreLogger):
 
         for (i, (feature, feature_data)) in enumerate(sssh.groupby('feature')):  # each distinct feature is processed
 
-            print(i, feature)
-            print(feature_data)
-
             stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, stable=stable)
 
+            print(i, feature, stable_breakpoint)
+            print(feature_data)
+
+            feature_prediction, feature_values = self.get_feature_prediction(
+                feature_data, mode=mode, max_ranks=max_ranks
+            )
+
+            feature_data.to_csv(self.outdir / f"{feature}.tsv", sep="\t", index=False, header=True)
+
+            print(feature_prediction, feature_values)
+
     @staticmethod
-    def get_top_feature_data(
-        feature_data: pandas.DataFrame, mode: str = "last", max_feature_values: int = 5
+    def get_feature_prediction(
+        feature_data: pandas.DataFrame, mode: str = "last", max_ranks: int = 5
     ):
 
         """ Gets the """
@@ -690,16 +702,15 @@ class SketchyDiagnostics(PoreLogger):
                 .sum().sort_values(by='sssh', ascending=False)
 
             feature_prediction = sorted_values.iloc[0, :].name
-            feature_values = sorted_values[:max_feature_values].index.tolist()
+            feature_values = sorted_values[:max_ranks].index.tolist()
 
         else:
             last_prediction = feature_data[feature_data["read"] == feature_data["read"].max()]
 
             feature_prediction = last_prediction.iloc[0, :].feature_value  # last top ranked feature value
-            feature_values = last_prediction[:max_feature_values].feature_value.tolist()  # all
+            feature_values = last_prediction[:max_ranks].feature_value.tolist()  # all
 
         return feature_prediction, feature_values
-
 
     @staticmethod
     def compute_breakpoint(feature_data: pandas.DataFrame, stable: int = None):
