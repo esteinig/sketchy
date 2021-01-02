@@ -25,7 +25,7 @@ def collect(
 
             database_data = []
             for db_path in database_paths:
-                db_header = pandas.read_csv(db_path / 'header.txt', sep="\t", header=None)
+                db_header = pandas.read_csv(db_path / 'header.txt', sep="\t", header=None).iloc[0].tolist()
                 read_limit_paths = db_path.glob("*/")
 
                 read_limit_data = []
@@ -39,11 +39,11 @@ def collect(
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
 
                             if path.name == "stream":
-                                df.columns = ["read"] + db_header.head(1).tolist()
+                                df.columns = ["read"] + db_header
                             elif path.name == "dist":
-                                df.columns = ["rank", "distance", "shared_hashes"] + db_header.iloc[0].tolist() + ["id"]
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header + ["id"]
                             elif path.name == "screen":
-                                df.columns = ["rank", "identity", "shared_hashes"] + db_header.iloc[0].tolist() + ["id"]
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header + ["id"]
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
