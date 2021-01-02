@@ -31,6 +31,7 @@ def collect(
                 for read_limit_path in read_limit_paths:
                     result_files = read_limit_path.glob("*.tsv")
 
+                    print(f"{path} - {db_path} - {read_limit_path}")
                     result_data = []
                     for file in result_files:
                         result_data.append(
