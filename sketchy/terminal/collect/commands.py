@@ -35,7 +35,7 @@ def collect(
                     for file in result_files:
                         try:
                            df = pandas.read_csv(file, sep="\t", header=None)
-                           print(df)
+                           df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
                         except pandas.errors.EmptyDataError:
                             # This can happen to 'screen' if very few reads are used
                             print(f"Could not read results from: {file} - skipping ...")
