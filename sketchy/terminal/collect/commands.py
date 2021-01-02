@@ -21,23 +21,23 @@ def collect(
 
         comparison_data = {}
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
-            database_paths = path.glob("*/")
-            print(path.name)
+            database_paths = [p for p in path.glob("*") if p.is_dir()]
+
             database_data = []
             for db_path in database_paths:
                 db_header = pandas.read_csv(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
 
-                read_limit_paths = db_path.glob("*/")
+                read_limit_paths = [p for p in db_path.glob("*") if p.is_dir()]
 
                 read_limit_data = []
                 for read_limit_path in read_limit_paths:
                     result_files = read_limit_path.glob("*.tsv")
-                    print(read_limit_path)
+
                     result_data = []
                     for file in result_files:
-                        print(file)
+
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
@@ -58,7 +58,6 @@ def collect(
 
                         result_data.append(df)
 
-                    print(result_data)
                     results = pandas.concat(result_data)
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
                     read_limit_data.append(results)
