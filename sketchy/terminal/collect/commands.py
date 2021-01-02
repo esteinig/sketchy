@@ -21,12 +21,12 @@ def collect(
 
         comparison_data = []
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
-            read_limit_paths = path.glob("*")
+            read_limit_paths = path.glob("*/")
 
             read_limit_data = []
             for read_limit_path in read_limit_paths:
                 result_files = read_limit_path.glob("*.tsv")
-
+                print(read_limit_path, result_files)
                 result_data = []
                 for file in result_files:
                     result_data.append(
