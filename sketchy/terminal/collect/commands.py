@@ -25,6 +25,7 @@ def collect(
 
             database_data = []
             for db_path in database_paths:
+                db_header = pandas.read_csv(db_path / 'header.txt', sep="\t", header=None)
                 read_limit_paths = db_path.glob("*/")
 
                 read_limit_data = []
@@ -36,6 +37,16 @@ def collect(
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
+
+                            if path.name == "stream":
+                                df.columns = ["read"] + db_header.head(1).tolist()
+                            elif path.name == "dist":
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header.head(1).tolist() + ["id"]
+                            elif path.name == "screen":
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header.head(1).tolist() + ["id"]
+                            else:
+                                raise ValueError("Something went seriously wrong, dude! Get your shit together.")
+
                         except pandas.errors.EmptyDataError:
                             # This can happen to 'screen' if very few reads are used
                             print(f"Could not read results from: {file} - skipping ...")
@@ -59,4 +70,3 @@ def collect(
             print(k)
             print(v)
 
-        print(comparison)
