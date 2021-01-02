@@ -4,7 +4,7 @@ from .fastx import fastx
 from .db import db
 from .online import online
 from .survey import survey
-from .diagnostics import plot
+from .diagnostics import diagnostics
 from .collect import collect
 
 VERSION = '0.5.0'
@@ -17,7 +17,7 @@ def terminal_client():
 
 
 terminal_client.add_command(collect)
-terminal_client.add_command(plot)
+terminal_client.add_command(diagnostics)
 terminal_client.add_command(survey)
 terminal_client.add_command(online)
 terminal_client.add_command(fastx)
