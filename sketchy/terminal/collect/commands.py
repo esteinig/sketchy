@@ -19,7 +19,7 @@ def collect(
 
     if workflow == "comparison":
 
-        comparison_data = []
+        comparison_data = {}
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
             database_paths = path.glob("*/")
 
@@ -53,8 +53,10 @@ def collect(
 
             dbs = pandas.concat(database_data)
             dbs['mode'] = [path.name for _ in dbs.iterrows()]
-            comparison_data.append(dbs)
+            comparison_data[path.name] = dbs
 
-        comparison = pandas.concat(comparison_data)
+        for k, v in comparison_data.items():
+            print(k)
+            print(v)
 
         print(comparison)
