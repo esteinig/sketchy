@@ -4,7 +4,8 @@ process SketchyStream {
     tag { id }
 
     publishDir "${params.outdir}/stream/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
-    publishDir "${params.outdir}/stream/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.sssh.tsv"
+    publishDir "${params.outdir}/stream/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.sssh"
+    publishDir "${params.outdir}/stream/${db.baseName}/", mode: "copy", pattern: "header.txt"
 
     input:
     tuple val(id), file(fx)
@@ -19,9 +20,10 @@ process SketchyStream {
     _read_limit = 4*read_limit
 
     """
-    head -$_read_limit $fx | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh.tsv
-    cat  ${id}.sssh.tsv | sketchy predict --db $db --limit $params.limit > predict.tsv
+    head -$_read_limit $fx | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh
+    cat  ${id}.sssh | sketchy predict --db $db --limit $params.limit > predict.tsv
     tail -$params.limit predict.tsv > ${id}.tsv
+    sketchy head --db $db > header.txt
     """
 
 }
@@ -32,6 +34,7 @@ process SketchyScreen {
     tag { id }
 
     publishDir "${params.outdir}/screen/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
+    publishDir "${params.outdir}/stream/${db.baseName}/", mode: "copy", pattern: "header.txt"
 
     input:
     tuple val(id), file(fx)
@@ -47,6 +50,7 @@ process SketchyScreen {
 
     """
     head -$_read_limit $fx | sketchy screen --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
+    sketchy head --db $db > header.txt
     """
 
 }
@@ -57,6 +61,7 @@ process SketchyDist {
     tag { id }
 
     publishDir "${params.outdir}/dist/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}.tsv"
+    publishDir "${params.outdir}/stream/${db.baseName}/", mode: "copy", pattern: "header.txt"
 
     input:
     tuple val(id), file(fx)
@@ -72,6 +77,7 @@ process SketchyDist {
 
     """
     head -$_read_limit $fx | sketchy dist --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
+    sketchy head --db $db > header.txt
     """
 
 }
