@@ -345,7 +345,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
                 println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
                 
-                if rank >= limit {
+                if rank+1 >= limit {
                     break
                 }
             }
@@ -401,7 +401,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
             println!("{}\t{}", read+1, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
             
-            if rank >= limit {
+            if rank+1 >= limit {
                 break
             }
         }
