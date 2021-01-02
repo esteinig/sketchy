@@ -695,6 +695,7 @@ class SketchyDiagnostics(PoreLogger):
 
             feature_data.to_csv(self.outdir / f"{feature}.tsv", sep="\t", index=False, header=True)
 
+            break
 
     @staticmethod
     def get_feature_prediction(
@@ -728,7 +729,12 @@ class SketchyDiagnostics(PoreLogger):
     def compute_breakpoint(feature_data: pandas.DataFrame, stable: int = None):
 
         top_predictions = feature_data[feature_data['feature_rank'] == 0]
+
+        print(top_predictions)
+
         reverse_stability = top_predictions.stability.values[::-1]
+
+        print(reverse_stability)
 
         last_stable_block_index = 0
         for stable in reverse_stability:
