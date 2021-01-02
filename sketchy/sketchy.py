@@ -676,18 +676,22 @@ class SketchyDiagnostics(PoreLogger):
 
         sssh = self.read_sssh(sssh_file)
 
+        data = {}
         for (i, (feature, feature_data)) in enumerate(sssh.groupby('feature')):  # each distinct feature is processed
 
             stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, stable=stable)
 
-            print(i, feature, stable_breakpoint)
-            print(feature_data)
-
-            feature_prediction, feature_values = self.get_feature_prediction(
+            feature_prediction, feature_values, preference_score = self.get_feature_prediction(
                 feature_data, mode=mode, max_ranks=max_ranks
             )
 
-            print(feature_prediction, feature_values)
+            data[feature] = {
+                'stability': stable_breakpoint,
+                'prediction': feature_prediction,
+                'preference': preference_score
+            }
+
+            print(feature, stable_breakpoint, feature_prediction, feature_values, preference_score)
 
             feature_data.to_csv(self.outdir / f"{feature}.tsv", sep="\t", index=False, header=True)
 
@@ -706,13 +710,19 @@ class SketchyDiagnostics(PoreLogger):
             feature_prediction = sorted_values.iloc[0, :].name
             feature_values = sorted_values[:max_ranks].index.tolist()
 
+            preference_score = float(
+                feature_data['score'].median()
+            )
+
         else:
             last_prediction = feature_data[feature_data["read"] == feature_data["read"].max()]
 
             feature_prediction = last_prediction.iloc[0, :].feature_value  # last top ranked feature value
             feature_values = last_prediction[:max_ranks].feature_value.tolist()  # all
 
-        return feature_prediction, feature_values
+            preference_score = last_prediction.iloc[0, :].preference_score
+
+        return feature_prediction, feature_values, preference_score
 
     @staticmethod
     def compute_breakpoint(feature_data: pandas.DataFrame, stable: int = None):
