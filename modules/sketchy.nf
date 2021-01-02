@@ -13,9 +13,13 @@ process SketchyStream {
 
     output:
     file("${id}.tsv")
+    
+    script:
+
+    _read_limit = 4*read_limit
 
     """
-    sketchy stream --fastx $fx --db $db --reads $read_limit --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh.tsv
+    head -$_read_limit | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh.tsv
     cat  ${id}.sssh.tsv | sketchy predict --db $db --limit $params.limit > predict.tsv
     tail -$params.limit predict.tsv > ${id}.tsv
     """
