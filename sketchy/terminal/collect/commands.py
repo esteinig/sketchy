@@ -57,7 +57,7 @@ def collect(
                             continue
 
                         result_data.append(df)
-
+                    print(result_data)
                     results = pandas.concat(result_data)
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
                     read_limit_data.append(results)
