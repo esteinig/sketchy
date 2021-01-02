@@ -34,13 +34,14 @@ def collect(
                     result_data = []
                     for file in result_files:
                         try:
-                            result_data.append(
-                                pandas.read_csv(file, sep="\t", header=None)
-                            )
+                           df = pandas.read_csv(file, sep="\t", header=None)
+                           print(df)
                         except pandas.errors.EmptyDataError:
                             # This can happen to 'screen' if very few reads are used
                             print(f"Could not read results from: {file} - skipping ...")
                             continue
+
+                        result_data.append(df)
 
                     results = pandas.concat(result_data)
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
