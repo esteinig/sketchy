@@ -670,7 +670,7 @@ class SketchyDiagnostics(PoreLogger):
 
         pass
 
-    def process_sssh(self, sssh_file: Path, stable: int = None, mode: str = "last", max_ranks: int = 5):
+    def process_sssh(self, sssh_file: Path, stable: int = 100, mode: str = "last", max_ranks: int = 5):
 
         """ Process the raw output of the predict subcommand """
 
