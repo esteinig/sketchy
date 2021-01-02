@@ -679,7 +679,7 @@ class SketchyDiagnostics(PoreLogger):
         data = {}
         for (i, (feature, feature_data)) in enumerate(sssh.groupby('feature')):  # each distinct feature is processed
 
-            stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, stable=stable)
+            stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, break_point=stable)
 
             feature_prediction, feature_values, preference_score = self.get_feature_prediction(
                 feature_data, mode=mode, max_ranks=max_ranks
@@ -726,7 +726,7 @@ class SketchyDiagnostics(PoreLogger):
         return feature_prediction, feature_values, preference_score
 
     @staticmethod
-    def compute_breakpoint(feature_data: pandas.DataFrame, stable: int = None):
+    def compute_breakpoint(feature_data: pandas.DataFrame, break_point: int = None):
 
         top_predictions = feature_data[feature_data['feature_rank'] == 0]
 
@@ -746,8 +746,8 @@ class SketchyDiagnostics(PoreLogger):
         # total reads - block length
         stable_point = len(reverse_stability) - last_stable_block_index+1
 
-        if stable:
-            read_index = stable_point - stable
+        if break_point:
+            read_index = stable_point - break_point
             # Conditions: break point validations
             if last_stable_block_index == 0:  # none detected
                 read_index = -1
