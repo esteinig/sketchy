@@ -10,14 +10,14 @@ Real-time lineage hashing and genotyping of bacterial pathogens from uncorrected
 
 **`v0.5.0: preprint`**
 
-`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming implementation of `mash dist` (the sum of shared hashes) for real-time analysis. It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
+`Sketchy` is a lineage calling and genotyping platform based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy` wraps `mash screen` for completed sequence runs and a streaming implementation of `mash dist` for real-time analysis (the sum of shared hashes). It queries species-wide, lineage-resolved reference sketches of bacterial whole genome assemblies and infers their associated genotypes based on the closest reference matches, including multi-locus sequence types, susceptibility profiles, virulence factors or species-specific markers. Precomputed genotype features and automated updates of species databases can be found in the corresponding pathogen reference sections. 
 
 Species we have validated using ONT sequence reads with matching Illumina data:
 
 * [*Staphylococcus aureus*](docs/saureus.md) (n = 142)
 * [*Klebsiella pneumoniae*](docs/kpneumo.md) (n = 120)
 
-Sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
+Automated sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
 
 Please see our preprint for guidance on the limitations of `Sketchy`.
 
