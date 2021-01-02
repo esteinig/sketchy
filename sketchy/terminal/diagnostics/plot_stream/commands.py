@@ -17,7 +17,7 @@ from sketchy.sketchy import SketchyDiagnostics
     '-st',
     type=int,
     required=False,
-    default=None,
+    default=100,
     help='Stability parameter passed to: sketchy stream to compute stable breakpoint for each feature [none]'
 )
 @click.option(
