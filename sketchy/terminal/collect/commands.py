@@ -9,15 +9,20 @@ from pathlib import Path
     '--directory', '-d', required=True, type=Path, help='Path to output directory from Nextflow'
 )
 @click.option(
-    '--workflow', '-w', required=False, type=str, default="comparison", help='Nextflow subworkflow, one of: sketchy'
+    '--workflow', '-w', required=False, type=str, default="comparison", help='Nextflow subworkflow, one of: comparison'
+)
+@click.option(
+    '--outdir', '-o', required=False, type=Path, default="nxf-results", help='Nextflow summary output directory'
 )
 def collect(
-    directory, workflow
+    directory, workflow, outdir
 ):
 
     """ Collect predictions and summarize results from Nextflow """
 
     if workflow == "comparison":
+
+        outdir.mkdir(parents=True, exist_ok=True)
 
         comparison_data = {}
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
@@ -71,6 +76,5 @@ def collect(
             comparison_data[path.name] = dbs
 
         for k, v in comparison_data.items():
-            print(k)
-            print(v)
+            v.to_csv(f"{outdir / k}.tsv", sep="\t", index=True, header=True)
 
