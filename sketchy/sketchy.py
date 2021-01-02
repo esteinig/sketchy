@@ -649,6 +649,112 @@ class Evaluation(PoreLogger):
         return df, feature_name
 
 
+class SketchyDiagnostics(PoreLogger):
+
+    def __init__(
+        self,
+        verbose: bool = True
+    ):
+
+        PoreLogger.__init__(
+            self, level=logging.INFO if verbose else logging.ERROR
+        )
+
+    def plot_heatmap(self):
+
+        """ Main access function for comparative feature heatmaps"""
+        pass
+
+    def process_sssh(self, sssh_file: Path, stable: int = None, mode: str = "last"):
+
+        """ Process the raw output of the predict subcommand """
+
+        sssh = self.read_sssh(sssh_file)
+
+        for (i, (feature, feature_data)) in enumerate(sssh.groupby('feature')):  # each distinct feature is processed
+
+            print(i, feature)
+            print(feature_data)
+
+            stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, stable=stable)
+
+    @staticmethod
+    def get_top_feature_data(
+        feature_data: pandas.DataFrame, mode: str = "last", max_feature_values: int = 5
+    ):
+
+        """ Gets the """
+
+        if mode == "total":
+            sorted_values = feature_data.groupby('feature_value') \
+                .sum().sort_values(by='sssh', ascending=False)
+
+            feature_prediction = sorted_values.iloc[0, :].name
+            feature_values = sorted_values[:max_feature_values].index.tolist()
+
+        else:
+            last_prediction = feature_data[feature_data["read"] == feature_data["read"].max()]
+
+            feature_prediction = last_prediction.iloc[0, :].feature_value  # last top ranked feature value
+            feature_values = last_prediction[:max_feature_values].feature_value.tolist()  # all
+
+        return feature_prediction, feature_values
+
+
+    @staticmethod
+    def compute_breakpoint(feature_data: pandas.DataFrame, stable: int = None):
+
+        top_predictions = feature_data[feature_data['feature_rank'] == 0]
+        reverse_stability = top_predictions.stability.values[::-1]
+
+        last_stable_block_index = 0
+        for stable in reverse_stability:
+            if stable == 0:
+                break
+            else:
+                last_stable_block_index += 1
+
+        # total reads - block length
+        stable_point = len(reverse_stability) - last_stable_block_index+1
+
+        if stable:
+            read_index = stable_point - stable
+            # Conditions: break point validations
+            if last_stable_block_index == 0:  # none detected
+                read_index = -1
+        else:
+            read_index = -1
+
+        return read_index
+
+    @staticmethod
+    def read_sssh(file: Path):
+        return pandas.read_csv(
+            file,
+            sep='\t',
+            header=None,
+            index_col=False,  # reads as first column rather than index
+            names=[
+                'read',
+                'feature',
+                'feature_value',
+                'feature_rank',
+                'sssh',
+                'stability',         # stability breakpoint ...
+                'preference_score',  # ... and preference score are for the top prediction
+            ],
+            dtype={
+                'read': int,
+                'feature': str,
+                'feature_value': str,
+                'feature_rank': int,
+                'sssh': int,
+                'stability': int,
+                'preference_score': float
+            }
+        )
+
+
 class SketchyDatabase(PoreLogger):
 
     def __init__(
@@ -811,7 +917,6 @@ class SketchyDatabase(PoreLogger):
                 self.logger.error(f"Database file does not exist: {f}")
 
         return sketch_file, genotype_file, genotype_index, genotype_key
-
 
     def get_sketch_info(self) -> pandas.DataFrame:
 
