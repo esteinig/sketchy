@@ -37,6 +37,7 @@ def collect(
 
                     result_data = []
                     for file in result_files:
+                        print(file)
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
