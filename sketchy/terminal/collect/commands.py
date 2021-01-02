@@ -21,25 +21,33 @@ def collect(
 
         comparison_data = []
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
-            read_limit_paths = path.glob("*/")
+            database_paths = path.glob("*/")
 
-            read_limit_data = []
-            for read_limit_path in read_limit_paths:
-                result_files = read_limit_path.glob("*.tsv")
-                print(read_limit_path, result_files)
-                result_data = []
-                for file in result_files:
-                    result_data.append(
-                        pandas.read_csv(file, sep="\t")
-                    )
-                results = pandas.concat(result_data)
-                results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
-                read_limit_data.append(results)
+            database_data = []
+            for db_path in database_paths:
+                read_limit_paths = db_path.glob("*/")
 
-            read_limits = pandas.concat(read_limit_data)
-            read_limits['mode'] = [path.name for _ in read_limits.iterrows()]
-            comparison_data.append(read_limits)
+                read_limit_data = []
+                for read_limit_path in read_limit_paths:
+                    result_files = read_limit_path.glob("*.tsv")
 
-        comparison = pandas.concat(read_limits)
+                    result_data = []
+                    for file in result_files:
+                        result_data.append(
+                            pandas.read_csv(file, sep="\t")
+                        )
+                    results = pandas.concat(result_data)
+                    results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
+                    read_limit_data.append(results)
+
+                read_limits = pandas.concat(read_limit_data)
+                read_limits['db'] = [db_path.name for _ in read_limits.iterrows()]
+                database_data.append(read_limits)
+
+            dbs = pandas.concat(database_data)
+            dbs['mode'] = [path.name for _ in dbs.iterrows()]
+            comparison_data.append(dbs)
+
+        comparison = pandas.concat(comparison_data)
 
         print(comparison)
