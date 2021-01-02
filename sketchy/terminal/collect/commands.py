@@ -37,7 +37,7 @@ def collect(
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
-
+                            print(df)
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
