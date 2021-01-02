@@ -8,7 +8,7 @@ from pathlib import Path
     '--directory', '-d', required=True, type=Path, help='Path to output directory from Nextflow'
 )
 @click.option(
-    '--workflow', '-w', required=False, is_flag=True, help='Nextflow subworkflow, one of: sketchy'
+    '--workflow', '-w', required=False, type=str, default="comparison", help='Nextflow subworkflow, one of: sketchy'
 )
 def collect(
     directory, workflow
