@@ -41,9 +41,9 @@ def collect(
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header.head(1).tolist()
                             elif path.name == "dist":
-                                df.columns = ["rank", "distance", "shared_hashes"] + db_header.head(1).tolist() + ["id"]
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header.iloc[0].tolist() + ["id"]
                             elif path.name == "screen":
-                                df.columns = ["rank", "identity", "shared_hashes"] + db_header.head(1).tolist() + ["id"]
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header.iloc[0].tolist() + ["id"]
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
