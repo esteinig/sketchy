@@ -363,7 +363,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
         
         // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
         if raw {
-            println!("{} {} {} {} {} {} {}", read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+            println!("{}\t{}\t{}\t{}\t{}\t{}\t{}", read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
         } else {
             // Add this to enable genotype reconstruction for each read
             read_prediction.entry(feature_key)
