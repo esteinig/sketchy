@@ -61,7 +61,7 @@ params.outdir = "nxf-sketchy"
 
 params.fastq = "*.fq"
 params.db = ""                               // must be actual path
-params.reads = "10,50,100,200,500,1000"
+params.reads = "20,50,100,200,500,1000"
 
 params.limit = 1                             // output best prediction
 params.ranks = 10
