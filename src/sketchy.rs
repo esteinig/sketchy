@@ -330,10 +330,10 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
             let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
             
             // iterate over genotype ranks ...
-            for rank in 0..*_max_genotype_ranks {
+            for rank in 0..=*_max_genotype_ranks {
 
                 let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
-                for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
+                for i in 0..=*_max_genotype_categories {  // ... iterate over genotype categories ...
                     let category = &read_prediction[&i];
                     let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
                         Some(value) => value,
@@ -345,7 +345,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
                 println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
                 
-                if rank+1 >= limit {
+                if rank >= limit {
                     break
                 }
             }
@@ -386,10 +386,10 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
         let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
 
         // iterate over genotype ranks ...
-        for rank in 0..*_max_genotype_ranks {
+        for rank in 0..=*_max_genotype_ranks {
 
             let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
-            for i in 0..*_max_genotype_categories {  // ... iterate over genotype categories ...
+            for i in 0..=*_max_genotype_categories {  // ... iterate over genotype categories ...
                 let category = &read_prediction[&i];
                 let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
                     Some(value) => value,
@@ -401,7 +401,7 @@ pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Erro
 
             println!("{}\t{}", read+1, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
             
-            if rank+1 >= limit {
+            if rank >= limit {
                 break
             }
         }
