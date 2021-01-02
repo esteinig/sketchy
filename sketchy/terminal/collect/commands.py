@@ -29,6 +29,8 @@ def collect(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
 
+                print(db_header)
+
                 read_limit_paths = db_path.glob("*/")
 
                 read_limit_data = []
@@ -40,7 +42,7 @@ def collect(
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
-
+                            print(df)
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
