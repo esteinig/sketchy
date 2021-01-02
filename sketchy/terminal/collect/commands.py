@@ -22,14 +22,12 @@ def collect(
         comparison_data = {}
         for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
             database_paths = path.glob("*/")
-
+            print(path.name)
             database_data = []
             for db_path in database_paths:
                 db_header = pandas.read_csv(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
-
-                print(db_header)
 
                 read_limit_paths = db_path.glob("*/")
 
@@ -42,7 +40,7 @@ def collect(
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
-                            print(df)
+
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
