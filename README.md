@@ -140,11 +140,13 @@ From stream:
  head -400 test.fq | sketchy stream -d saureus > sssh.tsv
  ```
  
- From file stopping at `--reads`:
+ From `--fastx` stopping after 100 `--reads`:
  
   ```bash
-sketchy stream -f test.fq --reads 100 -d saureus > sssh.tsv
+sketchy stream -f test.fq -r 100 -d saureus > sssh.tsv
  ```
+ 
+Note that using the `--fastx` option, all sequence reads are loaded into memory first. If memory is limited, the execution will fail with an `IndexError`. For this reason, the streaming input `-` is preferred.
  
 `Predict` then uses the ranked scores at each read to infer the genotype profiles:
 
