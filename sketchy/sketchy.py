@@ -317,7 +317,7 @@ class SketchyDiagnostics(PoreLogger):
         color: str = 'YlGnBu'
     ):
 
-        top_values = ssh_features[feature_name].value_count()[:max_ranks].index.tolist()
+        top_values = ssh_features[feature_name].value_counts()[:max_ranks].index.tolist()
 
         palette = sns.color_palette(
             color, max_ranks
