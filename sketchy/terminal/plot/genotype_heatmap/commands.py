@@ -28,7 +28,7 @@ from sketchy.sketchy import SketchyDiagnostics
 )
 def genotype_heatmap(plot, palette, mpl_backend):
 
-    """ Diagnostic plots for output from stream client """
+    """ Comparative visualization of genotype predictions from Nextflow """
 
     pass
 #
