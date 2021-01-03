@@ -7,6 +7,27 @@ from sketchy.sketchy import SketchyDiagnostics
 
 @click.command()
 @click.option(
+    '--data',
+    '-d',
+    type=Path,
+    required=True,
+    help='Path to data file from sub-workflow collection [required]',
+)
+@click.option(
+    '--outdir',
+    '-o',
+    type=Path,
+    default=Path("nfx-heatmaps"),
+    help='Output directory for plots [nfx-heatmaps]'
+)
+@click.option(
+    '--plot',
+    '-p',
+    type=Path,
+    default=Path("diagnostics.png"),
+    help='Plot file, extension specifies format [diagnostics.png]'
+)
+@click.option(
     '--color',
     '-c',
     type=str,
@@ -14,11 +35,24 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Color palette for output plots [YlGnBu]'
 )
 @click.option(
-    '--plot',
-    '-p',
-    type=Path,
-    default='sketchy',
-    help='Output plot file; format is inferred from extension [sketchy.png]'
+    '--subset_column',
+    '-sc',
+    type=str,
+    default=None,
+    help='Column name to subset data [none]'
+)
+@click.option(
+    '--subset_values',
+    '-sv',
+    type=str,
+    default='None',
+    help='Comma delimited string of values in subset column to select [none]'
+)
+@click.option(
+    '--verbose',
+    '-v',
+    is_flag=True,
+    help='Verbose logging output [false]'
 )
 @click.option(
     '--mpl_backend',
@@ -26,9 +60,13 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def genotype_heatmap(plot, palette, mpl_backend):
+def genotype_heatmap(data, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
 
-    """ Visualization of genotype predictions from Nextflow """
+    """ Comparison of genotype predictions from Nextflow """
+
+    sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
+
+
 
     pass
 #

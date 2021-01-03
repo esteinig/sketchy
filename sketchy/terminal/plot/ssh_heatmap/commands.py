@@ -27,7 +27,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Output directory for diagnostic files and plots [diagnostics]'
 )
 @click.option(
-    '--plot_file',
+    '--plot',
     '-p',
     type=Path,
     default=Path("ssh.png"),
@@ -59,12 +59,12 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def ssh_heatmap(db, ssh, plot_file, max_ranks, color, outdir, mpl_backend, verbose):
+def ssh_heatmap(db, ssh, plot, max_ranks, color, outdir, mpl_backend, verbose):
 
     """ Diagnostic heatmap for ranked sum of shared hashes """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
-    sd.plot_ssh_diagnostics(db=db, ssh_file=ssh, plot_file=plot_file, max_ranks=max_ranks, color=color)
+    sd.plot_ssh_diagnostics(db=db, ssh_file=ssh, plot_file=plot, max_ranks=max_ranks, color=color)
 
 
 

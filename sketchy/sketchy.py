@@ -42,11 +42,32 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-    def plot_genotype_heatmap(self):
+    def plot_genotype_heatmap(self, data, subset_column, subset_values):
 
         """ Main access function for comparative feature heatmaps"""
 
-        pass
+        nxf = pandas.read_csv(data, sep="\t", index_col=0, header=0)
+
+        if subset_column:
+            sv = [_.strip() for _ in subset_values.split(',')]
+            nxf = nxf[nxf[subset_column].isin(sv)]
+
+        mode = nxf.mode.unique()[0]  # get the analysis mode from the results
+
+        if mode == "stream":
+            nxf = nxf.drop(columns="read")  # drop unused read column
+        elif mode == "dist":
+            nxf = nxf.drop(columns=("rank", "distance", "shared_hashes"))  # drop unused read column
+        elif mode == "screen":
+            nxf = nxf.drop(columns=("rank", "identity", "shared_hashes"))  # drop unused read column
+        else:
+            raise ValueError(f"Unsupported mode: {mode}")
+
+        for db, db_data in nxf.groupby('db'):
+            self.logger.info(f"Processing database: {db}")
+            for read_limit, read_limit_data in db_data.groupby('read_limit'):
+                print(read_limit_data)
+
 
     def plot_sssh_diagostics(
         self, sssh_data: dict, plot_file: Path, plot_breakpoint: bool = False, color: str = "YlGnBu"
