@@ -62,7 +62,7 @@ from sketchy.sketchy import SketchyDiagnostics
 )
 def sssh_diagnostics(sssh, plot_file, stable, max_ranks, color, outdir, mpl_backend, verbose):
 
-    """ Diagnostic plots for sum of ranked sums of shared hashes from stream client """
+    """ Sum of ranked sums of shared hashes diagnostics (main) """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 

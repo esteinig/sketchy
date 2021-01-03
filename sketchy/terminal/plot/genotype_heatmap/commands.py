@@ -28,7 +28,7 @@ from sketchy.sketchy import SketchyDiagnostics
 )
 def genotype_heatmap(plot, palette, mpl_backend):
 
-    """ Comparative visualization of genotype predictions from Nextflow """
+    """ Visualization of genotype predictions from Nextflow """
 
     pass
 #
