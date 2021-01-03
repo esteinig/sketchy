@@ -23,7 +23,7 @@ from sketchy.sketchy import SketchyDiagnostics
     '--plot_file',
     '-p',
     type=Path,
-    default=Path("diagnostics.png"),
+    default=Path("ssh.png"),
     help='Plot file, extension specifies format [diagnostics.png]'
 )
 @click.option(
