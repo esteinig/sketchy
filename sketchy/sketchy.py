@@ -108,17 +108,15 @@ class SketchyDiagnostics(PoreLogger):
         reads = len(ssh_features['read'].unique())
         ranks = len(ssh_features['rank'].unique())
 
-        number_plots = len(genotypes.columns)
+        features = [_ for _ in genotypes.columns.tolist() if _ != 'idx']
 
         fig, ax = plt.subplots(
-            nrows=number_plots, ncols=1, figsize=(
-                1 * 7, number_plots * 4.5
+            nrows=len(features), ncols=1, figsize=(
+                1 * 7, len(features) * 4.5
             )
         )
 
         fig.subplots_adjust(hspace=0.8)
-
-        features = [_ for _ in genotypes.columns.tolist() if _ != 'idx']
 
         for (i, feature_name) in enumerate(features):
             self.plot_ssh(
@@ -318,6 +316,9 @@ class SketchyDiagnostics(PoreLogger):
         ax: plt.axes = None,
         color: str = 'YlGnBu'
     ):
+
+        if not color.endswith("_r"):
+            color += "_r"
 
         top_values = ssh_features[feature_name].value_counts()[:max_ranks].index.tolist()
 
