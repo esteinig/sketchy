@@ -3,11 +3,12 @@ import click
 from .create import create
 from .inspect import inspect
 
+
 @click.group()
-def db():
+def database():
     """ Reference database construction and inspection """
     pass
 
 
-db.add_command(create)
-db.add_command(inspect)
+database.add_command(create)
+database.add_command(inspect)

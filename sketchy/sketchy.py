@@ -203,7 +203,7 @@ class Evaluation(PoreLogger):
         self.features = self.feature_index.columns.tolist()
 
         if self.ssh is not None:
-            # Merge ssh and fature index for heatmap
+            # Merge ssh and feature index for heatmap
             self.ssh_features = self.ssh \
                 .join(self.feature_data, how='inner') \
                 .sort_values(['read', 'rank'])
@@ -654,11 +654,16 @@ class SketchyDiagnostics(PoreLogger):
     def __init__(
         self,
         outdir: Path = Path("sketchy_diagnostics"),
+        mpl_backend: str = None,
         verbose: bool = True
     ):
 
+
         self.outdir = outdir
         self.outdir.mkdir(parents=True, exist_ok=True)
+
+        if mpl_backend:
+            plt.switch_backend(mpl_backend)
 
         PoreLogger.__init__(
             self, level=logging.INFO if verbose else logging.ERROR
@@ -668,15 +673,125 @@ class SketchyDiagnostics(PoreLogger):
 
         """ Main access function for comparative feature heatmaps"""
 
-        pass
 
-    def process_sssh(self, sssh_file: Path, stable: int = 100, mode: str = "last", max_ranks: int = 5):
+    def plot_diagostics(self, sssh_data: dict, plot_file: Path, plot_breakpoint: bool = False, color: str = "YlGnBu"):
+
+        # Something odd with colors, need reverse palettes:
+        if not color.endswith('_r'):
+            color += '_r'
+
+        number_features = len(sssh_data)
+        number_plots = 2
+
+        fig, axes = plt.subplots(
+            nrows=number_features, ncols=number_plots, figsize=(
+                number_plots * 7, number_features * 4.5
+            )
+        )
+
+        if axes.ndim == 1:
+            axes = reshape(
+                axes, (-1, 2)
+            )
+
+        fig.subplots_adjust(hspace=0.8)
+
+        for (i, (feature, data)) in enumerate(sssh_data.items()):
+
+            feature_data = data["feature_data"]
+
+            self.plot_sssh(
+                feature_name=feature,
+                feature_data=feature_data,
+                top_feature_values=data['feature_values'],
+                stability_breakpoint=data['stable_breakpoint'],
+                color=color,
+                plot_breakpoint=plot_breakpoint,
+                ax=axes[i, 0]
+            )
+
+            self.plot_preference_score(
+                feature_data=feature_data[feature_data['feature_rank'] == 0].reset_index(),
+                ax=axes[i, 1]
+            )
+
+        plt.tight_layout()
+        fig.savefig(plot_file)
+
+    def plot_preference_score(
+        self,
+        feature_data: pandas.DataFrame,
+        threshold: float = 0.6,
+        ax: plt.axes = None
+    ) -> None:
+
+        p3 = sns.lineplot(
+            data=feature_data, x='read', y='preference_score',
+            ax=ax, color='#333333', ci=None, estimator=None
+        )
+
+        ax.axhline(
+            y=threshold, linewidth=1, linestyle='--', color='black'
+        )
+
+        # Legend and labels
+        p3.tick_params(labelsize=6)
+        p3.set_xlabel('\nReads', fontsize=9)
+        p3.set_ylabel('Preference score\n', fontsize=9)
+
+    def plot_sssh(
+        self,
+        feature_name: str,
+        feature_data: pandas.DataFrame,
+        top_feature_values: list,
+        stability_breakpoint: int = None,
+        ax: plt.axes = None,
+        color: str = 'YlGnBu',
+        max_ranks: int = 5,
+        plot_breakpoint: bool = False,
+    ) -> None:
+
+        feature_data = feature_data.loc[
+            feature_data['feature_value'].isin(top_feature_values), :
+        ]
+
+        feature_data = feature_data.assign(
+            feature_value=feature_data['feature_value'].astype(str)
+        )
+
+        feature_values = feature_data.feature_value.unique()
+        palette = sns.color_palette(
+            color, n_colors=max_ranks
+        )[:len(feature_values)]
+
+        p2 = sns.lineplot(
+            data=feature_data, x='read', y='sssh', hue='feature_value',
+            ax=ax, ci=None, estimator=None, palette=palette,
+            hue_order=[str(v) for v in top_feature_values]
+        )
+
+        if stability_breakpoint is not None and plot_breakpoint:
+            ax.axvline(
+                x=stability_breakpoint, linewidth=1, linestyle='-', color='black'
+            )
+
+        legend = ax.legend()
+        legend.texts[0].set_text(feature_name)
+
+        # Legend and labels
+        p2.tick_params(labelsize=6)
+        p2.set_xlabel('\nReads', fontsize=9)
+        p2.set_ylabel('Sum of ranked sum of shared hashes\n', fontsize=9)
+
+    def process_sssh(
+        self, sssh_file: Path, stable: int = 100, mode: str = "last", max_ranks: int = 5
+    ) -> dict:
 
         """ Process the raw output of the predict subcommand """
 
         sssh = self.read_sssh(sssh_file)
 
-        data = {}
+        sssh_data = {}
         for (i, (feature, feature_data)) in enumerate(sssh.groupby('feature')):  # each distinct feature is processed
 
             stable_breakpoint = self.compute_breakpoint(feature_data=feature_data, break_point=stable)
@@ -685,17 +800,18 @@ class SketchyDiagnostics(PoreLogger):
                 feature_data, mode=mode, max_ranks=max_ranks
             )
 
-            data[feature] = {
-                'stability': stable_breakpoint,
-                'prediction': feature_prediction,
-                'preference': preference_score
+            sssh_data[feature] = {
+                'stable_breakpoint': stable_breakpoint,
+                'feature_prediction': feature_prediction,
+                'preference_score': preference_score,
+                'feature_values': feature_values,
+                'feature_data': feature_data,
+                'max_ranks': max_ranks
             }
-
-            print(feature, stable_breakpoint, feature_prediction, feature_values, preference_score)
 
             feature_data.to_csv(self.outdir / f"{feature}.tsv", sep="\t", index=False, header=True)
 
-            break
+        return sssh_data
 
     @staticmethod
     def get_feature_prediction(
@@ -729,12 +845,7 @@ class SketchyDiagnostics(PoreLogger):
     def compute_breakpoint(feature_data: pandas.DataFrame, break_point: int = None):
 
         top_predictions = feature_data[feature_data['feature_rank'] == 0]
-
-        print(top_predictions)
-
         reverse_stability = top_predictions.stability.values[::-1]
-
-        print(reverse_stability)
 
         last_stable_block_index = 0
         for stable in reverse_stability:
