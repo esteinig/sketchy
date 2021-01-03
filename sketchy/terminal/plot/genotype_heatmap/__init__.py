@@ -1,1 +1,1 @@
-from .commands import evaluation_heatmap
+from .commands import genotype_heatmap

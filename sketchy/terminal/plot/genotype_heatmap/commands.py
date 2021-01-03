@@ -26,7 +26,7 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def evaluation_heatmap(plot, palette, mpl_backend):
+def genotype_heatmap(plot, palette, mpl_backend):
 
     """ Diagnostic plots for output from stream client """
 
