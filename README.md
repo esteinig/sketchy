@@ -133,7 +133,7 @@ Because streaming is slower than screening for completed sequence runs, I tend t
 
 Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches (> 30,000 genomes) and tens of thousands of reads, total runtime can be excruciating. However, generally not that many reads are required to make predictions (see preprint). Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and ranked sum of sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
+The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and  sum of ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
 From stream:
 
