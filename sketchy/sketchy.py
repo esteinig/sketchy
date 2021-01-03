@@ -103,7 +103,8 @@ class SketchyDiagnostics(PoreLogger):
 
         ssh_features = ssh \
             .join(genotypes, how='inner') \
-            .sort_values(['read', 'rank'])
+            .sort_values(['read', 'rank']) \
+            .drop(columns='idx')
 
         reads = len(ssh_features['read'].unique())
         ranks = len(ssh_features['rank'].unique())
@@ -118,6 +119,7 @@ class SketchyDiagnostics(PoreLogger):
 
         fig.subplots_adjust(hspace=0.8)
 
+        print(genotypes.columns.tolist())
         for (i, feature_name) in enumerate(genotypes.columns.tolist()):
             print(feature_name)
             self.plot_ssh(
