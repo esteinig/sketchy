@@ -52,7 +52,7 @@ class SketchyDiagnostics(PoreLogger):
             sv = [_.strip() for _ in subset_values.split(',')]
             nxf = nxf[nxf[subset_column].isin(sv)]
 
-        mode = nxf.mode.unique()[0]  # get the analysis mode from the results
+        mode = nxf['mode'].unique()[0]  # get the analysis mode from the results
 
         if mode == "stream":
             nxf = nxf.drop(columns="read")  # drop unused read column
