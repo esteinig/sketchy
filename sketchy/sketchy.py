@@ -750,6 +750,9 @@ class SketchyDiagnostics(PoreLogger):
         plot_breakpoint: bool = False,
     ) -> None:
 
+        print(feature_data)
+        print(top_feature_values)
+
         feature_data = feature_data.loc[
             feature_data['feature_value'].isin(top_feature_values), :
         ]
