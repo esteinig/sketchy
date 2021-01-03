@@ -110,9 +110,7 @@ class SketchyDiagnostics(PoreLogger):
 
         number_plots = len(genotypes.columns)
 
-        print(genotypes.columns, number_plots)
-        
-        fig, axes = plt.subplots(
+        fig, ax = plt.subplots(
             nrows=number_plots, ncols=1, figsize=(
                 1 * 7, number_plots * 4.5
             )
@@ -128,7 +126,7 @@ class SketchyDiagnostics(PoreLogger):
                 reads=reads,
                 ranks=ranks,
                 color=color,
-                ax=axes[i, 0]
+                ax=ax[i]
             )
 
         plt.tight_layout()
