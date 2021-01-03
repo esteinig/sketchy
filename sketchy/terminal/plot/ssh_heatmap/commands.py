@@ -6,11 +6,18 @@ from sketchy.sketchy import SketchyDiagnostics
 
 @click.command()
 @click.option(
-    '--sssh',
+    '--db',
+    '-d',
+    type=Path,
+    required=True,
+    help='Path to database directory used in the run; full path required [required]',
+)
+@click.option(
+    '--ssh',
     '-s',
     type=Path,
     required=True,
-    help='Path to sum of ranked sums shared hashes data file from evaluation',
+    help='Path to raw sums of shared hashes data file from stream [required]',
 )
 @click.option(
     '--outdir',
@@ -27,13 +34,6 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Plot file, extension specifies format [diagnostics.png]'
 )
 @click.option(
-    '--stable',
-    '-b',
-    type=int,
-    default=100,
-    help='Stability parameter passed to: sketchy stream to compute stable breakpoint for each feature [none]'
-)
-@click.option(
     '--color',
     '-c',
     type=str,
@@ -45,8 +45,7 @@ from sketchy.sketchy import SketchyDiagnostics
     '-m',
     type=int,
     default=5,
-    help='In the plots, number of feature values / prediction ranks; reduces cluttering '
-         'if many alternatives genotypes called [5]'
+    help='Number shared hashes ranks to color; others are grayed out [5]'
 )
 @click.option(
     '--verbose',
@@ -60,11 +59,12 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def diagnostics(sssh, plot_file, stable, max_ranks, color, outdir, mpl_backend, verbose):
+def ssh_heatmap(db, ssh, plot_file, max_ranks, color, outdir, mpl_backend, verbose):
 
-    """ Diagnostic plots for output from stream client """
+    """ Diagnostic heatmap for ranked sum of shared hashes """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
+    sd.plot_ssh_diagnostics(db=db, ssh_file=ssh, plot_file=plot_file, max_ranks=max_ranks, color=color)
 
-    sssh_data = sd.process_sssh(sssh_file=sssh, stable=stable, max_ranks=max_ranks, mode="last")
-    sd.plot_diagostics(sssh_data=sssh_data, plot_file=plot_file, color=color)
+
+
