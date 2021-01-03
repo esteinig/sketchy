@@ -119,7 +119,7 @@ class SketchyDiagnostics(PoreLogger):
         fig.subplots_adjust(hspace=0.8)
 
         features = [_ for _ in genotypes.columns.tolist() if _ != 'idx']
-        
+
         for (i, feature_name) in enumerate(features):
             self.plot_ssh(
                 ssh_features=ssh_features,
