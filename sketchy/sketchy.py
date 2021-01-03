@@ -118,7 +118,8 @@ class SketchyDiagnostics(PoreLogger):
 
         fig.subplots_adjust(hspace=0.8)
 
-        for (i, feature_name) in enumerate(genotypes.columns):
+        for (i, feature_name) in enumerate(genotypes.columns.names):
+            print(feature_name)
             self.plot_ssh(
                 ssh_features=ssh_features,
                 feature_name=feature_name,
