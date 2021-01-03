@@ -123,6 +123,7 @@ sketchy screen -f test.fastq -d saureus -p
 Please cite the following when using `sketchy screen`:
 
 * Ondov et al. (2019) - `Mash Screen`
+* Brinda et al. (2020) - `Genomic neighbor typing`
 
 ### Streaming function
 
@@ -174,6 +175,7 @@ sketchy-db plot \
 Please cite the following when using `sketchy stream`:
 
 * Ondov et al. (2016) - `Mash`
+* Brinda et al. (2020) - `Genomic neighbor typing`
 
 ### Distance function
 
@@ -186,6 +188,7 @@ sketchy dist -f test.fastq -d saureus -p
 Please cite the following when using `sketchy dist`:
 
 * Ondov et al. (2016) - `Mash`
+* Brinda et al. (2020) - `Genomic neighbor typing`
 
 ### Online streaming analysis
 
