@@ -106,20 +106,15 @@ class SketchyDiagnostics(PoreLogger):
             .sort_values(['read', 'rank'])
 
         reads = len(ssh_features['read'].unique())
-        ranks = len( ssh_features['rank'].unique())
+        ranks = len(ssh_features['rank'].unique())
 
         number_plots = len(genotypes.columns)
 
         fig, axes = plt.subplots(
-            nrows=1, ncols=number_plots, figsize=(
-                number_plots * 7, 4.5
+            nrows=number_plots, ncols=1, figsize=(
+                1 * 7, number_plots * 4.5
             )
         )
-
-        if axes.ndim == 1:
-            axes = reshape(
-                axes, (-1, 2)
-            )
 
         fig.subplots_adjust(hspace=0.8)
 
@@ -351,7 +346,7 @@ class SketchyDiagnostics(PoreLogger):
         p1.set_xticks(xticks)
         p1.set_xticklabels(xticks, rotation='vertical')
 
-        p1.set_xlabel('\nReads', fontsize=9)
+        p1.set_xlabel('\nReads', fontsize=10)
         p1.set_ylabel('Ranked sum of shared hashes\n', fontsize=9)
 
         p1.set_yticks(yticks)
