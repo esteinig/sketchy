@@ -110,6 +110,8 @@ class SketchyDiagnostics(PoreLogger):
 
         number_plots = len(genotypes.columns)
 
+        print(genotypes.columns, number_plots)
+        
         fig, axes = plt.subplots(
             nrows=number_plots, ncols=1, figsize=(
                 1 * 7, number_plots * 4.5
