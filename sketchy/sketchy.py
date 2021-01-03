@@ -716,7 +716,7 @@ class SketchyDiagnostics(PoreLogger):
             )
 
         plt.tight_layout()
-        fig.savefig(plot_file)
+        fig.savefig(f"{self.outdir / plot_file}")
 
     def plot_preference_score(
         self,

@@ -16,8 +16,8 @@ from sketchy.sketchy import SketchyDiagnostics
     '--outdir',
     '-o',
     type=Path,
-    default=Path("sketchy_diagnostics"),
-    help='Output directory for diagnostic files and plots [sketchy_diagnostics]'
+    default=Path("diagnostics"),
+    help='Output directory for diagnostic files and plots [diagnostics]'
 )
 @click.option(
     '--plot_file',
