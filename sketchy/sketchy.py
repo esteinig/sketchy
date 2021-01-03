@@ -734,9 +734,9 @@ class SketchyDiagnostics(PoreLogger):
         )
 
         # Legend and labels
-        p3.tick_params(labelsize=6)
-        p3.set_xlabel('\nReads', fontsize=9)
-        p3.set_ylabel('Preference score\n', fontsize=9)
+        p3.tick_params(labelsize=10)
+        p3.set_xlabel('\nReads', fontsize=12)
+        p3.set_ylabel('Preference score\n', fontsize=12)
 
     def plot_sssh(
         self,
@@ -749,9 +749,6 @@ class SketchyDiagnostics(PoreLogger):
         max_ranks: int = 5,
         plot_breakpoint: bool = False,
     ) -> None:
-
-        print(feature_data)
-        print(top_feature_values)
 
         feature_data = feature_data.loc[
             feature_data['feature_value'].isin(top_feature_values), :
@@ -781,9 +778,9 @@ class SketchyDiagnostics(PoreLogger):
         legend.texts[0].set_text(feature_name)
 
         # Legend and labels
-        p2.tick_params(labelsize=6)
-        p2.set_xlabel('\nReads', fontsize=9)
-        p2.set_ylabel('Sum of ranked sum of shared hashes\n', fontsize=9)
+        p2.tick_params(labelsize=10)
+        p2.set_xlabel('\nReads', fontsize=12)
+        p2.set_ylabel('Sum of ranked sum of shared hashes\n', fontsize=12)
 
     def process_sssh(
         self, sssh_file: Path, stable: int = 100, mode: str = "last", max_ranks: int = 5
