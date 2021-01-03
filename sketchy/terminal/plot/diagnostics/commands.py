@@ -13,6 +13,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Path to sum of ranked sums shared hashes data file from evaluation',
 )
 @click.option(
+    '--outdir',
+    '-o',
+    type=Path,
+    default=Path("sketchy_diagnostics"),
+    help='Output directory for diagnostic files and plots [sketchy_diagnostics]'
+)
+@click.option(
     '--plot_file',
     '-p',
     type=Path,
@@ -53,11 +60,11 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def diagnostics(sssh, plot_file, stable, max_ranks, color, mpl_backend, verbose):
+def diagnostics(sssh, plot_file, stable, max_ranks, color, outdir, mpl_backend, verbose):
 
     """ Diagnostic plots for output from stream client """
 
-    sd = SketchyDiagnostics(verbose=verbose, mpl_backend=mpl_backend)
+    sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
     sssh_data = sd.process_sssh(sssh_file=sssh, stable=stable, max_ranks=max_ranks, mode="last")
     sd.plot_diagostics(sssh_data=sssh_data, plot_file=plot_file, color=color)
