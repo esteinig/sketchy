@@ -66,7 +66,7 @@ def genotype_heatmap(data, outdir, plot, color, subset_column, subset_values, mp
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
-
+    sd.plot_genotype_heatmap(data=data, subset_column=subset_column, subset_values=subset_values)
 
     pass
 #
