@@ -837,9 +837,14 @@ class SketchyDiagnostics(PoreLogger):
             last_prediction = feature_data[feature_data["read"] == feature_data["read"].max()]
 
             feature_prediction = last_prediction.iloc[0, :].feature_value  # last top ranked feature value
-            feature_values = list(set(
-                [feature_prediction] + feature_data["feature_value"].value_counts()[:max_ranks].index.tolist()
-            ))
+
+            _feature_values = [feature_prediction] + \
+                feature_data["feature_value"].value_counts()[:max_ranks].index.tolist()
+
+            feature_values = []  # preserves hue order in diagnostic plots
+            for v in _feature_values:
+                if v not in feature_values:
+                    feature_values.append(v)
 
             preference_score = last_prediction.iloc[0, :].preference_score
 
