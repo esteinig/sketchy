@@ -653,11 +653,10 @@ class SketchyDiagnostics(PoreLogger):
 
     def __init__(
         self,
-        outdir: Path = Path("sketchy_diagnostics"),
+        outdir: Path = Path("diagnostics"),
         mpl_backend: str = None,
         verbose: bool = True
     ):
-
 
         self.outdir = outdir
         self.outdir.mkdir(parents=True, exist_ok=True)
