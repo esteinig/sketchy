@@ -89,12 +89,12 @@ class SketchyDiagnostics(PoreLogger):
 
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
-                        labels=_predictions.sort_index(), palette="Greens_r",
+                        labels=_predictions.sort_index(), palette="Set2_r",
                         title=f"\n{read_limit} Reads\n", ax=axes[i]
                     )
 
                 plt.tight_layout()
-                fig.savefig(f"{self.outdir / db}.png")
+                fig.savefig(f"{self.outdir / f'{mode}.{db}'}.png")
 
 
     def plot_sssh_diagostics(
