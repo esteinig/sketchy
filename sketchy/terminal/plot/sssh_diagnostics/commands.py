@@ -10,7 +10,7 @@ from sketchy.sketchy import SketchyDiagnostics
     '-s',
     type=Path,
     required=True,
-    help='Path to sum of ranked sums shared hashes data file from evaluation',
+    help='Path to raw prediction data from `sketchy predict -w` [required]',
 )
 @click.option(
     '--outdir',
