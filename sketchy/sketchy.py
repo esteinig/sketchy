@@ -345,10 +345,11 @@ class SketchyDiagnostics(PoreLogger):
             feature_value=feature_data['feature_value'].astype(str)
         )
 
-        feature_values = feature_data.feature_value.unique()
+        # feature_values = feature_data.feature_value.unique()
+
         palette = sns.color_palette(
             color, n_colors=max_ranks
-        )[:len(feature_values)]
+        )[:len(top_feature_values)]
 
         p2 = sns.lineplot(
             data=feature_data, x='read', y='sssh', hue='feature_value',
