@@ -78,7 +78,7 @@ class SketchyDiagnostics(PoreLogger):
                     )
                 )
 
-                fig.subplots_adjust(hspace=1.2)
+                fig.subplots_adjust(hspace=2)
 
                 for (i, (read_limit, predictions)) in enumerate(
                     db_data.groupby('read_limit')
