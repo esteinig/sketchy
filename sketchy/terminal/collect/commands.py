@@ -12,10 +12,16 @@ from pathlib import Path
     '--workflow', '-w', required=False, type=str, default="comparison", help='Nextflow subworkflow, one of: comparison'
 )
 @click.option(
+    '--sssh', '-s', is_flag=True, help='Extract also the preference score for each feature at the read limits; required --db'
+)
+@click.option(
+    '--db', '-d', is_flag=True, help='Reference '
+)
+@click.option(
     '--outdir', '-o', required=False, type=Path, default="nxf-results", help='Nextflow summary output directory'
 )
 def collect(
-    directory, workflow, outdir
+    directory, workflow, outdir, sssh
 ):
 
     """ Collect predictions and summarize results from Nextflow """
@@ -41,6 +47,7 @@ def collect(
                     result_files = read_limit_path.glob("*.tsv")
 
                     result_data = []
+
                     for file in result_files:
 
                         try:

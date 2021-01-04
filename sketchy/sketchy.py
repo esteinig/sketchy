@@ -42,31 +42,52 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-    def plot_genotype_heatmap(self, data, subset_column, subset_values):
+    def plot_genotype_heatmap(self, nextflow: Path, subset_column: str, subset_values: str):
 
         """ Main access function for comparative feature heatmaps"""
 
-        nxf = pandas.read_csv(data, sep="\t", index_col=0, header=0)
+        nextflow_files = nextflow.glob(".tsv")
 
-        if subset_column:
-            sv = [_.strip() for _ in subset_values.split(',')]
-            nxf = nxf[nxf[subset_column].isin(sv)]
+        for file in nextflow_files:
+            nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
 
-        mode = nxf['mode'].unique()[0]  # get the analysis mode from the results
+            if subset_column:
+                sv = [_.strip() for _ in subset_values.split(',')]
+                nxf = nxf[nxf[subset_column].isin(sv)]
 
-        if mode == "stream":
-            nxf = nxf.drop(columns="read")  # drop unused read column
-        elif mode == "dist":
-            nxf = nxf.drop(columns=["rank", "distance", "shared_hashes"])  # drop unused read column
-        elif mode == "screen":
-            nxf = nxf.drop(columns=["rank", "identity", "shared_hashes"])  # drop unused read column
-        else:
-            raise ValueError(f"Unsupported mode: {mode}")
+            mode = nxf['mode'].unique()[0]  # get the analysis mode from the results
 
-        for db, db_data in nxf.groupby('db'):
-            self.logger.info(f"Processing database: {db}")
-            for read_limit, read_limit_data in db_data.groupby('read_limit'):
-                print(read_limit_data)
+            if mode == "stream":
+                nxf = nxf.drop(columns="read")  # drop unused read column
+            elif mode == "dist":
+                nxf = nxf.drop(columns=["rank", "distance", "shared_hashes"])  # drop unused read column
+            elif mode == "screen":
+                nxf = nxf.drop(columns=["rank", "identity", "shared_hashes"])  # drop unused read column
+            else:
+                raise ValueError(f"Unsupported mode: {mode}")
+
+            for db, db_data in nxf.groupby('db'):
+                self.logger.info(f"Processing database: {db}")\
+
+                nrows = len(db_data["read_limit"].unique())
+                fig, axes = plt.subplots(
+                    nrows=nrows, ncols=1, figsize=(
+                        1 * 7, nrows * 4.5
+                    )
+                )
+
+                fig.subplots_adjust(hspace=0.8)
+
+                for (i, (read_limit, predictions)) in db_data.groupby('read_limit'):
+                    print(predictions)
+                    self.plot_comparative_heatmap(
+                        values=None, annot=True, cbar=False,
+                        labels=predictions, palette="Greens",
+                        title=f"{read_limit} Reads", ax=axes[i, 0]
+                    )
+
+                plt.tight_layout()
+                fig.savefig(f"{self.outdir / db}.png")
 
 
     def plot_sssh_diagostics(
@@ -85,11 +106,6 @@ class SketchyDiagnostics(PoreLogger):
                 number_plots * 7, number_features * 4.5
             )
         )
-
-        if axes.ndim == 1:
-            axes = reshape(
-                axes, (-1, 2)
-            )
 
         fig.subplots_adjust(hspace=0.8)
 
@@ -192,6 +208,83 @@ class SketchyDiagnostics(PoreLogger):
         p3.set_xlabel('\nReads', fontsize=12)
         p3.set_ylabel('Preference score\n', fontsize=12)
 
+    @staticmethod
+    def plot_comparative_heatmap(
+        values: pandas.DataFrame = None,
+        palette: [str] or str = "YlGnBu",
+        ax=None,
+        fmt: str = ".3f",
+        cbar: bool = True,
+        annot: bool = True,
+        labels: pandas.DataFrame = None,
+        threshold: float = 0.,
+        time: bool = False,
+        title: str = "",
+        evaluation: bool = False
+    ):
+        # If all NA
+        if all(values.isna().all().tolist()):
+            values = values.fillna(0.)
+
+        if values is None:
+            if labels is None:
+                raise ValueError("If no values supplied, a label matrix is required")
+            values = labels.replace(labels, 0.)
+
+        p1 = sns.heatmap(
+            values,
+            vmin=0 if evaluation else None,
+            vmax=3 if evaluation else None,
+            linewidths=5,
+            cbar=cbar,
+            ax=ax,
+            annot=annot,
+            fmt=fmt,
+            cmap=palette,
+            annot_kws={"size": 18 if time else 24, "weight": "bold"}
+        )
+        p1.tick_params(axis='both', which='major', labelsize=24, length=3, width=2)
+        p1.tick_params(axis='x', rotation=90)
+        p1.tick_params(axis='y', rotation=0)
+
+        ax.set_title(title, fontdict={'fontsize': 24})
+        ax.set_xlabel('')
+
+        if threshold > 0.:
+            for text in ax.texts:
+                if float(text.get_text()) < threshold:
+                    text.set_text("")
+
+        if not time and labels is not None:
+            label_vec = labels.stack().tolist()
+            for i, text in enumerate(ax.texts):
+                try:
+                    # there is always categorical data never numeric floats
+                    val = f"{float(label_vec[i]):.0f}"
+                except ValueError:
+                    val = label_vec[i].strip()
+
+                    # Specific database rules for better visibility
+                    if val.startswith('SCCmec'):
+                        val = val.replace('SCCmec-', '')
+
+                text.set_text(val)
+
+        if time:
+            label_vec = labels.stack().tolist()
+            for i, text in enumerate(ax.texts):
+                if isinstance(label_vec[i], str):
+                    try:
+                        text.set_text(
+                            label_vec[i].split(" ")[1]
+                        )  # date time
+                    except KeyError:
+                        text.set_text(
+                            label_vec[i]
+                        )  # time delta
+                else:
+                    text.set_text()
+
     def process_sssh(
         self, sssh_file: Path, stable: int = 100, mode: str = "last", max_ranks: int = 5
     ) -> dict:
@@ -260,6 +353,8 @@ class SketchyDiagnostics(PoreLogger):
 
         legend = ax.legend()
         legend.texts[0].set_text(feature_name)
+
+        ax.set_title(feature_name, fontdict={'fontsize': 24})
 
         # Legend and labels
         p2.tick_params(labelsize=10)
