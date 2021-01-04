@@ -48,6 +48,8 @@ class SketchyDiagnostics(PoreLogger):
 
         nextflow_files = nextflow.glob("*.tsv")
 
+        scale = 1.0
+        
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
 
@@ -72,7 +74,7 @@ class SketchyDiagnostics(PoreLogger):
                 nrows = len(db_data["read_limit"].unique())
                 fig, axes = plt.subplots(
                     nrows=nrows, ncols=1, figsize=(
-                        1 * 7, nrows * 4.5
+                        1 * 4 * 9 * scale, nrows * 2 * 9 * scale
                     )
                 )
 
