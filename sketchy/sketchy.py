@@ -81,11 +81,16 @@ class SketchyDiagnostics(PoreLogger):
                 for (i, (read_limit, predictions)) in enumerate(
                     db_data.groupby('read_limit')
                 ):
-                    print(predictions)
+                    _drop_for_labels = ['db', 'mode', 'read_limit']
+                    if mode in ('dist', 'screen'):
+                        _drop_for_labels.append('id')
+
+                    _predictions = predictions.drop(columns=_drop_for_labels)
+                    
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
-                        labels=predictions, palette="Greens",
-                        title=f"{read_limit} Reads", ax=axes[i, 0]
+                        labels=_predictions, palette="Greens",
+                        title=f"{read_limit} Reads", ax=axes[i]
                     )
 
                 plt.tight_layout()
