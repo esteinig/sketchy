@@ -175,7 +175,6 @@ class SketchyDiagnostics(PoreLogger):
                 ax=ax[i]
             )
 
-        plt.tight_layout()
         fig.savefig(f"{self.outdir / plot_file}")
 
     @staticmethod
