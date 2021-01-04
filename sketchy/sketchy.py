@@ -162,7 +162,7 @@ class SketchyDiagnostics(PoreLogger):
             )
         )
 
-        fig.subplots_adjust(hspace=0.8)
+        fig.subplots_adjust(hspace=0.8, vspace=1.2)
 
         for (i, feature_name) in enumerate(features):
             self.plot_ssh(
