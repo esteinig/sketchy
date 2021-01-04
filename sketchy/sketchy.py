@@ -46,7 +46,7 @@ class SketchyDiagnostics(PoreLogger):
 
         """ Main access function for comparative feature heatmaps"""
 
-        nextflow_files = nextflow.glob(".tsv")
+        nextflow_files = nextflow.glob("*.tsv")
 
         for file in nextflow_files:
             print(file)
