@@ -78,7 +78,7 @@ class SketchyDiagnostics(PoreLogger):
                     )
                 )
 
-                fig.subplots_adjust(hspace=0.8)
+                fig.subplots_adjust(hspace=0.8, vspace=1.2)
 
                 for (i, (read_limit, predictions)) in enumerate(
                     db_data.groupby('read_limit')
@@ -162,7 +162,7 @@ class SketchyDiagnostics(PoreLogger):
             )
         )
 
-        fig.subplots_adjust(hspace=0.8, vspace=1.2)
+        fig.subplots_adjust(hspace=0.8)
 
         for (i, feature_name) in enumerate(features):
             self.plot_ssh(
@@ -253,9 +253,9 @@ class SketchyDiagnostics(PoreLogger):
             annot=annot,
             fmt=fmt,
             cmap=palette,
-            annot_kws={"size": 18 if time else 24, "weight": "bold"}
+            annot_kws={"size": 18 if time else 30, "weight": "bold"}
         )
-        p1.tick_params(axis='both', which='major', labelsize=24, length=3, width=2)
+        p1.tick_params(axis='both', which='major', labelsize=30, length=3, width=2)
         p1.tick_params(axis='x', rotation=90)
         p1.tick_params(axis='y', rotation=0)
 
