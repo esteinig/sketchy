@@ -259,7 +259,7 @@ class SketchyDiagnostics(PoreLogger):
         p1.tick_params(axis='x', rotation=90)
         p1.tick_params(axis='y', rotation=0)
 
-        ax.set_title(title, fontdict={'fontsize': 24})
+        ax.set_title(title, fontdict={'fontsize': 38})
         ax.set_xlabel('')
 
         if threshold > 0.:
