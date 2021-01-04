@@ -89,7 +89,7 @@ class SketchyDiagnostics(PoreLogger):
 
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
-                        labels=_predictions, palette="Greens_r",
+                        labels=_predictions.sort_index(), palette="Greens_r",
                         title=f"\n{read_limit} Reads\n", ax=axes[i]
                     )
 
