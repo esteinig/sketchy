@@ -49,7 +49,7 @@ class SketchyDiagnostics(PoreLogger):
         nextflow_files = nextflow.glob("*.tsv")
 
         scale = 1.0
-        
+
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
 
@@ -91,7 +91,7 @@ class SketchyDiagnostics(PoreLogger):
 
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
-                        labels=_predictions, palette="Greens",
+                        labels=_predictions, palette="Greens_r",
                         title=f"{read_limit} Reads", ax=axes[i]
                     )
 
@@ -231,6 +231,9 @@ class SketchyDiagnostics(PoreLogger):
         title: str = "",
         evaluation: bool = False
     ):
+
+        if not palette.endswith("_r"):
+            palette += "_r"
 
         if values is None:
             if labels is None:
