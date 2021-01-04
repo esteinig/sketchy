@@ -49,6 +49,7 @@ class SketchyDiagnostics(PoreLogger):
         nextflow_files = nextflow.glob(".tsv")
 
         for file in nextflow_files:
+            print(file)
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
 
             if subset_column:
