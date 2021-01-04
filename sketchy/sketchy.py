@@ -86,7 +86,7 @@ class SketchyDiagnostics(PoreLogger):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels)
-                    
+
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
                         labels=_predictions, palette="Greens",
@@ -229,14 +229,14 @@ class SketchyDiagnostics(PoreLogger):
         title: str = "",
         evaluation: bool = False
     ):
-        # If all NA
-        if all(values.isna().all().tolist()):
-            values = values.fillna(0.)
 
         if values is None:
             if labels is None:
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 0.)
+        else:
+            if all(values.isna().all().tolist()):  # if all values are NA
+                values = values.fillna(0.)
 
         p1 = sns.heatmap(
             values,
