@@ -60,7 +60,7 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def prediction_heatmap(nextflow, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
+def genotype_heatmap(nextflow, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
 
     """ Comparison of genotype predictions from Nextflow """
 
