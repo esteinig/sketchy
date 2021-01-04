@@ -78,7 +78,7 @@ class SketchyDiagnostics(PoreLogger):
                     )
                 )
 
-                fig.subplots_adjust(hspace=2)
+                fig.subplots_adjust(hspace=0.8)
 
                 for (i, (read_limit, predictions)) in enumerate(
                     db_data.groupby('read_limit')
@@ -95,7 +95,6 @@ class SketchyDiagnostics(PoreLogger):
                         title=f"{read_limit} Reads", ax=axes[i]
                     )
 
-                plt.tight_layout()
                 fig.savefig(f"{self.outdir / db}.png")
 
 
@@ -175,6 +174,7 @@ class SketchyDiagnostics(PoreLogger):
                 ax=ax[i]
             )
 
+        plt.tight_layout()
         fig.savefig(f"{self.outdir / plot_file}")
 
     @staticmethod
