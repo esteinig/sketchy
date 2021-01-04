@@ -78,7 +78,9 @@ class SketchyDiagnostics(PoreLogger):
 
                 fig.subplots_adjust(hspace=0.8)
 
-                for (i, (read_limit, predictions)) in db_data.groupby('read_limit'):
+                for (i, (read_limit, predictions)) in enumerate(
+                    db_data.groupby('read_limit')
+                ):
                     print(predictions)
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
