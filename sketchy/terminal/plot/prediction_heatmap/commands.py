@@ -7,11 +7,11 @@ from sketchy.sketchy import SketchyDiagnostics
 
 @click.command()
 @click.option(
-    '--data',
-    '-d',
+    '--nextflow',
+    '-n',
     type=Path,
     required=True,
-    help='Path to data file from sub-workflow collection [required]',
+    help='Path to collected results directory of Nextflow run [required]',
 )
 @click.option(
     '--outdir',
@@ -60,15 +60,14 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def genotype_heatmap(data, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
+def prediction_heatmap(nextflow, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
 
     """ Comparison of genotype predictions from Nextflow """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
-    sd.plot_genotype_heatmap(data=data, subset_column=subset_column, subset_values=subset_values)
+    sd.plot_genotype_heatmap(nextflow=nextflow, subset_column=subset_column, subset_values=subset_values)
 
-    pass
 #
 #     if subset:
 #         subset = subset.split(',')
