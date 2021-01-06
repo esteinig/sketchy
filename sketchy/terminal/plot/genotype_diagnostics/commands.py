@@ -60,7 +60,7 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def sssh_diagnostics(sssh, plot, stable, max_ranks, color, outdir, mpl_backend, verbose):
+def genotype_diagnostics(sssh, plot, stable, max_ranks, color, outdir, mpl_backend, verbose):
 
     """ Sum of ranked sums of shared hashes diagnostics (main) """
 
