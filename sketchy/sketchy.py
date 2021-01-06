@@ -124,7 +124,7 @@ class SketchyDiagnostics(PoreLogger):
         for (i, (feature, data)) in enumerate(sssh_data.items()):
 
             feature_data = data["feature_data"]
-            print(data['feature_values'])
+
             self.plot_sssh(
                 feature_name=feature,
                 feature_data=feature_data,
@@ -338,7 +338,6 @@ class SketchyDiagnostics(PoreLogger):
         stability_breakpoint: int = None,
         ax: plt.axes = None,
         color: str = 'YlGnBu',
-        max_ranks: int = 5,
         plot_breakpoint: bool = False,
     ) -> None:
 
@@ -352,11 +351,9 @@ class SketchyDiagnostics(PoreLogger):
 
         feature_values = feature_data.feature_value.unique()
 
-        print(color, max_ranks, feature_values, top_feature_values)
-
         palette = sns.color_palette(
-            color, n_colors=max_ranks
-        )[:len(feature_values)]
+            color, n_colors=len(feature_values)
+        )[:len(top_feature_values)]
 
         p2 = sns.lineplot(
             data=feature_data, x='read', y='sssh', hue='feature_value',
