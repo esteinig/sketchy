@@ -24,7 +24,7 @@ use prettytable::{Table, Row, Cell};
 use prettytable::format::{FormatBuilder};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 
-pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize) -> Result<(), Error> {
+pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize, last: bool) -> Result<(), Error> {
     
     /* Sketchy core compute function for sum of shared hashes from MASH
 
@@ -74,7 +74,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
     let data_file = File::open(&genotype_index)?;
     let data_reader = BufReader::new(data_file);
 
-    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, reads, ranks, stability, progress, raw).map_err(
+    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, reads, ranks, stability, progress, raw, last).map_err(
         |err| println!("{:?}", err)
     ).ok();
 
@@ -452,7 +452,7 @@ fn get_header_row(genotype_key: String) -> Result<Row, Error> {
 
 fn sum_of_shared_hashes<R: BufRead>(
     reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, 
-    reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool
+    reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, last: bool
 ) -> Result<(), Error> {
     
     /* Sum of shared hashes core function */ 
@@ -518,7 +518,6 @@ fn sum_of_shared_hashes<R: BufRead>(
             // collect the highest ranked ssh scores and their indices
             let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
             
-
             // write ranked ssh block for this read
             for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
                 
@@ -556,13 +555,15 @@ fn sum_of_shared_hashes<R: BufRead>(
                             for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
                                 println!(
                                     "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-                                    read-1, feature, feat_value, feat_rank,sssh_score, stable, preference_score
+                                    read-1, feature, feat_value, feat_rank, sssh_score, stable, preference_score
                                 )
                             }
                         }
-                        // Clear the feature sssh scores for next read
-                        for (_, feature_map) in sssh.iter_mut(){
-                            feature_map.clear()    
+                        // Clear the feature sssh scores for next read (read-by-read sssh, otherwise total sssh)
+                        if last {
+                            for (_, feature_map) in sssh.iter_mut(){
+                                feature_map.clear()    
+                            }
                         }
                     }
                 }
