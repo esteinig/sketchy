@@ -36,7 +36,7 @@ fn main() -> Result<(), Error> {
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [10]"))
-            .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw translated genotypes [false]"))
+            .arg(Arg::with_name("GENO").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
@@ -148,11 +148,11 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
-        let raw: bool = predict.is_present("RAW");
+        let geno: bool = predict.is_present("GENO");
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
-        sketchy::predict(genotype_key, limit, raw).map_err(
+        sketchy::predict(genotype_key, limit, !geno).map_err(
             |err| println!("{:?}", err)
         ).ok();
 

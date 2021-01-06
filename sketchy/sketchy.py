@@ -42,13 +42,18 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-    def plot_genotype_heatmap(self, nextflow: Path, subset_column: str, subset_values: str):
+    def plot_genotype_heatmap(self, nextflow: Path, reference: Path, subset_column: str, subset_values: str):
 
-        """ Main access function for comparative feature heatmaps"""
+        """ Main access function for comparative feature heatmaps from Nextflow """
 
         nextflow_files = nextflow.glob("*.tsv")
 
         scale = 1.0
+
+        if reference:
+            ref = pandas.read_csv(reference, sep="\t", index_col=0, header=0)  # same format as output heatmap
+        else:
+            ref = None
 
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
@@ -119,7 +124,7 @@ class SketchyDiagnostics(PoreLogger):
         for (i, (feature, data)) in enumerate(sssh_data.items()):
 
             feature_data = data["feature_data"]
-
+            print(data['feature_values'])
             self.plot_sssh(
                 feature_name=feature,
                 feature_data=feature_data,
@@ -346,6 +351,8 @@ class SketchyDiagnostics(PoreLogger):
         )
 
         feature_values = feature_data.feature_value.unique()
+
+        print(color, max_ranks, feature_values)
 
         palette = sns.color_palette(
             color, n_colors=max_ranks
