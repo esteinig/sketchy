@@ -19,7 +19,7 @@ fn main() -> Result<(), Error> {
         .version("0.5.0")
         .about("\nGenomic neighbor typing using MinHash\n")
         .subcommand(SubCommand::with_name("stream")
-            .about("\ncompute sum of shared hashes from fasta/q stream")
+            .about("\ncompute cumulative shared hashes score from fasta/q stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
             .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).help("Fasta/q path or STDIN [-]"))
@@ -29,7 +29,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
             .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw sum of shared hashes [false]"))
-            .arg(Arg::with_name("NONCUM").short("c").long("not_cumulative").takes_value(false).help("Diasable cumulative sum of sums of shared hashes [false]"))
+            .arg(Arg::with_name("STATIC").short("c").long("static").takes_value(false).help("Diasable cumulative score [false]"))
         )
         .subcommand(SubCommand::with_name("predict")
             .about("\npredict genotypes from sum of shared hashes stream")
@@ -86,12 +86,12 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
         let raw: bool = stream.is_present("RAW");
-        let noncum: bool = stream.is_present("NONCUM");
+        let _static: bool = stream.is_present("STATIC");
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, noncum).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, _static).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
