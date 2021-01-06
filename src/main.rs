@@ -29,7 +29,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
             .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw sum of shared hashes [false]"))
-            .arg(Arg::with_name("LAST").short("l").long("last").takes_value(false).help("Sum of sums of shared hashes per read, not cumulative [false]"))
+            .arg(Arg::with_name("DISABLE").short("d").long("disable").takes_value(false).help("Diasable cumulative sum of sums of shared hashes [false]"))
         )
         .subcommand(SubCommand::with_name("predict")
             .about("\npredict genotypes from sum of shared hashes stream")
@@ -86,12 +86,12 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
         let raw: bool = stream.is_present("RAW");
-        let last: bool = stream.is_present("LAST");
+        let disable: bool = stream.is_present("DISABLE");
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, last).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, disable).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
