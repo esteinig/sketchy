@@ -352,7 +352,7 @@ class SketchyDiagnostics(PoreLogger):
 
         feature_values = feature_data.feature_value.unique()
 
-        print(color, max_ranks, feature_values)
+        print(color, max_ranks, feature_values, top_feature_values)
 
         palette = sns.color_palette(
             color, n_colors=max_ranks
