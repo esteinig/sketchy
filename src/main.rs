@@ -29,14 +29,14 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
             .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw sum of shared hashes [false]"))
-            .arg(Arg::with_name("STATIC").short("c").long("static").takes_value(false).help("Diasable cumulative score [false]"))
+            .arg(Arg::with_name("CUMULATIVE").short("c").long("cumulative").takes_value(false).help("Enable cumulative score [false]"))
         )
         .subcommand(SubCommand::with_name("predict")
             .about("\npredict genotypes from sum of shared hashes stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [10]"))
-            .arg(Arg::with_name("GENO").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
+            .arg(Arg::with_name("GENOTYPE").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
@@ -86,12 +86,12 @@ fn main() -> Result<(), Error> {
         let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
         let progress: bool = stream.is_present("PROGRESS");
         let raw: bool = stream.is_present("RAW");
-        let _static: bool = stream.is_present("STATIC");
+        let cumulative: bool = stream.is_present("CUMULATIVE");
 
         let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
         let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
 
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, _static).map_err(
+        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, cumulative).map_err(
             |err| println!("{:?}", err)
         ).ok();
         
@@ -148,7 +148,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
         let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
-        let geno: bool = predict.is_present("GENO");
+        let genotype: bool = predict.is_present("GENOTYPE");
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 

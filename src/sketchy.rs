@@ -452,7 +452,7 @@ fn get_header_row(genotype_key: String) -> Result<Row, Error> {
 
 fn sum_of_shared_hashes<R: BufRead>(
     reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, 
-    reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, _static: bool
+    reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, cumulative: bool
 ) -> Result<(), Error> {
     
     /* Sum of shared hashes core function */ 
@@ -559,8 +559,8 @@ fn sum_of_shared_hashes<R: BufRead>(
                                 )
                             }
                         }
-                        // Clear the feature sssh scores for next read (read-by-read sssh, otherwise total sssh)
-                        if _static {
+                        // Clear the feature sssh scores for next read (read-by-read sssh, otherwise total cumulative sssh)
+                        if !cumulative {
                             for (_, feature_map) in sssh.iter_mut(){
                                 feature_map.clear()    
                             }

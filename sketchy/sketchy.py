@@ -101,7 +101,6 @@ class SketchyDiagnostics(PoreLogger):
                 plt.tight_layout()
                 fig.savefig(f"{self.outdir / f'{mode}.{db}'}.png")
 
-
     def plot_sssh_diagostics(
         self, sssh_data: dict, plot_file: Path, plot_breakpoint: bool = False, color: str = "YlGnBu"
     ):

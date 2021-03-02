@@ -16,8 +16,12 @@ from sketchy.utils import get_files
     help='Lineage to show summary for [required]'
 )
 @click.option(
+    '--summary', '-s', default=None, type=Path, required=False,
+    help='Output file for summary or lineage summary genome table [none]'
+)
+@click.option(
     '--output', '-o', default=None, type=Path, required=False,
-    help='Output file for summary or lineage genome table [none]'
+    help='Output lineage summary genome table [none]'
 )
 @click.option(
     '--file_path', '-f', default=None, type=Path, required=False,
@@ -39,7 +43,7 @@ from sketchy.utils import get_files
     '--lineage_column', '-lc',  default='mlst', type=str, required=False,
     help='DB lineage column [mlst]'
 )
-def inspect(db, lineage, output, file_path, pattern, reindex, id_column, lineage_column):
+def inspect(db, lineage, summary, output, file_path, pattern, reindex, id_column, lineage_column):
 
     """ Interrogate the reference database: summary or subset genotypes """
 
@@ -66,8 +70,10 @@ def inspect(db, lineage, output, file_path, pattern, reindex, id_column, lineage
                 df.drop(columns='idx', inplace=True)
                 df.index.name = 'idx'
 
-    else:
+    if summary:
         df = li.get_summary(lineage)
+        df.to_csv(output, sep='\t', index=True, header=True)
 
     if output:
-        df.to_csv(output, sep='\t', index=True, header=True)
+        df = li.get_lineage(lineage=lineage)
+        df.to_csv(output, sep='\t', index=False, header=True)
