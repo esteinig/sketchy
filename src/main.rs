@@ -112,6 +112,8 @@ fn main() -> Result<(), Error> {
         let pretty: bool = screen.is_present("PRETTY");
 
         let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
+        
+        println!("{:?}", fastx);
 
         sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
             |err| println!("{:?}", err)
