@@ -674,13 +674,7 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
 
     // Check if database is in SKETCHY_PATH ENV
 
-    let db_path = if !_db_path.exists() {
-        Path::new(&sketchy_path).join(_db_name)
-    } else {
-        // Check if database is in relative path, since relative paths are not resolved    
-        let cwd: String = env::current_dir().unwrap().to_str().unwrap().to_string();
-        Path::new(&cwd).join(_db_name)
-    };
+    let db_path = Path::new(&sketchy_path).join(_db_name);
 
     // Fail if not suitable database path exists
     
