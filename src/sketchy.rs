@@ -684,8 +684,8 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
 
     // Fail if not suitable database path exists
     
-    println("{}", db_path);
-    
+    println!("{}", db_path);
+
     if !db_path.exists() {
         clap::Error::with_description("Database sketch directory is not available", clap::ErrorKind::InvalidValue).exit();
     };
