@@ -572,6 +572,7 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
+
 class SketchyDatabase(PoreLogger):
 
     def __init__(
