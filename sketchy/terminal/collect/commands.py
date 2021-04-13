@@ -25,7 +25,7 @@ def collect(
         outdir.mkdir(parents=True, exist_ok=True)
 
         comparison_data = {}
-        for path in (directory / 'stream', directory / 'dist', directory / 'screen'):
+        for path in (directory / 'dist', directory / 'screen', directory / 'screen_winner', directory / 'stream'):
             database_paths = [p for p in path.glob("*") if p.is_dir()]
 
             database_data = []
@@ -52,7 +52,7 @@ def collect(
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
                                 df.columns = ["rank", "distance", "shared_hashes"] + db_header + ["id"]
-                            elif path.name == "screen":
+                            elif path.name == "screen" or path.name == "screen_winner":
                                 df.columns = ["rank", "identity", "shared_hashes"] + db_header + ["id"]
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
