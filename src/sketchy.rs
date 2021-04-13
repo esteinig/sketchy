@@ -111,7 +111,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     ];
 
     if winner {
-        mash_args.append("-w")
+        mash_args.push("-w")
     };
 
     let screen_out = Command::new("mash") // system call to MASH   
