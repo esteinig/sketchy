@@ -24,8 +24,8 @@ process SketchyStream {
     """
     SKETCHY_PATH=\$PWD
     head -$_read_limit $fx | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh
-    cat  ${id}.sssh | sketchy predict --db $db --limit $params.limit > predict.tsv
-    tail -$params.limit predict.tsv > ${id}.tsv
+    cat  ${id}.sssh | sketchy predict --db $db --limit $params.limit --genotype > predict.tsv
+    tail -n $params.limit predict.tsv > ${id}.tsv
     sketchy head --db $db > header.txt
     """
 
