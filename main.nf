@@ -83,6 +83,7 @@ if (params.reads) {
     System.exit(1)
 }
 
+println!(dbs);
 
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
