@@ -67,24 +67,8 @@ params.limit = 1                             // output best prediction
 params.ranks = 10
 params.stability = 100
 
-if (params.db) {
-    dbs = params.db.split(",").collect { file(it) }
-} else {
-    println("You need to specify one or multiple database paths (--db)")
-    println("Example  nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
-    System.exit(1)
-}
-
-if (params.reads) {
-    read_limits = params.reads.split(",").collect { it.toInteger() }
-} else {
-    println("You need to specify one or multiple prediction end points (--reads)")
-    println("Example: nextflow run esteinig/sketchy --reads 100,500")
-    System.exit(1)
-}
-
-println!(db);
-println!(dbs);
+dbs = params.db.split(",").collect { file(it) }
+read_limits = params.reads.split(",").collect { it.toInteger() }
 
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
