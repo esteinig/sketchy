@@ -107,7 +107,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
     let _threads = &*format!("{}", threads);
     let _fastx = &*format!("{}", fastx);
-    let _sketch = &*format!("{}", sketch)
+    let _sketch = &*format!("{}", sketch);
 
     let mut mash_args = vec![
         "screen", "-p", _threads, _sketch, _fastx 
