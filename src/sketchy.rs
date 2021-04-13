@@ -81,7 +81,7 @@ pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i3
     Ok(())
 }
 
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
+pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool, winner: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
 
@@ -107,8 +107,12 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
 
     let mash_args = [
-        "screen", "-p", &*format!("{}", threads), "-w", &*format!("{}", sketch), &*format!("{}", fastx)
+        "screen", "-p", &*format!("{}", threads), &*format!("{}", sketch), &*format!("{}", fastx)
     ];
+
+    if winner {
+        mash_args.append("-w")
+    };
 
     let screen_out = Command::new("mash") // system call to MASH   
         .args(&mash_args)

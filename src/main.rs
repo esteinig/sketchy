@@ -46,6 +46,7 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
             .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
             .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
+            .arg(Arg::with_name("WINNER").short("w").long("winner").takes_value(false).help("Winner-take-all [false]"))
         )
         .subcommand(SubCommand::with_name("dist")
             .about("\nquery read set against database with mash dist")
@@ -110,12 +111,11 @@ fn main() -> Result<(), Error> {
         let threads: i32 = screen.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
         let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
         let pretty: bool = screen.is_present("PRETTY");
+        let winner: bool = screen.is_present("WINNER");
 
         let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
-        
-        println!("{:?}", fastx);
 
-        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
+        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty, winner).map_err(
             |err| println!("{:?}", err)
         ).ok();
 

@@ -13,7 +13,7 @@ from sketchy.sketchy import SketchyDatabase
     '--full', '-f', is_flag=True,
     help='Include columns with numeric formats [false]'
 )
-def download(outdir, full):
+def get(outdir, full):
 
     """ Download default sketches """
 
@@ -21,6 +21,6 @@ def download(outdir, full):
         sketch_file=None, genotype_file=None
     )
 
-    db.download_databases(outdir=outdir, full=full)
+    db.get_default_databases(outdir=outdir, full=full)
 
 

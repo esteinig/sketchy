@@ -1,5 +1,6 @@
 import click
 
+from .get import get
 from .create import create
 from .inspect import inspect
 
@@ -10,5 +11,6 @@ def database():
     pass
 
 
+database.add_command(get)
 database.add_command(create)
 database.add_command(inspect)
