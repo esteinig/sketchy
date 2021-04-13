@@ -67,8 +67,10 @@ params.limit = 1                             // output best prediction
 params.ranks = 10
 params.stability = 100
 
-dbs = params.db.split(",").collect { file(it) }
+dbs = [params.db];
 read_limits = params.reads.split(",").collect { it.toInteger() }
+
+println!(dbs);
 
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
