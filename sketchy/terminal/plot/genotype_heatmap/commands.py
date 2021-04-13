@@ -14,6 +14,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Path to collected results directory of Nextflow run [required]',
 )
 @click.option(
+    '--reference',
+    '-r',
+    type=Path,
+    required=False,
+    help='Path to reference genotype file for heatmap colors [optional]',
+)
+@click.option(
     '--outdir',
     '-o',
     type=Path,
@@ -60,13 +67,15 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def genotype_heatmap(nextflow, outdir, plot, color, subset_column, subset_values, mpl_backend, verbose):
+def genotype_heatmap(nextflow, outdir, plot, color, reference, subset_column, subset_values, mpl_backend, verbose):
 
     """ Comparison of genotype predictions from Nextflow """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
-    sd.plot_genotype_heatmap(nextflow=nextflow, subset_column=subset_column, subset_values=subset_values)
+    sd.plot_genotype_heatmap(
+        nextflow=nextflow, reference=reference, subset_column=subset_column, subset_values=subset_values
+    )
 
 #
 #     if subset:

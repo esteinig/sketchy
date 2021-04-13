@@ -85,6 +85,7 @@ if (params.reads) {
 
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
+include { SketchyScreenWinner } from './modules/sketchy'
 include { SketchyDist } from './modules/sketchy'
 
 workflow {
@@ -94,5 +95,6 @@ workflow {
     SketchyStream(ont, dbs, read_limits)
     SketchyScreen(ont, dbs, read_limits)
     SketchyDist(ont, dbs, read_limits)
+    SketchyScreenWinner(ont, dbs, read_limits)
 
 }
