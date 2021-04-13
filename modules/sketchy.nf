@@ -22,7 +22,7 @@ process SketchyStream {
     _read_limit = 4*read_limit
 
     """
-    echo $db
+    SKETCHY_PATH=\$PWD
     head -$_read_limit $fx | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}.sssh
     cat  ${id}.sssh | sketchy predict --db $db --limit $params.limit > predict.tsv
     tail -$params.limit predict.tsv > ${id}.tsv
@@ -53,7 +53,7 @@ process SketchyScreen {
     _read_limit = 4*read_limit
 
     """
-    echo $db
+    SKETCHY_PATH=\$PWD
     head -$_read_limit $fx | sketchy screen --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
     sketchy head --db $db > header.txt
     """
@@ -82,7 +82,7 @@ process SketchyDist {
     _read_limit = 4*read_limit
 
     """
-    echo $db
+    SKETCHY_PATH=\$PWD
     head -$_read_limit $fx | sketchy dist --fastx - --db $db --limit $params.limit --threads $task.cpus > ${id}.tsv
     sketchy head --db $db > header.txt
     """
