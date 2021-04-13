@@ -70,7 +70,7 @@ params.stability = 100
 dbs = [params.db];
 read_limits = params.reads.split(",").collect { it.toInteger() }
 
-println!(dbs);
+println(dbs);
 
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
