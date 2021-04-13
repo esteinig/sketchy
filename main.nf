@@ -59,9 +59,9 @@ def helpMessage() {
 
 params.outdir = "nxf-sketchy"
 
-params.fastq = "*.fq"
+params.fastq = "*.fastq"
 params.db = ""                               // must be actual path
-params.reads = "20,50,100,200,500,1000"
+params.reads = "20,50,100,200,500,1000,2000,5000,10000"
 
 params.limit = 1                             // output best prediction
 params.ranks = 10
