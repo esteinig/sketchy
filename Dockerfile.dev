@@ -16,7 +16,7 @@ ENV CARGO_HOME=/rust/.cargo
 ENV RUSTUP_HOME=/rust/.rustup
 
 RUN conda install -c conda-forge -c bioconda -c esteinig --yes \
-    pysam mash=$MASH_VERSION psutil
+    pysam mash=$MASH_VERSION psutil drep
 
 RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
