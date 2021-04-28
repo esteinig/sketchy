@@ -135,3 +135,18 @@ process Bootstrap {
     """
 
 }
+
+
+process ReadLimit {
+
+    label "sketchy"
+    tag { id }
+
+    input:
+    tuple val(id), file(fx)
+    each read_limit
+
+    output:
+    tuple val(id), val(0), val(read_limit), file(fx)
+
+}

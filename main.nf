@@ -57,6 +57,7 @@ def helpMessage() {
     """.stripIndent()
 }
 
+
 params.outdir = "nxf-sketchy"
 
 params.fastq = "*.fastq"
@@ -91,21 +92,49 @@ if (params.reads) {
     System.exit(1)
 }
 
+
+def startMessage() {
+
+    log.info"""
+    =========================================
+          S K E T C H Y   v${version}
+    =========================================
+
+    Fastq:                  ${params.fastq}
+    Outdir:                 ${params.outdir}
+    Databases:              ${dbs}
+    Read limits:            ${read_limits}
+    Bootstraps replicates:  ${reps}
+
+    Prediction limit:       ${params.limit} [1 = best prediction]
+    Prediction ranks:       ${params.ranks}
+    Prediction stability:   ${params.stability}
+
+    =========================================
+
+    """.stripIndent()
+}
+
 include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
 include { SketchyScreenWinner } from './modules/sketchy'
 include { SketchyDist } from './modules/sketchy'
 include { Bootstrap } from './modules/sketchy'
+include { ReadLimit } from './modules/sketchy'
 
 workflow {
 
     ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
+    
+    if (params.replicates > 0) {
+        fq = Bootstrap(ont, reps, read_limits)
+    } else {
+        fq = ReadLimit(ont, read_limits)
+    }
 
-    bs = Bootstrap(ont, params.replicates, read_limits)
-
-    SketchyStream(bs, dbs)
-    SketchyScreen(bs, dbs)
-    SketchyDist(bs, dbs)
-    SketchyScreenWinner(bs, dbs)
+    SketchyStream(fq, dbs)
+    SketchyScreen(fq, dbs)
+    SketchyDist(fq, dbs)
+    SketchyScreenWinner(fq, dbs)
 
 }
