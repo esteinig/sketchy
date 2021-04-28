@@ -66,13 +66,20 @@ params.reads = "20,50,100,200,500,1000,2000,5000,10000"
 params.limit = 1                             // output best prediction
 params.ranks = 10
 params.stability = 100
-params.replicates = 1..100
+params.replicates = 100
+
+if (params.replicates > 0) {
+    reps = 1..params.replicates
+} else {
+    println("You need to specify bootstrap replicates.")
+    System.exit(1)
+}
 
 if (params.db) {
     dbs = params.db.split(",").collect { file(it) }
 } else {
     println("You need to specify one or multiple database paths (--db)")
-    println("Example  nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
+    println("Example: nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
     System.exit(1)
 }
 
