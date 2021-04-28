@@ -716,7 +716,7 @@ class SketchyDatabase(PoreLogger):
             self.logger.info(f"Processing genotype: {name}")
             feature_keys[i] = {
                 'name': name,
-                'values': column_data.astype('category').cat.categories.tolist()
+                'values': [str(v) for v in column_data.astype('category').cat.categories.tolist()]
             }
 
         genotypes[transform] = genotypes[transform].apply(
