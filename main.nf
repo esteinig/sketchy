@@ -88,17 +88,17 @@ include { SketchyStream } from './modules/sketchy'
 include { SketchyScreen } from './modules/sketchy'
 include { SketchyScreenWinner } from './modules/sketchy'
 include { SketchyDist } from './modules/sketchy'
-include { BootstrapFastq } from './modules/sketchy'
+include { Bootstrap } from './modules/sketchy'
 
 workflow {
 
     ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
 
-    bs = BootstrapFastq(ont, params.replicates, read_limits)
+    bs = Bootstrap(ont, params.replicates, read_limits)
 
-    SketchyStream(bs, dbs, read_limits)
-    SketchyScreen(bs, dbs, read_limits)
-    SketchyDist(bs, dbs, read_limits)
-    SketchyScreenWinner(bs, dbs, read_limits)
+    SketchyStream(bs, dbs)
+    SketchyScreen(bs, dbs)
+    SketchyDist(bs, dbs)
+    SketchyScreenWinner(bs, dbs)
 
 }
