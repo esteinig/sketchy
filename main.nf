@@ -67,7 +67,7 @@ params.reads = "20,50,100,200,500,1000,2000,5000,10000"
 params.limit = 1                             // output best prediction
 params.ranks = 10
 params.stability = 100
-params.replicates = 100
+params.replicates = 0
 
 if (params.replicates > 0) {
     reps = 1..params.replicates
