@@ -8,9 +8,8 @@ process SketchyStream {
     publishDir "${params.outdir}/stream/${db.baseName}", mode: "copy", pattern: "header.txt"
 
     input:
-    tuple val(id), file(fx)
+    tuple val(id), val(rep), val(read_limit), file(fx)
     each file(db)
-    each read_limit
 
     output:
     file("${id}_${rep}.tsv")
