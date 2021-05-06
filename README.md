@@ -156,10 +156,10 @@ cat sssh.tsv | sketchy predict -d saureus > predictions.tsv
 cat test.fq | sketchy stream -d saureus | sketchy predict -d saureus > predictions.tsv
 ```
 
-Diagnostic plots and evaluation summaries including are handled in the Python `sketchy-db` client:
+Diagnostic plots and evaluation summaries including are handled in the `sketchy-utils` Python client:
 
 ```
-sketchy-db plot \
+sketchy-utils plot \
     --sssh sssh.tsv \
     --db saureus \
     --palette YnGnBu \
@@ -180,7 +180,7 @@ sketchy dist -f test.fastq -d saureus -p
 In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client:
 
 ```
-sketchy-db online watch -d /live/fastq | cat - | sketchy stream --db saureus > test.sssh.tsv
+sketchy-utils online watch -d /live/fastq | cat - | sketchy stream --db saureus > test.sssh.tsv
 ```
 
 ### Android mobile phones
@@ -201,7 +201,7 @@ wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
   && tar -xvzf saureus.min.tar.gz
 wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
 
-cat mobile_test.fq | sketchy-rs stream --db ./saureus.min
+cat mobile_test.fq | sketchy stream --db ./saureus.min
 ```
 
 ### Nextflow pipeline
@@ -230,7 +230,6 @@ ref.json  # key
 ### Genome assemblies and sketch construction
 
 Given a set of high-quality assemblies in the format `{id}.fasta`:
-
 
 ```
 DRR083589.fasta
@@ -266,7 +265,7 @@ DRR128208   st90    iv      +
 To generate the `Sketchy` reference genotypes in `sketchy genotypes create`:
 
 ```
-sketchy-db create -i genotypes.tsv -s ref.msh --outdir ref --drop id
+sketchy-utils create -i genotypes.tsv -s ref.msh --outdir ref --drop id
 ```
 
 This will create a directory with the following files
