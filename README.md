@@ -120,11 +120,6 @@ SKETCHY_PATH=$HOME/.sketchy
 sketchy screen -f test.fastq -d saureus -p
 ```
 
-Please cite the following when using `sketchy screen`:
-
-* Ondov et al. (2019) - `Mash Screen`
-* Brinda et al. (2020) - `Genomic neighbor typing`
-
 ### Streaming function
 
 Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch.
@@ -172,11 +167,6 @@ sketchy-db plot \
     --format png
 ```
 
-Please cite the following when using `sketchy stream`:
-
-* Ondov et al. (2016) - `Mash`
-* Brinda et al. (2020) - `Genomic neighbor typing`
-
 ### Distance function
 
 We also implement a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
@@ -184,11 +174,6 @@ We also implement a non-streaming task to compute the `Mash` distance on a set o
 ```
 sketchy dist -f test.fastq -d saureus -p
 ```
-
-Please cite the following when using `sketchy dist`:
-
-* Ondov et al. (2016) - `Mash`
-* Brinda et al. (2020) - `Genomic neighbor typing`
 
 ### Online streaming analysis
 
@@ -333,3 +318,12 @@ In the plot on the right, the preference score from [Brinda and colleagues](http
 <a href='https://github.com/esteinig'><img src='docs/example_saureus_2.png' align="center" height="500" /></a>
 
 In this example, the same data from the Bengal Bay clone is run on the lower resolution reference sketch `saureus_15_1000` instead of `saureus_15_10000`. Incorrect sequence type ST12 is called for about 300 reads before making a switch to the correct sequence type ST772. This is reflected in the heatmap by distinct color blocks, but lower-resolution also trades-off prediction speed with larger more accurate sketches. In the higher resolution sketch above, the sequence type is called almost immediately and initial uncertainty is lower, as indicated by less gray coloring in the heatmap on the initial reference sketch queries.
+
+## Citations
+
+
+Please cite the following when using `sketchy`:
+
+* Ondov et al. (2019) - `Mash Screen`
+* Brinda et al. (2020) - `Genomic neighbor typing`
+* Steinig et al. (2021) - `Sketchy`
