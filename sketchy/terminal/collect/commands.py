@@ -33,6 +33,7 @@ def collect(
 
             database_data = []
             for db_path in database_paths:
+                print(db_path)
                 db_header = pandas.read_csv(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
@@ -46,19 +47,15 @@ def collect(
 
                 read_limit_data = []
                 for read_limit_path in read_limit_paths:
-                    print(read_limit_path)
                     result_files = read_limit_path.glob("*.tsv")
 
                     result_data = []
                     for file in result_files:
-
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             name = file.name.strip(".tsv").split("_")
                             df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
                             df['replicate'] = [name[-1] for _ in df.iterrows()]
-
-                            print(df)
 
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
@@ -80,7 +77,7 @@ def collect(
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
                     read_limit_data.append(results)
 
-                
+
                 read_limits = pandas.concat(read_limit_data)
                 read_limits['db'] = [db_path.name for _ in read_limits.iterrows()]
                 database_data.append(read_limits)
