@@ -56,7 +56,7 @@ def collect(
                             df = pandas.read_csv(file, sep="\t", header=None)
                             name = file.name.strip(".tsv").split("_")
                             df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
-                            df['replicate'] = [name[1] for _ in df.iterrows()]
+                            df['replicate'] = [name[-1] for _ in df.iterrows()]
 
                             print(df)
 
