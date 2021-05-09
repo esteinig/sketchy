@@ -46,6 +46,7 @@ def collect(
 
                 read_limit_data = []
                 for read_limit_path in read_limit_paths:
+                    print(read_limit_path)
                     result_files = read_limit_path.glob("*.tsv")
 
                     result_data = []
