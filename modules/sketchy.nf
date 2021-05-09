@@ -35,7 +35,7 @@ process SketchyScreen {
     label "sketchy"
     tag { id }
 
-    publishDir "${params.outdir}/screen/${db.baseName}", mode: "copy", pattern: "${id}_${rep}.tsv"
+    publishDir "${params.outdir}/screen/${db.baseName}/${read_limit}", mode: "copy", pattern: "${id}_${rep}.tsv"
     publishDir "${params.outdir}/screen/${db.baseName}", mode: "copy", pattern: "header.txt"
 
     input:
