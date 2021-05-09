@@ -58,6 +58,9 @@ def collect(
                             else:
                                 db_header = ['id'] + db_header  # quick fix
 
+                            print(db_header)
+                            print(df.columns)
+
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
