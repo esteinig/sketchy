@@ -54,12 +54,9 @@ def collect(
                             df['replicate'] = [name[1] for _ in df.iterrows()]
 
                             if id:
-                                db_header += ['id']
+                                db_header += ['id'] + ['replicate']  # use for saureus
                             else:
-                                db_header = ['id'] + db_header  # quick fix
-
-                            print(db_header)
-                            print(df)
+                                db_header = ['id'] + db_header + ['replicate']  # quick fix
 
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
