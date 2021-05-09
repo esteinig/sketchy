@@ -50,7 +50,6 @@ def collect(
                     result_files = read_limit_path.glob("*.tsv")
 
                     result_data = []
-
                     for file in result_files:
 
                         try:
