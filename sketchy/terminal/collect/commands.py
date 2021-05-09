@@ -46,7 +46,11 @@ def collect(
 
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
-                            df.index = [file.name.strip(".tsv") for _ in df.iterrows()]
+                            name = file.name.strip(".tsv").split("_")
+                            fname, replicate = name[0], name[1]
+
+                            df.index = [fname for _ in df.iterrows()]
+                            df['replicate'] = [replicate for _ in df.iterrows()]
 
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header

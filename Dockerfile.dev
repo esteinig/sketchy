@@ -22,4 +22,4 @@ RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | s
 
 RUN git clone -b $SKETCHY_BRANCH --single-branch https://github.com/esteinig/sketchy.git
 RUN pip install ./sketchy
-RUN cd ./sketchy && cargo build && mv target/debug/sketchy /usr/local/bin
+RUN cd ./sketchy && cargo build --release && mv target/release/sketchy /usr/local/bin
