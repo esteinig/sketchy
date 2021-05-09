@@ -58,6 +58,8 @@ def collect(
                             df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
                             df['replicate'] = [name[1] for _ in df.iterrows()]
 
+                            print(df)
+
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
