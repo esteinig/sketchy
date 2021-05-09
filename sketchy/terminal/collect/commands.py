@@ -80,7 +80,7 @@ def collect(
                     results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
                     read_limit_data.append(results)
 
-                print(read_limit_data)
+                
                 read_limits = pandas.concat(read_limit_data)
                 read_limits['db'] = [db_path.name for _ in read_limits.iterrows()]
                 database_data.append(read_limits)
