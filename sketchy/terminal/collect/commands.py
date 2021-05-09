@@ -14,8 +14,11 @@ from pathlib import Path
 @click.option(
     '--outdir', '-o', required=False, type=Path, default="nxf-results", help='Nextflow summary output directory'
 )
+@click.option(
+    '--id', '-i', required=False, is_flag=True, help='Add the column ID into the database header (default saureus db)'
+)
 def collect(
-    directory, workflow, outdir
+    directory, workflow, outdir, id
 ):
 
     """ Collect predictions and summarize results from Nextflow """
@@ -49,13 +52,16 @@ def collect(
                             name = file.name.strip(".tsv").split("_")
                             df.index = [name[0] for _ in df.iterrows()]
                             df['replicate'] = [name[1] for _ in df.iterrows()]
-                            
+
+                            if id:
+                                db_header += ['id']
+
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
                             elif path.name == "dist":
-                                df.columns = ["rank", "distance", "shared_hashes"] + db_header + ["id"]
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header
                             elif path.name == "screen" or path.name == "screen_winner":
-                                df.columns = ["rank", "identity", "shared_hashes"] + db_header + ["id"]
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
