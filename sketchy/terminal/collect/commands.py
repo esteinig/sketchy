@@ -37,6 +37,11 @@ def collect(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
 
+                if id:
+                    db_header = db_header + ['id', 'replicate']  # use for saureus
+                else:
+                    db_header = ['id'] + db_header + ['replicate']  # quick fix
+
                 read_limit_paths = [p for p in db_path.glob("*") if p.is_dir()]
 
                 read_limit_data = []
@@ -52,11 +57,6 @@ def collect(
                             name = file.name.strip(".tsv").split("_")
                             df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
                             df['replicate'] = [name[1] for _ in df.iterrows()]
-
-                            if id:
-                                db_header += ['id', 'replicate']  # use for saureus
-                            else:
-                                db_header = ['id'] + db_header + ['replicate']  # quick fix
 
                             print(df)
                             print(db_header)
