@@ -50,20 +50,22 @@ def collect(
                         try:
                             df = pandas.read_csv(file, sep="\t", header=None)
                             name = file.name.strip(".tsv").split("_")
-                            df.index = [name[0] for _ in df.iterrows()]
+                            df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
                             df['replicate'] = [name[1] for _ in df.iterrows()]
 
                             if id:
                                 db_header += ['id']
 
                             print(df)
+                            print()
+                            print(db_header)
 
                             if path.name == "stream":
-                                df.columns = ["replicate", "read"] + db_header
+                                df.columns = ["read"] + db_header
                             elif path.name == "dist":
-                                df.columns = ["replicate", "rank", "distance", "shared_hashes"] + db_header
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header
                             elif path.name == "screen" or path.name == "screen_winner":
-                                df.columns = ["replicate", "rank", "identity", "shared_hashes"] + db_header
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
