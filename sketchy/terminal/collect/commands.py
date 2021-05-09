@@ -15,10 +15,10 @@ from pathlib import Path
     '--outdir', '-o', required=False, type=Path, default="nxf-results", help='Nextflow summary output directory'
 )
 @click.option(
-    '--id', '-i', required=False, is_flag=True, help='Add the column ID into the database header (default saureus db)'
+    '--id_last', '-i', required=False, is_flag=True, help='Add identifier column last into the database header (saureus db)'
 )
 def collect(
-    directory, workflow, outdir, id
+    directory, workflow, outdir, id_last
 ):
 
     """ Collect predictions and summarize results from Nextflow """
@@ -37,7 +37,7 @@ def collect(
                     db_path / 'header.txt', sep="\t", header=None, index_col=None
                 ).iloc[0].tolist()
 
-                if id:
+                if id_last:
                     db_header = db_header + ['id', 'replicate']  # use for saureus
                 else:
                     db_header = ['id'] + db_header + ['replicate']  # quick fix
