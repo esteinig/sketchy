@@ -55,10 +55,8 @@ def collect(
 
                             if id:
                                 db_header += ['id']
-
-                            print(df)
-                            print()
-                            print(db_header)
+                            else:
+                                db_header = ['id'] + db_header  # quick fix
 
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
