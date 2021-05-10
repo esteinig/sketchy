@@ -570,7 +570,7 @@ class SketchyDiagnostics(PoreLogger):
     def match_reference(self, nextflow, reference):
         """ Match predictions from collected Nextflow results to reference table """
 
-        ref = pandas.read_csv(reference, sep="\t", header=0, index=0)
+        ref = pandas.read_csv(reference, sep="\t", header=0, index_col=0)
 
         for col in ref.columns.tolist():
             column_values = ref[col].tolist()
