@@ -73,9 +73,10 @@ def genotype_heatmap(results, outdir, reference, plot, color, subset_column, sub
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
-    sd.match_reference(nextflow=results, reference=reference)
+    if reference:
+        sd.match_reference(nextflow=results, reference=reference)
 
-    # sd.plot_genotype_heatmap(
-    #     nextflow=results, subset_column=subset_column, subset_values=subset_values
-    # )
+    sd.plot_genotype_heatmap(
+        nextflow=results, subset_column=subset_column, subset_values=subset_values
+    )
 
