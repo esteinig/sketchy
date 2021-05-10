@@ -9,7 +9,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from numpy import nan
-from numpy import reshape
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
@@ -636,6 +635,18 @@ class SketchyDiagnostics(PoreLogger):
 
         df = pandas.concat(methods_summary).reset_index(drop=True)
 
+        for db, db_data in df.groupby("db"):
+            fig, axes = plt.subplots(
+                nrows=len(methods_summary), ncols=1, figsize=(
+                    1 * 4 * 9, len(methods_summary) * 2 * 9
+                )
+            )
+            for i, (method, method_data) in enumerate(db_data.groupby('method')):
+                sns.swarmplot(data=method_data, x="read_limit", y="true_calls", ax=axes[i])
+
+            plt.tight_layout()
+            fig.savefig(f"{db}.summary.png")
+            
         print(df)
 
 class SketchyDatabase(PoreLogger):
