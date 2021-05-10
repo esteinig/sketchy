@@ -39,9 +39,9 @@ def collect(
                 ).iloc[0].tolist()
 
                 if id_last:
-                    db_header = db_header + ['id', 'replicate']  # use for saureus
+                    db_header1 = db_header + ['id', 'replicate']  # use for saureus
                 else:
-                    db_header = ['id'] + db_header + ['replicate']  # quick fix
+                    db_header1 = ['id'] + db_header + ['replicate']  # quick fix
 
                 read_limit_paths = [p for p in db_path.glob("*") if p.is_dir()]
 
@@ -58,13 +58,11 @@ def collect(
                             df['replicate'] = [name[-1] for _ in df.iterrows()]
 
                             if path.name == "stream":
-                                print(df)
-                                print(db_header)
-                                df.columns = ["read"] + db_header
+                                df.columns = ["read"] + db_header + ['replicate']
                             elif path.name == "dist":
-                                df.columns = ["rank", "distance", "shared_hashes"] + db_header
+                                df.columns = ["rank", "distance", "shared_hashes"] + db_header1
                             elif path.name == "screen" or path.name == "screen_winner":
-                                df.columns = ["rank", "identity", "shared_hashes"] + db_header
+                                df.columns = ["rank", "identity", "shared_hashes"] + db_header1
                             else:
                                 raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
