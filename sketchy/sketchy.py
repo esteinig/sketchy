@@ -62,7 +62,7 @@ class SketchyDiagnostics(PoreLogger):
                 nxf = nxf.drop(columns="read")  # drop unused read column
             elif mode == "dist":
                 nxf = nxf.drop(columns=["rank", "distance", "shared_hashes"])  # drop unused read column
-            elif mode == "screen":
+            elif mode == "screen" or mode == "screen_winner":
                 nxf = nxf.drop(columns=["rank", "identity", "shared_hashes"])  # drop unused read column
             else:
                 raise ValueError(f"Unsupported mode: {mode}")
