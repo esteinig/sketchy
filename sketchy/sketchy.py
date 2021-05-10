@@ -583,12 +583,17 @@ class SketchyDiagnostics(PoreLogger):
 
         ref = ref.drop(columns=to_exclude)
 
-        print(ref)
-
         methods_summary = []
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
+
+            if len(data['replicate'].unique()) > 1:
+                is_bootstrapped = True
+            else:
+                is_bootstrapped = False
+
+            print(f"Bootstrap replicates: {is_bootstrapped}")
 
             # Excluding isolates:
             unique_samples = data.index.unique().tolist()
@@ -604,11 +609,9 @@ class SketchyDiagnostics(PoreLogger):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
                         sample = row.name
-
-                        print(sample, row['replicate'])
+                        replicate = row['replicate']
 
                         row = row.drop(labels=['db', 'read_limit', 'replicate'])
-
 
                         sample_ref = ref.loc[sample, :]
                         comparison = pandas.DataFrame(
@@ -626,11 +629,17 @@ class SketchyDiagnostics(PoreLogger):
 
                         if 'st' in genotypes:
                             true_st = comparison.loc['st', 'match']
+                        elif 'mlst' in genotypes:
+                            true_st = comparison.loc['mlst', 'match']
+                        elif 'lineage' in genotypes:
+                            true_st = comparison.loc['lineage', 'match']
                         else:
                             true_st = nan
 
-                        summary.append([sample, db, read_limit, true_calls, total_calls, true_percent, true_st])
-                        comparisons[f"{db}_{read_limit}_{sample}"] = comparison
+                        summary.append(
+                            [sample, db, read_limit, true_calls, total_calls, true_percent, true_st, replicate]
+                        )
+                        comparisons[f"{db}_{read_limit}_{sample}_{replicate}"] = comparison
 
             summary_df = pandas.DataFrame(
                 summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st']
@@ -647,7 +656,7 @@ class SketchyDiagnostics(PoreLogger):
                 nrows=1, ncols=1, figsize=(14, 10)
             )
 
-            sns.barplot(data=db_data, x="read_limit", y="true_percent", hue="method", ax=axes, ci='sd', palette="colorblind")
+            sns.barplot(data=db_data, x="read_limit", y="true_percent", hue="method", ax=axes, palette="colorblind")
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
