@@ -7,7 +7,7 @@ from sketchy.sketchy import SketchyDiagnostics
 
 @click.command()
 @click.option(
-    '--results',
+    '--nextflow',
     '-n',
     type=Path,
     required=True,
@@ -42,6 +42,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Color palette for output plots [YlGnBu]'
 )
 @click.option(
+    '--scale',
+    '-s',
+    type=float,
+    default=1.0,
+    help='Scale factor of plot size [1.0]'
+)
+@click.option(
     '--subset_column',
     '-sc',
     type=str,
@@ -56,6 +63,26 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Comma delimited string of values in subset column to select [none]'
 )
 @click.option(
+    '--reverse_subset',
+    '-rs',
+    is_flag=True,
+    help='Reverse the subset (selection NOT in column)'
+)
+@click.option(
+    '--exclude_isolates',
+    '-ei',
+    type=str,
+    default='None',
+    help='Exclude isolates from heatmap output [none]'
+)
+@click.option(
+    '--exclude_genotypes',
+    '-eg',
+    type=str,
+    default='None',
+    help='Exclude genotypes from heatmap output [none]'
+)
+@click.option(
     '--verbose',
     '-v',
     is_flag=True,
@@ -67,16 +94,20 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
-def genotype_heatmap(results, outdir, reference, plot, color, subset_column, subset_values, mpl_backend, verbose):
+def genotype_heatmap(
+    nextflow, outdir, reference, plot, color, scale, reverse_subset,
+    subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
+):
 
     """ Comparison of genotype predictions from Nextflow """
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
     if reference:
-        sd.match_reference(nextflow=results, reference=reference)
+        sd.match_reference(nextflow=nextflow, reference=reference)
 
     sd.plot_genotype_heatmap(
-        nextflow=results, subset_column=subset_column, subset_values=subset_values
+        nextflow=nextflow, subset_column=subset_column, subset_values=subset_values, reverse_subset=reverse_subset,
+        exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates, scale=scale
     )
 

@@ -41,20 +41,29 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-    def plot_genotype_heatmap(self, nextflow: Path, subset_column: str, subset_values: str):
+    def plot_genotype_heatmap(
+            self, nextflow: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
+            exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
 
         nextflow_files = nextflow.glob("*.tsv")
 
-        scale = 1.5
-
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
 
+            if exclude_isolates:
+                nxf = nxf.drop(exclude_isolates)
+
+            if exclude_genotypes:
+                nxf = nxf.drop(columns=exclude_genotypes)
+
             if subset_column:
                 sv = [_.strip() for _ in subset_values.split(',')]
-                nxf = nxf[nxf[subset_column].isin(sv)]
+                if reverse_subset:
+                    nxf = nxf[~nxf[subset_column].isin(sv)]
+                else:
+                    nxf = nxf[nxf[subset_column].isin(sv)]
 
             mode = nxf['mode'].unique()[0]  # get the analysis mode from the results
 
