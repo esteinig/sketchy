@@ -601,12 +601,16 @@ class SketchyDiagnostics(PoreLogger):
                     for _, row in read_data.iterrows():
                         row = row.drop(labels=['db', 'read_limit'])
                         sample_ref = ref.loc[row.name, :]
-                        print(
-                            pandas.DataFrame(
-                                [row, sample_ref],
-                                index=[f"{row.name}_{method}", f"{row.name}_ref"]
-                            ).T
-                        )
+                        comparison = pandas.DataFrame(
+                            [row, sample_ref],
+                            index=[f"called", f"reference"]
+                        ).T
+
+                        comparison["match"] = comparison["called"].equals(comparison["reference"])
+
+                        print(comparison)
+
+
 
 class SketchyDatabase(PoreLogger):
 
