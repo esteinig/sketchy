@@ -638,7 +638,7 @@ class SketchyDiagnostics(PoreLogger):
         for db, db_data in df.groupby("db"):
             fig, axes = plt.subplots(
                 nrows=len(methods_summary), ncols=1, figsize=(
-                    1 * 4 * 9, len(methods_summary) * 2 * 9
+                    1 * 4 * 9, len(methods_summary) * 4 * 9
                 )
             )
             for i, (method, method_data) in enumerate(db_data.groupby('method')):
