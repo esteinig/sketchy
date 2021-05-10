@@ -610,7 +610,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         true_calls = sum([1 for v in comparison['match'] if v == True])
                         total_calls = len(comparison)
-                        true_percent = ((true_calls/total_calls)*100, 2)
+                        true_percent = round((true_calls/total_calls)*100, 2)
                         print(f"DB: {db} Reads: {read_limit} True calls: {true_calls}/{total_calls} ({true_percent}%)")
 
 
