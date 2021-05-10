@@ -604,7 +604,7 @@ class SketchyDiagnostics(PoreLogger):
                         print(
                             pandas.DataFrame(
                                 [row, sample_ref],
-                                columns=[f"{row.name}_{method}", f"{row.name}_ref"]
+                                index=[f"{row.name}_{method}", f"{row.name}_ref"]
                             ).T
                         )
 
