@@ -590,16 +590,14 @@ class SketchyDiagnostics(PoreLogger):
             print(f"Excluding samples ({method}) not in reference table: {', '.join(not_in_ref)}")
 
             data = data[~data.index.isin(not_in_ref)]
-
             data = data[ref.columns.tolist() + ["db", "read_limit"]]
 
             for db, db_data in data.groupby("db"):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
-                        print(row)
-
-
-
+                        sample = row.name
+                        sample_ref = ref.loc[sample, :]
+                        print(row, sample_ref)
 
 class SketchyDatabase(PoreLogger):
 
