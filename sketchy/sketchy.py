@@ -583,6 +583,8 @@ class SketchyDiagnostics(PoreLogger):
 
         ref = ref.drop(columns=to_exclude)
 
+        print(ref)
+
         methods_summary = []
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
@@ -602,10 +604,12 @@ class SketchyDiagnostics(PoreLogger):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
                         sample = row.name
-                        row = row.drop(labels=['db', 'read_limit', 'replicate'])
 
                         print(sample, row['replicate'])
-                        
+
+                        row = row.drop(labels=['db', 'read_limit', 'replicate'])
+
+
                         sample_ref = ref.loc[sample, :]
                         comparison = pandas.DataFrame(
                             [row, sample_ref],
