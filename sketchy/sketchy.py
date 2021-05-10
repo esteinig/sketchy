@@ -575,10 +575,14 @@ class SketchyDiagnostics(PoreLogger):
         unique_references = ref.index.unique().tolist()
 
         # Excluding reference columns
+        to_exclude = []
         for col in ref.columns.tolist():
             column_values = ref[col].tolist()
             if all([v == "-" for v in column_values]):
+                to_exclude.append(col)
                 print(f'Excluding column: {col}')
+
+        ref = ref.drop(columns=to_exclude)
 
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
