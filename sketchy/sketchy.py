@@ -634,7 +634,7 @@ class SketchyDiagnostics(PoreLogger):
 
             methods_summary.append(summary_df)
 
-        df = pandas.concat(methods_summary).reset_index()
+        df = pandas.concat(methods_summary).reset_index(drop=True)
 
         print(df)
 
