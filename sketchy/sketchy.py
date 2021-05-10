@@ -597,7 +597,6 @@ class SketchyDiagnostics(PoreLogger):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     print(read_data)
 
-            print(matched_data)
 
 
 
