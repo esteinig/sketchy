@@ -584,6 +584,7 @@ class SketchyDiagnostics(PoreLogger):
 
         ref = ref.drop(columns=to_exclude)
 
+        methods_summary = []
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
@@ -621,7 +622,7 @@ class SketchyDiagnostics(PoreLogger):
                             true_st = comparison.loc['st', 'match']
                         else:
                             true_st = nan
-                            
+
                         summary.append([sample, db, read_limit, true_calls, total_calls, true_percent, true_st])
                         comparisons[f"{db}_{read_limit}_{sample}"] = comparison
 
@@ -629,11 +630,13 @@ class SketchyDiagnostics(PoreLogger):
                 summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st']
             ).sort_values(['db', 'sample', 'read_limit'])
 
+            summary_df['method'] = [method for _ in summary_df.iterrows()]
 
+            methods_summary.append(summary_df)
 
-            print(summary_df)
+        df = pandas.concat(methods_summary)
 
-
+        print(df)
 
 class SketchyDatabase(PoreLogger):
 
