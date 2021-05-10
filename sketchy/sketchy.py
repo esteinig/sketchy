@@ -603,12 +603,14 @@ class SketchyDiagnostics(PoreLogger):
                         sample_ref = ref.loc[row.name, :]
                         comparison = pandas.DataFrame(
                             [row, sample_ref],
-                            index=[f"called", f"reference"]
+                            index=[f"call", f"reference"]
                         ).T
 
-                        comparison["match"] = comparison["called"] == comparison["reference"]
+                        comparison["match"] = comparison["call"] == comparison["reference"]
 
-                        print(comparison)
+                        print(
+                            comparison['match'].count_values()
+                        )
 
 
 
