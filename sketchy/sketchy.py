@@ -591,7 +591,11 @@ class SketchyDiagnostics(PoreLogger):
 
             data = data[~data.index.isin(not_in_ref)]
 
-            matched_data = data[ref.columns.tolist() + ["db", "read_limit"]]
+            data = data[ref.columns.tolist() + ["db", "read_limit"]]
+
+            for db, db_data in data.groupby("db"):
+                for read_limit, read_data in db_data.groupby("read_limit"):
+                    print(read_data)
 
             print(matched_data)
 
