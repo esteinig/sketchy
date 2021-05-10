@@ -636,15 +636,13 @@ class SketchyDiagnostics(PoreLogger):
         df = pandas.concat(methods_summary).reset_index(drop=True)
 
         for db, db_data in df.groupby("db"):
-            fig, axes = plt.subplots(
+            fig, ax = plt.subplots(
                 nrows=len(methods_summary), ncols=1, figsize=(
                     1 * 4 * 9, len(methods_summary) * 4 * 9
                 )
             )
-            for i, (method, method_data) in enumerate(db_data.groupby('method')):
-                print(i, method)
-                print(method_data)
-                sns.swarmplot(data=method_data, x="read_limit", y="true_calls", ax=axes[i])
+
+            sns.barplot(data=db_data, x="read_limit", y="true_calls", hue="method", ax=ax)
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
