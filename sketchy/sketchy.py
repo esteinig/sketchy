@@ -637,9 +637,7 @@ class SketchyDiagnostics(PoreLogger):
 
         for db, db_data in df.groupby("db"):
             fig, axes = plt.subplots(
-                nrows=1, ncols=1, figsize=(
-                    5 * 4, 5 * 4
-                )
+                nrows=1, ncols=1, figsize=(12, 12)
             )
 
             sns.barplot(data=db_data, x="read_limit", y="true_percent", hue="method", ax=axes, ci='sd', palette="colorblind")
