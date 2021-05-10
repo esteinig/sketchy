@@ -666,7 +666,7 @@ class SketchyDiagnostics(PoreLogger):
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
-            db_data.to_csv(f"{db}.data.tsv")
+            db_data.to_csv(f"{db}.data.tsv", sep="\t", index=False)
 
         print(df)
 
