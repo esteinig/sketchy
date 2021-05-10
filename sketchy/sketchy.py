@@ -606,7 +606,7 @@ class SketchyDiagnostics(PoreLogger):
                             index=[f"called", f"reference"]
                         ).T
 
-                        comparison["match"] = comparison["called"].equals(comparison["reference"])
+                        comparison["match"] = comparison["called"] == comparison["reference"]
 
                         print(comparison)
 
