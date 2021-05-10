@@ -42,18 +42,13 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
-    def plot_genotype_heatmap(self, nextflow: Path, reference: Path, subset_column: str, subset_values: str):
+    def plot_genotype_heatmap(self, nextflow: Path, subset_column: str, subset_values: str):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
 
         nextflow_files = nextflow.glob("*.tsv")
 
         scale = 1.0
-
-        if reference:
-            ref = pandas.read_csv(reference, sep="\t", index_col=0, header=0)  # same format as output heatmap
-        else:
-            ref = None
 
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
@@ -571,6 +566,17 @@ class SketchyDiagnostics(PoreLogger):
             )
 
             return df.set_index('idx')
+
+    def match_reference(self, nextflow, reference):
+        """ Match predictions from collected Nextflow results to reference table """
+
+        ref = pandas.read_csv(reference, sep="\t", header=0, index=0)
+
+        for col in ref.columns.tolist():
+            column_values = ref[col].tolist()
+            if len(set(column_values)) == 1 and all(column_values) == "-":
+                print(f'Excluding column: {col}')
+
 
 
 class SketchyDatabase(PoreLogger):
