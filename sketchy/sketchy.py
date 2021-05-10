@@ -609,7 +609,7 @@ class SketchyDiagnostics(PoreLogger):
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
                         print(
-                            comparison['match'].count_values()
+                            comparison['match'].value_counts()
                         )
 
 
