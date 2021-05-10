@@ -586,8 +586,10 @@ class SketchyDiagnostics(PoreLogger):
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
             unique_samples = data.index.unique().tolist()
 
-            print(unique_samples, unique_references)
-            
+            not_in_ref = set(unique_references).difference(set(unique_samples))
+
+            print(not_in_ref)
+
 
 
 class SketchyDatabase(PoreLogger):
