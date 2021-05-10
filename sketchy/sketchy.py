@@ -580,19 +580,21 @@ class SketchyDiagnostics(PoreLogger):
             if all([v == "-" for v in column_values]):
                 print(f'Excluding column: {col}')
 
-        # Excluding isolates in each method:
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
+
+            # Excluding isolates:
             unique_samples = data.index.unique().tolist()
-
             not_in_ref = list(set(unique_samples).difference(unique_references))
-
             print(f"Excluding samples ({method}) not in reference table: {', '.join(not_in_ref)}")
 
             data = data[~data.index.isin(not_in_ref)]
 
-            print(data.sort_values("read_limit"))
+            matched_data = data[ref.columns.tolist()]
+
+            print(matched_data)
+
 
 
 class SketchyDatabase(PoreLogger):
