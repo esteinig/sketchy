@@ -59,6 +59,8 @@ def collect(
 
                             if path.name == "stream":
                                 df.columns = ["read"] + db_header
+                                print(df)
+                                print(db_header)
                             elif path.name == "dist":
                                 df.columns = ["rank", "distance", "shared_hashes"] + db_header
                             elif path.name == "screen" or path.name == "screen_winner":
