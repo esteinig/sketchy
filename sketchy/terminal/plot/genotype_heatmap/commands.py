@@ -72,14 +72,14 @@ from sketchy.sketchy import SketchyDiagnostics
     '--exclude_isolates',
     '-ei',
     type=str,
-    default='None',
+    default=None,
     help='Exclude isolates from heatmap output [none]'
 )
 @click.option(
     '--exclude_genotypes',
     '-eg',
     type=str,
-    default='None',
+    default=None,
     help='Exclude genotypes from heatmap output [none]'
 )
 @click.option(
@@ -105,6 +105,11 @@ def genotype_heatmap(
 
     if reference:
         sd.match_reference(nextflow=nextflow, reference=reference)
+
+    if exclude_genotypes:
+        exclude_genotypes = [i.strip() for i in exclude_genotypes.split(',')]
+    if exclude_isolates:
+        exclude_isolates = [i.strip() for i in exclude_isolates.split(',')]
 
     sd.plot_genotype_heatmap(
         nextflow=nextflow, subset_column=subset_column, subset_values=subset_values, reverse_subset=reverse_subset,
