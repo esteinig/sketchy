@@ -636,13 +636,13 @@ class SketchyDiagnostics(PoreLogger):
         df = pandas.concat(methods_summary).reset_index(drop=True)
 
         for db, db_data in df.groupby("db"):
-            fig, ax = plt.subplots(
+            fig, axes = plt.subplots(
                 nrows=len(methods_summary), ncols=1, figsize=(
                     1 * 4 * 9, len(methods_summary) * 4 * 9
                 )
             )
 
-            sns.barplot(data=db_data, x="read_limit", y="true_calls", hue="method", ax=ax)
+            sns.barplot(data=db_data, x="read_limit", y="true_calls", hue="method", ax=axes[0])
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
