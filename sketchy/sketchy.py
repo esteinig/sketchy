@@ -598,7 +598,10 @@ class SketchyDiagnostics(PoreLogger):
             # Excluding isolates:
             unique_samples = data.index.unique().tolist()
             not_in_ref = list(set(unique_samples).difference(unique_references))
-            print(f"Excluding samples ({method}) not in reference table: {', '.join(not_in_ref)}")
+            print(
+                f"Excluding samples ({method}) not in reference and data:"
+                f" {', '.join(not_in_ref if not_in_ref else '-')}"
+            )
 
             data = data[~data.index.isin(not_in_ref)]
             data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
@@ -642,7 +645,7 @@ class SketchyDiagnostics(PoreLogger):
                         comparisons[f"{db}_{read_limit}_{sample}_{replicate}"] = comparison
 
             summary_df = pandas.DataFrame(
-                summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st']
+                summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st', 'replicate']
             ).sort_values(['db', 'sample', 'read_limit'])
 
             summary_df['method'] = [method for _ in summary_df.iterrows()]
