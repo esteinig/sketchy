@@ -574,6 +574,7 @@ class SketchyDiagnostics(PoreLogger):
 
         for col in ref.columns.tolist():
             column_values = ref[col].tolist()
+            print(column_values)
             if len(set(column_values)) == 1 and all(column_values) == "-":
                 print(f'Excluding column: {col}')
 
