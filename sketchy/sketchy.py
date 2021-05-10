@@ -572,6 +572,8 @@ class SketchyDiagnostics(PoreLogger):
 
         ref = pandas.read_csv(reference, sep="\t", header=0, index_col=0)
 
+        unique_references = ref.index.unique().tolist()
+
         # Excluding reference columns
         for col in ref.columns.tolist():
             column_values = ref[col].tolist()
@@ -579,13 +581,13 @@ class SketchyDiagnostics(PoreLogger):
                 print(f'Excluding column: {col}')
 
         # Excluding isolates in each method:
-
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
-
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
+            unique_samples = data.index.unique().tolist()
 
-            print(data)
+            print(unique_samples, unique_references)
+            
 
 
 class SketchyDatabase(PoreLogger):
