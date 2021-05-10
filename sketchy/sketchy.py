@@ -592,7 +592,7 @@ class SketchyDiagnostics(PoreLogger):
 
             data = data[~data.index.isin(not_in_ref)]
 
-            print(data)
+            print(data.sort_values("read_limit"))
 
 
 class SketchyDatabase(PoreLogger):
