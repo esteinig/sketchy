@@ -596,11 +596,14 @@ class SketchyDiagnostics(PoreLogger):
             data = data[~data.index.isin(not_in_ref)]
             data = data[ref.columns.tolist() + ["db", "read_limit"]]
 
+            summary = []
+            comparisons = {}
             for db, db_data in data.groupby("db"):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
+                        sample = row.name
                         row = row.drop(labels=['db', 'read_limit'])
-                        sample_ref = ref.loc[row.name, :]
+                        sample_ref = ref.loc[sample, :]
                         comparison = pandas.DataFrame(
                             [row, sample_ref],
                             index=[f"call", f"reference"]
@@ -611,7 +614,16 @@ class SketchyDiagnostics(PoreLogger):
                         true_calls = sum([1 for v in comparison['match'] if v == True])
                         total_calls = len(comparison)
                         true_percent = round((true_calls/total_calls)*100, 2)
-                        print(f"DB: {db} Reads: {read_limit} True calls: {true_calls}/{total_calls} ({true_percent}%)")
+
+                        summary.append([sample, db, read_limit, true_calls, total_calls, true_percent])
+                        comparisons[f"{db}_{read_limit}_{sample}"] = comparison
+
+            summary_df = pandas.DataFrame(
+                summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent']
+            ).sort_values(['db', 'sample', 'read_limit'])
+
+            print(summary_df)
+
 
 
 class SketchyDatabase(PoreLogger):
