@@ -591,7 +591,7 @@ class SketchyDiagnostics(PoreLogger):
 
             data = data[~data.index.isin(not_in_ref)]
 
-            matched_data = data[ref.columns.tolist()]
+            matched_data = data[ref.columns.tolist() + ["db", "read_limit"]]
 
             print(matched_data)
 
