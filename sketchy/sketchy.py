@@ -642,11 +642,13 @@ class SketchyDiagnostics(PoreLogger):
                 )
             )
             for i, (method, method_data) in enumerate(db_data.groupby('method')):
+                print(i, method)
+                print(method_data)
                 sns.swarmplot(data=method_data, x="read_limit", y="true_calls", ax=axes[i])
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
-            
+
         print(df)
 
 class SketchyDatabase(PoreLogger):
