@@ -602,7 +602,10 @@ class SketchyDiagnostics(PoreLogger):
                         row = row.drop(labels=['db', 'read_limit'])
                         sample_ref = ref.loc[row.name, :]
                         print(
-                            pandas.DataFrame([row, sample_ref], names=[f"{row.name}_{method}", f"{row.name}_ref"]).T
+                            pandas.DataFrame(
+                                [row, sample_ref],
+                                columns=[f"{row.name}_{method}", f"{row.name}_ref"]
+                            ).T
                         )
 
 class SketchyDatabase(PoreLogger):
