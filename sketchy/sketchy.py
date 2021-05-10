@@ -600,11 +600,9 @@ class SketchyDiagnostics(PoreLogger):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
                         row = row.drop(labels=['db', 'read_limit'])
-                        sample = row.name
-                        sample_ref = ref.loc[sample, :]
-
+                        sample_ref = ref.loc[row.name, :]
                         print(
-                            pandas.DataFrame([row, sample_ref])
+                            pandas.DataFrame([row, sample_ref], names=[f"{row.name}_{method}", f"{row.name}_ref"]).T
                         )
 
 class SketchyDatabase(PoreLogger):
