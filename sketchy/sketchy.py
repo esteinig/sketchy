@@ -659,7 +659,10 @@ class SketchyDiagnostics(PoreLogger):
                 nrows=1, ncols=1, figsize=(14, 10)
             )
 
-            sns.barplot(data=db_data, x="read_limit", y="true_percent", hue="method", ax=axes, palette="colorblind")
+            sns.barplot(
+                data=db_data, x="read_limit", y="true_percent", hue="method", ci='sd',
+                ax=axes, palette="colorblind"
+            )
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
