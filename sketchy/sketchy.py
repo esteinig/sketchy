@@ -615,12 +615,21 @@ class SketchyDiagnostics(PoreLogger):
                         total_calls = len(comparison)
                         true_percent = round((true_calls/total_calls)*100, 2)
 
-                        summary.append([sample, db, read_limit, true_calls, total_calls, true_percent])
+                        genotypes = comparison.index.tolist()
+
+                        if 'st' in genotypes:
+                            true_st = comparison.loc['st', 'match']
+                        else:
+                            true_st = nan
+                            
+                        summary.append([sample, db, read_limit, true_calls, total_calls, true_percent, true_st])
                         comparisons[f"{db}_{read_limit}_{sample}"] = comparison
 
             summary_df = pandas.DataFrame(
-                summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent']
+                summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st']
             ).sort_values(['db', 'sample', 'read_limit'])
+
+
 
             print(summary_df)
 
