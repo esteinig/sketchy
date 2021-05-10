@@ -608,7 +608,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
-                        true_calls = comparison['match'].value_counts("True")
+                        true_calls = sum([1 for v in comparison['match'] if v == True])
                         total_calls = len(comparison)
 
 
