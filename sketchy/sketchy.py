@@ -608,11 +608,11 @@ class SketchyDiagnostics(PoreLogger):
 
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
-                        true_false = comparison['match'].value_counts()
+                        true_calls = comparison['match'].value_counts("True")
+                        total_calls = len(comparison)
 
-                        print(true_false["True"])
 
-                        print("DB: {db} Reads: {read_limit} True calls: ")
+                        print(f"DB: {db} Reads: {read_limit} True calls: {true_calls}/{total_calls}")
 
 
 class SketchyDatabase(PoreLogger):
