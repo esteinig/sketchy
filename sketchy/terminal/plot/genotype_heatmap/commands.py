@@ -7,18 +7,11 @@ from sketchy.sketchy import SketchyDiagnostics
 
 @click.command()
 @click.option(
-    '--nextflow',
-    '-n',
+    '--directory',
+    '-d',
     type=Path,
     required=True,
     help='Path to collected results directory of Nextflow run [required]',
-)
-@click.option(
-    '--reference',
-    '-r',
-    type=Path,
-    required=False,
-    help='Path to reference genotype file for heatmap colors [optional]',
 )
 @click.option(
     '--outdir',
@@ -95,7 +88,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Matplotlib backend [default]'
 )
 def genotype_heatmap(
-    nextflow, outdir, reference, plot, color, scale, reverse_subset,
+    directory, outdir, scale, reverse_subset,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
 ):
 
@@ -103,16 +96,13 @@ def genotype_heatmap(
 
     sd = SketchyDiagnostics(outdir=outdir, verbose=verbose, mpl_backend=mpl_backend)
 
-    if reference:
-        sd.match_reference(nextflow=nextflow, reference=reference)
-
     if exclude_genotypes:
         exclude_genotypes = [i.strip() for i in exclude_genotypes.split(',')]
     if exclude_isolates:
         exclude_isolates = [i.strip() for i in exclude_isolates.split(',')]
 
     sd.plot_genotype_heatmap(
-        nextflow=nextflow, subset_column=subset_column, subset_values=subset_values, reverse_subset=reverse_subset,
+        nextflow=directory, subset_column=subset_column, subset_values=subset_values, reverse_subset=reverse_subset,
         exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates, scale=scale
     )
 

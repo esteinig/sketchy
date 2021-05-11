@@ -1,5 +1,6 @@
 import click
 
+from .match import match
 from .fastx import fastx
 from .database import database
 from .online import online
@@ -17,6 +18,7 @@ def terminal_client():
     pass
 
 
+terminal_client.add_command(match)
 terminal_client.add_command(collect)
 terminal_client.add_command(plot)
 terminal_client.add_command(survey)
