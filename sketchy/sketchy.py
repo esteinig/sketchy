@@ -42,8 +42,9 @@ class SketchyDiagnostics(PoreLogger):
         )
 
     def plot_genotype_heatmap(
-            self, nextflow: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
-            exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0):
+        self, nextflow: Path, reference: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
+        exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0
+    ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
 
@@ -90,14 +91,15 @@ class SketchyDiagnostics(PoreLogger):
                     db_data.groupby('read_limit')
                 ):
                     _drop_for_labels = ['db', 'mode', 'read_limit']
-                    if mode in ('dist', 'screen'):
+                    if mode in ('dist', 'screen', 'screen-w'):
                         _drop_for_labels.append('id')
 
-                    _predictions = predictions.drop(columns=_drop_for_labels)
+                    _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
+                    _values = self.get_reference_values(_predictions, reference)
 
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
-                        labels=_predictions.sort_index(), palette="Set2_r",
+                        labels=_predictions, palette="Set2_r",
                         title=f"\n{read_limit} Reads\n", ax=axes[i]
                     )
 
@@ -593,6 +595,7 @@ class SketchyDiagnostics(PoreLogger):
         ref = ref.drop(columns=to_exclude)
 
         methods_summary = []
+        methods_data = []
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
@@ -616,7 +619,7 @@ class SketchyDiagnostics(PoreLogger):
             data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
 
             summary = []
-            comparisons = {}
+            comparisons = []
             for db, db_data in data.groupby("db"):
                 for read_limit, read_data in db_data.groupby("read_limit"):
                     for _, row in read_data.iterrows():
@@ -651,18 +654,28 @@ class SketchyDiagnostics(PoreLogger):
                         summary.append(
                             [sample, db, read_limit, true_calls, total_calls, true_percent, true_st, replicate]
                         )
-                        comparisons[f"{db}_{read_limit}_{sample}_{replicate}"] = comparison
+
+                        comparison['db'] = [db for _ in comparison.iterrows()]
+                        comparison['read_limit'] = [read_limit for _ in comparison.iterrows()]
+                        comparison['sample'] = [sample for _ in comparison.iterrows()]
+                        comparison['replicate'] = [replicate for _ in comparison.iterrows()]
+
+                        comparisons.append(comparison)
 
             summary_df = pandas.DataFrame(
                 summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st', 'replicate']
             ).sort_values(['db', 'sample', 'read_limit'])
 
             summary_df['method'] = [method for _ in summary_df.iterrows()]
-
             methods_summary.append(summary_df)
 
-        df = pandas.concat(methods_summary).reset_index(drop=True)
+            comparisons_method = pandas.concat(comparisons)
+            comparisons_method['method'] = [method for _ in comparisons_method.iterrows()]
+            methods_data.append(comparisons_method)
 
+        data = pandas.concat(methods_data).reset_index(drop=True)
+
+        df = pandas.concat(methods_summary).reset_index(drop=True)
         for db, db_data in df.groupby("db"):
             fig, axes = plt.subplots(
                 nrows=1, ncols=1, figsize=(14, 10)
@@ -677,7 +690,11 @@ class SketchyDiagnostics(PoreLogger):
             fig.savefig(f"{db}.summary.png")
             db_data.to_csv(f"{db}.data.tsv", sep="\t", index=False)
 
+            data[data['db'] == db].to_csv(f"{db}.match.tsv", sep='\t', index=False)
+
         print(df)
+        print(data)
+
 
 class SketchyDatabase(PoreLogger):
 
