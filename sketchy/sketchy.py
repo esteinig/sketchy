@@ -267,7 +267,7 @@ class SketchyDiagnostics(PoreLogger):
             values = labels.replace(labels, 1.)
 
         p1 = sns.heatmap(
-            pandas.DataFrame(values, index=
+            pandas.DataFrame(values, index=index_labels, columns=column_labels),
             vmin=0 if evaluation else None,
             vmax=3 if evaluation else None,
             linewidths=5,
