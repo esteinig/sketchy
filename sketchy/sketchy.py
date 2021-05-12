@@ -272,7 +272,7 @@ class SketchyDiagnostics(PoreLogger):
             values = labels.replace(labels, 1.)
 
         # color the zero values
-        values = where(values == 0, 0.1, values)
+        # values = where(values == 0, 0.1, values)
 
         p1 = sns.heatmap(
             pandas.DataFrame(values, index=index_labels, columns=column_labels),
