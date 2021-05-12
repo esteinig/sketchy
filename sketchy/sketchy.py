@@ -688,6 +688,7 @@ class SketchyDiagnostics(PoreLogger):
                 data=db_data, x="read_limit", y="true_percent", hue="method", ci='sd',
                 ax=axes, palette="colorblind"
             )
+            plt.axhline(y=80, color='black', linestyle='---')
 
             p.set_xlabel('\nRead threshold (n)', fontsize=9)
             p.set_ylabel('Correct prediction (%)\n', fontsize=9)
