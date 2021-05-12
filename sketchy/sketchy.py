@@ -653,10 +653,10 @@ class SketchyDiagnostics(PoreLogger):
                         ).T
 
                         comparison["call"] = [
-                            c.strip() if isinstance(str, c) else c for c in comparison['call']
+                            c.strip() if isinstance(c, str) else c for c in comparison['call']
                         ]
                         comparison["reference"] = [
-                            r.strip() if isinstance(str, r) else r for r in comparison['reference']
+                            r.strip() if isinstance(c, str) else r for r in comparison['reference']
                         ]
 
                         comparison["match"] = comparison["call"] == comparison["reference"]
