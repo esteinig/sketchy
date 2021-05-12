@@ -28,13 +28,6 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Output directory for plots [nfx-heatmaps]'
 )
 @click.option(
-    '--plot',
-    '-p',
-    type=Path,
-    default=Path("diagnostics.png"),
-    help='Plot file, extension specifies format [diagnostics.png]'
-)
-@click.option(
     '--color',
     '-c',
     type=str,
