@@ -28,13 +28,6 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Output directory for plots [nfx-heatmaps]'
 )
 @click.option(
-    '--color',
-    '-c',
-    type=str,
-    default='YlGnBu',
-    help='Color palette for output plots [YlGnBu]'
-)
-@click.option(
     '--scale',
     '-s',
     type=float,
