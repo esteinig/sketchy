@@ -108,8 +108,7 @@ class SketchyDiagnostics(PoreLogger):
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
                         _index_labels.append(sample)
-                        _column_labels = ref_data.index.tolist()
-                        print(ref_data)
+                        _column_labels = ref_data['reference'].tolist()
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
