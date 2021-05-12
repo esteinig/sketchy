@@ -109,7 +109,7 @@ class SketchyDiagnostics(PoreLogger):
                         ]
                         _index_labels.append(sample)
                         _column_labels = ref_data.index.tolist()
-                        print(ref_data.index.tolist(), ref_data.index)
+                        print(ref_data)
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
