@@ -8,7 +8,7 @@ import json
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from numpy import array
+from numpy import array, where
 from numpy import nan
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
@@ -270,6 +270,9 @@ class SketchyDiagnostics(PoreLogger):
             if labels is None:
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
+
+        # color the zero values
+        values = where(values == 0, 0.1, values)
 
         p1 = sns.heatmap(
             pandas.DataFrame(values, index=index_labels, columns=column_labels),
