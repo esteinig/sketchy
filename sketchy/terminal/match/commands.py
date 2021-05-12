@@ -24,14 +24,24 @@ from sketchy.sketchy import SketchyDiagnostics
     '-o',
     required=False,
     type=Path,
-    default="nxf-results",
+    default="nfx-results",
     help='Nextflow summary output directory'
 )
+@click.option(
+    '--exclude',
+    '-e',
+    required=False,
+    type=str,
+    default="",
+    help='Run samples to exclude'
+)
 def match(
-    directory, outdir, reference
+    directory, outdir, reference, exclude
 ):
 
     """ Match a reference genotype table to prediction outputs from Nextflow """
 
+    to_exclude = [s.strip() for s in exclude.split(",")]
+
     sd = SketchyDiagnostics(outdir=outdir, verbose=True, mpl_backend=None)
-    sd.match_reference(nextflow=directory, reference=reference)
+    sd.match_reference(nextflow=directory, reference=reference, exclude_isolates=to_exclude)

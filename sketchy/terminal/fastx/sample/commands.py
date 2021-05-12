@@ -38,8 +38,9 @@ from sketchy.utils import get_output_handle, is_fasta, is_fastq, create_fastx_in
 )
 @click.option(
     "--seed",
-    help="Seed for sampling function [none].",
-    is_flag=True
+    help="Seed for sampling function [system time].",
+    type=int,
+    default=None
 )
 def sample(fastx, output, sample, replacement, seed):
 

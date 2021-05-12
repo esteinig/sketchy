@@ -577,7 +577,7 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
-    def match_reference(self, nextflow, reference):
+    def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
 
         ref = pandas.read_csv(reference, sep="\t", header=0, index_col=0)
@@ -599,6 +599,9 @@ class SketchyDiagnostics(PoreLogger):
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
+
+            if exclude_isolates:
+                data = data[~data.index.isin(exclude_isolates)]
 
             if len(data['replicate'].unique()) > 1:
                 is_bootstrapped = True
@@ -681,10 +684,13 @@ class SketchyDiagnostics(PoreLogger):
                 nrows=1, ncols=1, figsize=(14, 10)
             )
 
-            sns.barplot(
+            p = sns.barplot(
                 data=db_data, x="read_limit", y="true_percent", hue="method", ci='sd',
                 ax=axes, palette="colorblind"
             )
+
+            p.set_xlabel('\nRead threshold (n)', fontsize=9)
+            p.set_ylabel('Correct prediction (%)\n', fontsize=9)
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
