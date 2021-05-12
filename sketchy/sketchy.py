@@ -108,7 +108,7 @@ class SketchyDiagnostics(PoreLogger):
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
                         _index_labels.append(sample)
-                        _column_labels = ref_data['reference'].tolist()
+                        _column_labels = ref_data['genotype'].tolist()
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
@@ -678,6 +678,7 @@ class SketchyDiagnostics(PoreLogger):
                         comparison['read_limit'] = [read_limit for _ in comparison.iterrows()]
                         comparison['sample'] = [sample for _ in comparison.iterrows()]
                         comparison['replicate'] = [replicate for _ in comparison.iterrows()]
+                        comparison['genotype'] = genotypes
 
                         comparisons.append(comparison)
 
