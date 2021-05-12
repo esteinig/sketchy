@@ -43,5 +43,5 @@ def match(
 
     to_exclude = [s.strip() for s in exclude.split(",")]
 
-    sd = SketchyDiagnostics(outdir=outdir, verbose=True, mpl_backend=None)
+    sd = SketchyDiagnostics(outdir=None, verbose=True, mpl_backend=None)
     sd.match_reference(nextflow=directory, reference=reference, exclude_isolates=to_exclude)

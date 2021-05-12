@@ -34,7 +34,9 @@ class SketchyDiagnostics(PoreLogger):
 
         self.na = "#d3d3d3"
         self.outdir = outdir
-        self.outdir.mkdir(parents=True, exist_ok=True)
+
+        if outdir:
+            self.outdir.mkdir(parents=True, exist_ok=True)
 
         if mpl_backend:
             plt.switch_backend(mpl_backend)
