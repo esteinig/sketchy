@@ -109,11 +109,11 @@ class SketchyDiagnostics(PoreLogger):
                         ]
                         _index_labels.append(sample)
                         _column_labels = ref_data.index.tolist()
-                        print(ref_data)
+                        print(ref_data.index.tolist(), ref_data.index)
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
-
+                    print(_column_labels)
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette="Set2_r",
