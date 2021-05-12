@@ -105,12 +105,13 @@ class SketchyDiagnostics(PoreLogger):
                             (md['db'] == db) & (md['read_limit'] == read_limit) &
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
-
+                        print(len(ref_data))
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
 
                     print(_predictions.values.shape, _values.shape)
+                    print(_predictions.values)
 
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
@@ -261,9 +262,6 @@ class SketchyDiagnostics(PoreLogger):
             if labels is None:
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
-        else:
-            if all(values.isna().all().tolist()):  # if all values are NA
-                values = values.fillna(0.)
 
         p1 = sns.heatmap(
             values,
