@@ -93,7 +93,7 @@ class SketchyDiagnostics(PoreLogger):
                 for (i, (read_limit, predictions)) in enumerate(
                     db_data.groupby('read_limit')
                 ):
-                    _drop_for_labels = ['db', 'mode', 'read_limit']
+                    _drop_for_labels = ['db', 'mode', 'read_limit', 'replicate']
                     if mode in ('dist', 'screen', 'screen-w'):
                         _drop_for_labels.append('id')
 
@@ -105,13 +105,9 @@ class SketchyDiagnostics(PoreLogger):
                             (md['db'] == db) & (md['read_limit'] == read_limit) &
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
-                        print(len(ref_data))
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
-
-                    print(_predictions.values.shape, _values.shape)
-                    print(_predictions.values)
 
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
