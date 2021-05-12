@@ -653,8 +653,8 @@ class SketchyDiagnostics(PoreLogger):
                         ).T
 
                         comparison["call"] = comparison["call"].str.strip()
-                        comparison["reference"] = comparison["call"].str.strip()
-                        
+                        comparison["reference"] = comparison["reference"].str.strip()
+
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
                         true_calls = sum([1 for v in comparison['match'] if v == True])
