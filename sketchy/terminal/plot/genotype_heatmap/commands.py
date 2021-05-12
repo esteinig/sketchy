@@ -109,7 +109,7 @@ def genotype_heatmap(
         exclude_isolates = [i.strip() for i in exclude_isolates.split(',')]
 
     sd.plot_genotype_heatmap(
-        nextflow=directory, reference=match_data, subset_column=subset_column, subset_values=subset_values,
+        nextflow=directory, match_data=match_data, subset_column=subset_column, subset_values=subset_values,
         reverse_subset=reverse_subset, exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates,
         scale=scale
     )
