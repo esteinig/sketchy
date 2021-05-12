@@ -702,6 +702,8 @@ class SketchyDiagnostics(PoreLogger):
         print(df)
         print(data)
 
+        print(f"Samples in data: {df.sample.nunique()}")
+
 
 class SketchyDatabase(PoreLogger):
 
