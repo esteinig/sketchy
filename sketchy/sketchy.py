@@ -106,13 +106,14 @@ class SketchyDiagnostics(PoreLogger):
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
 
-                        print(sample, ref_data)
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
-                    print(array(_values))
+                    _values = array(_values)
+
+                    print(_predictions.values.shape, _values.shape)
 
                     self.plot_comparative_heatmap(
-                        values=None, annot=True, cbar=False,
+                        values=_values, annot=True, cbar=False,
                         labels=_predictions, palette="Set2_r",
                         title=f"\n{read_limit} Reads\n", ax=axes[i]
                     )
