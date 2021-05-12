@@ -124,7 +124,7 @@ class SketchyDiagnostics(PoreLogger):
                     )
 
                 plt.tight_layout()
-                fig.savefig(f"{self.outdir / f'{mode}.{db}'}.png")
+                fig.savefig(f"{self.outdir / f'{mode}.{db}'}.svg")
 
     def plot_sssh_diagostics(
         self, sssh_data: dict, plot_file: Path, plot_breakpoint: bool = False, color: str = "YlGnBu"
@@ -721,7 +721,7 @@ class SketchyDiagnostics(PoreLogger):
             p.set_ylabel('Correct prediction (%)\n', fontsize=9)
 
             plt.tight_layout()
-            fig.savefig(f"{db}.summary.png")
+            fig.savefig(f"{db}.summary.svg")
             db_data.to_csv(f"{db}.summary.tsv", sep="\t", index=False)
 
             data[data['db'] == db].to_csv(f"{db}.match.tsv", sep='\t', index=False)
