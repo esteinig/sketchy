@@ -8,6 +8,7 @@ import json
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+from numpy import array
 from numpy import nan
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
@@ -42,13 +43,15 @@ class SketchyDiagnostics(PoreLogger):
         )
 
     def plot_genotype_heatmap(
-        self, nextflow: Path, reference: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
+        self, nextflow: Path, match_data: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
         exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0
     ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
 
         nextflow_files = nextflow.glob("*.tsv")
+
+        md = pandas.read_csv(match_data, sep="\t", header=0)
 
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
@@ -95,8 +98,15 @@ class SketchyDiagnostics(PoreLogger):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
-                    _values = self.get_reference_values(_predictions, reference)
 
+                    _values = []
+                    for sample, sample_data in _predictions.groupby(_predictions.index):
+                        ref_data = md[(md['db'] == db) & (md['read_limit'] == read_limit) & (md['sample'] == sample)]
+                        print(sample, ref_data)
+                        _values.append(map(int, ref_data['match'].tolist()))
+
+                    print(array(_values))
+                    
                     self.plot_comparative_heatmap(
                         values=None, annot=True, cbar=False,
                         labels=_predictions, palette="Set2_r",
@@ -695,7 +705,7 @@ class SketchyDiagnostics(PoreLogger):
 
             plt.tight_layout()
             fig.savefig(f"{db}.summary.png")
-            db_data.to_csv(f"{db}.data.tsv", sep="\t", index=False)
+            db_data.to_csv(f"{db}.summary.tsv", sep="\t", index=False)
 
             data[data['db'] == db].to_csv(f"{db}.match.tsv", sep='\t', index=False)
 

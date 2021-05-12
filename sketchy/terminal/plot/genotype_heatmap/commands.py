@@ -14,6 +14,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Path to collected results directory of Nextflow run [required]',
 )
 @click.option(
+    '--match_data',
+    '-m',
+    type=Path,
+    default=Path("nfx-heatmaps"),
+    help='Output directory for plots [nfx-heatmaps]'
+)
+@click.option(
     '--outdir',
     '-o',
     type=Path,
@@ -88,7 +95,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Matplotlib backend [default]'
 )
 def genotype_heatmap(
-    directory, outdir, scale, reverse_subset,
+    directory, match_data, outdir, scale, reverse_subset,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
 ):
 
@@ -102,7 +109,8 @@ def genotype_heatmap(
         exclude_isolates = [i.strip() for i in exclude_isolates.split(',')]
 
     sd.plot_genotype_heatmap(
-        nextflow=directory, subset_column=subset_column, subset_values=subset_values, reverse_subset=reverse_subset,
-        exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates, scale=scale
+        nextflow=directory, reference=match_data, subset_column=subset_column, subset_values=subset_values,
+        reverse_subset=reverse_subset, exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates,
+        scale=scale
     )
 
