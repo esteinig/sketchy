@@ -261,7 +261,7 @@ class SketchyDiagnostics(PoreLogger):
         column_labels: list = None
     ):
 
-        if not palette.endswith("_r"):
+        if isinstance(palette, str) and not palette.endswith("_r"):
             palette += "_r"
 
         if values is None:
