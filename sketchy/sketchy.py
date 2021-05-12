@@ -112,7 +112,6 @@ class SketchyDiagnostics(PoreLogger):
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
-                    print(_column_labels)
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette="Set2_r",
@@ -653,6 +652,9 @@ class SketchyDiagnostics(PoreLogger):
                             index=[f"call", f"reference"]
                         ).T
 
+                        comparison["call"] = comparison["call"].str.strip()
+                        comparison["reference"] = comparison["call"].str.strip()
+                        
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
                         true_calls = sum([1 for v in comparison['match'] if v == True])
