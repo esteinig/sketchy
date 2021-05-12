@@ -94,17 +94,21 @@ class SketchyDiagnostics(PoreLogger):
                     db_data.groupby('read_limit')
                 ):
                     _drop_for_labels = ['db', 'mode', 'read_limit', 'replicate']
-                    if mode in ('dist', 'screen', 'screen-w'):
+                    if mode in ('dist', 'screen', 'screen_winner'):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
 
                     _values = []
+                    _index_labels = []
+                    _column_labels = None
                     for sample, sample_data in _predictions.groupby(_predictions.index):
                         ref_data = md[
                             (md['db'] == db) & (md['read_limit'] == read_limit) &
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
+                        _index_labels.append(sample)
+                        _column_labels = ref_data.index.tolist()
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     _values = array(_values)
@@ -112,7 +116,8 @@ class SketchyDiagnostics(PoreLogger):
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette="Set2_r",
-                        title=f"\n{read_limit} Reads\n", ax=axes[i]
+                        title=f"\n{read_limit} Reads\n", ax=axes[i],
+                        index_labels=_index_labels, column_labels=_column_labels
                     )
 
                 plt.tight_layout()
@@ -248,7 +253,9 @@ class SketchyDiagnostics(PoreLogger):
         threshold: float = 0.,
         time: bool = False,
         title: str = "",
-        evaluation: bool = False
+        evaluation: bool = False,
+        index_labels: list = None,
+        column_labels: list = None
     ):
 
         if not palette.endswith("_r"):
@@ -260,7 +267,7 @@ class SketchyDiagnostics(PoreLogger):
             values = labels.replace(labels, 1.)
 
         p1 = sns.heatmap(
-            values,
+            pandas.DataFrame(values, index=
             vmin=0 if evaluation else None,
             vmax=3 if evaluation else None,
             linewidths=5,
