@@ -101,9 +101,13 @@ class SketchyDiagnostics(PoreLogger):
 
                     _values = []
                     for sample, sample_data in _predictions.groupby(_predictions.index):
-                        ref_data = md[(md['db'] == db) & (md['read_limit'] == read_limit) & (md['sample'] == sample)]
+                        ref_data = md[
+                            (md['db'] == db) & (md['read_limit'] == read_limit) &
+                            (md['sample'] == sample) & (md['method'] == mode)
+                        ]
+
                         print(sample, ref_data)
-                        _values.append(map(int, ref_data['match'].tolist()))
+                        _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     print(array(_values))
 
