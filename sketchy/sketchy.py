@@ -14,6 +14,7 @@ from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
+from matplotlib.colors import LinearSegmentedColormap
 
 RE = Fore.RESET
 C = Fore.CYAN
@@ -111,10 +112,13 @@ class SketchyDiagnostics(PoreLogger):
                         _column_labels = ref_data['genotype'].tolist()
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
+                    cm = LinearSegmentedColormap.from_list("", [
+                        '#d3d3d3', '#238443'
+                    ])
                     _values = array(_values)
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
-                        labels=_predictions, palette="Greens",
+                        labels=_predictions, palette=cm,
                         title=f"\n{read_limit} Reads\n", ax=axes[i],
                         index_labels=_index_labels, column_labels=_column_labels
                     )
