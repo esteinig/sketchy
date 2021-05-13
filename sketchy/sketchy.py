@@ -115,7 +115,7 @@ class SketchyDiagnostics(PoreLogger):
                         _values.append([int(b) for b in ref_data['match'].tolist()])
 
                     cm = LinearSegmentedColormap.from_list("", [
-                        '#fc4e2a', '#238443'
+                        '#de8f05', '#029e73'
                     ])
                     _values = array(_values)
                     self.plot_comparative_heatmap(
