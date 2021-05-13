@@ -718,7 +718,7 @@ class SketchyDiagnostics(PoreLogger):
 
             p = sns.barplot(
                 data=db_data, x="read_limit", y="true_percent", hue="method", ci='sd',
-                ax=axes, palette="colorblind"
+                ax=axes, palette=['#0173b2', '#de8f05', '#029e73', '#d55e00']
             )
             plt.axhline(y=80, color='black', linestyle='--')
 
