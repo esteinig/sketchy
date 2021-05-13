@@ -248,7 +248,7 @@ class SketchyDiagnostics(PoreLogger):
 
     @staticmethod
     def plot_comparative_heatmap(
-        values: pandas.DataFrame = None,
+        values: array = None,
         palette: [str] or str = "YlGnBu",
         ax=None,
         fmt: str = ".3f",
@@ -286,11 +286,11 @@ class SketchyDiagnostics(PoreLogger):
             cmap=palette,
             annot_kws={"size": 18 if time else 30, "weight": "bold"}
         )
-        p1.tick_params(axis='both', which='major', labelsize=30, length=3, width=2)
-        p1.tick_params(axis='x', rotation=90)
+        p1.tick_params(axis='both', which='major', labelsize=60, length=3, width=2)
+        p1.tick_params(axis='x', rotation=45)
         p1.tick_params(axis='y', rotation=0)
 
-        ax.set_title(title, fontdict={'fontsize': 38})
+        ax.set_title(title, fontdict={'fontsize': 80})
         ax.set_xlabel('')
 
         if threshold > 0.:
