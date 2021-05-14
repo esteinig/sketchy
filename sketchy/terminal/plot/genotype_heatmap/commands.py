@@ -93,7 +93,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Figure width multiplier [default]'
 )
 def genotype_heatmap(
-    directory, match_data, outdir, scale, reverse_subset,
+    directory, match_data, outdir, scale, reverse_subset, width, height,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
 ):
 
