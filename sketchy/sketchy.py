@@ -776,7 +776,8 @@ class SketchyDiagnostics(PoreLogger):
                         ]
 
                     print(rdata)
-
+                    rdata = rdata.str.upper()  # r prediction --> R
+                    
                     accuracy = accuracy_score(rdata['reference'], rdata['call'])
                     precision = precision_score(rdata['reference'], rdata['call'], average='binary')
                     recall = precision_score(rdata['reference'], rdata['call'], average='binary')
