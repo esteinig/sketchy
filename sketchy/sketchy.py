@@ -765,9 +765,9 @@ class SketchyDiagnostics(PoreLogger):
         for method, mdata in data.groupby("method"):
             for db, ddata in data.groupby("db"):
                 for read_limit, rdata in data.groupby("read_limit"):
-                    accuracy = accuracy_score(rdata['reference'], rdata['call'])
-                    precision = precision_score(rdata['reference'], rdata['call'])
-                    recall = precision_score(rdata['reference'], rdata['call'])
+                    accuracy = accuracy_score(rdata['reference'], rdata['call'], average='micro')
+                    precision = precision_score(rdata['reference'], rdata['call'], average='micro')
+                    recall = precision_score(rdata['reference'], rdata['call'], average='micro')
 
                     print(
                         f"Method: {method} DB: {db} Reads: {read_limit} "
