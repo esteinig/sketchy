@@ -103,17 +103,12 @@ class SketchyDiagnostics(PoreLogger):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
-
-                    print(_predictions)
-
                     _predictions = self.natsort_index(_predictions)
-
-                    print(_predictions)
 
                     _values = []
                     _index_labels = []
                     _column_labels = None
-                    for sample, sample_data in _predictions.groupby(_predictions.index):
+                    for sample, sample_data in _predictions.groupby(_predictions.index, sorted=False):
                         ref_data = md[
                             (md['db'] == db) & (md['read_limit'] == read_limit) &
                             (md['sample'] == sample) & (md['method'] == mode)
