@@ -47,7 +47,8 @@ class SketchyDiagnostics(PoreLogger):
 
     def plot_genotype_heatmap(
         self, nextflow: Path, match_data: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
-        exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0, height: int = 8, width: int = 8
+        exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0, height: int = 8,
+        width: int = 8, chunk: int = 0
     ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
@@ -119,11 +120,10 @@ class SketchyDiagnostics(PoreLogger):
                     ])
 
                     _values = array(_values)
-
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette=cm,
-                        title=f"\n{read_limit} Reads\n", ax=axes[i],
+                        title=f"\n{read_limit} Reads\n", ax=axes[i] if nrows > 1 else axes,
                         index_labels=_index_labels, column_labels=_column_labels
                     )
 
