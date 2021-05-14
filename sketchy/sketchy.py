@@ -765,9 +765,19 @@ class SketchyDiagnostics(PoreLogger):
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
                 for read_limit, rdata in ddata.groupby("read_limit"):
+
+                    # Remove multiclass predictions for binary a-p-r scores
+
+                    if db == 'saureus':
+                        rdata = rdata[~rdata['genotype'].isin(['mlst', 'meca', 'pvl', 'scc'])]
+                    elif db == 'kpneumoniae':
+                        rdata = rdata[~rdata['genotype'].isin(
+                            ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
+                        ]
+
                     accuracy = accuracy_score(rdata['reference'], rdata['call'])
-                    precision = precision_score(rdata['reference'], rdata['call'], average='samples')
-                    recall = precision_score(rdata['reference'], rdata['call'], average='samples')
+                    precision = precision_score(rdata['reference'], rdata['call'], average='binary')
+                    recall = precision_score(rdata['reference'], rdata['call'], average='binary')
 
                     print(
                         f"Method: {method} DB: {db} Reads: {read_limit} "
