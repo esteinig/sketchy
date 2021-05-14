@@ -150,7 +150,7 @@ class SketchyDiagnostics(PoreLogger):
                     re.findall(r"\d+", x)[0]
                 )
             )
-            df = df.reindex(names_sorted).reset_index(level=0)
+            df = df.reindex(names_sorted).reset_index()
 
         except TypeError:
             self.logger.info(
