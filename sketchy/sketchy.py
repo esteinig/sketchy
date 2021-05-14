@@ -1,5 +1,6 @@
 __version__ = '0.5.0'
 
+import re
 import os
 import shutil
 import logging
@@ -27,7 +28,7 @@ class SketchyDiagnostics(PoreLogger):
 
     def __init__(
         self,
-        outdir: Path = Path("diagnostics"),
+        outdir: Path = None,
         mpl_backend: str = None,
         verbose: bool = True
     ):
@@ -103,6 +104,12 @@ class SketchyDiagnostics(PoreLogger):
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
 
+                    print(_predictions)
+
+                    _predictions = self.str_num_sort_col(_predictions, 'index')
+
+                    print(_predictions)
+
                     _values = []
                     _index_labels = []
                     _column_labels = None
@@ -129,6 +136,29 @@ class SketchyDiagnostics(PoreLogger):
 
                 plt.tight_layout()
                 fig.savefig(f"{self.outdir / f'{mode}.{db}'}.svg")
+
+    def str_num_sort_col(self, df: pandas.DataFrame, col: str = None):
+
+        try:
+            if col == 'index':
+                c = df.index
+            else:
+                c = df[col]
+
+            names_sorted = sorted(
+                c.tolist(), key=lambda x: int(
+                    re.findall(r"\d+", x)[0]
+                )
+            )
+            df = df.set_index('name') \
+                .reindex(names_sorted).reset_index(level=0)
+        except TypeError:
+            self.logger.info(
+                'Could not extract index using regex from'
+                ' name string. Skipping sorting.'
+            )
+
+        return df
 
     def plot_sssh_diagostics(
         self, sssh_data: dict, plot_file: Path, plot_breakpoint: bool = False, color: str = "YlGnBu"
