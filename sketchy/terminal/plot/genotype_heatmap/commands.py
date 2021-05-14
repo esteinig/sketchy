@@ -80,6 +80,18 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Matplotlib backend [default]'
 )
+@click.option(
+    '--height',
+    type=int,
+    default=2,
+    help='Figure height multiplier [default]'
+)
+@click.option(
+    '--width',
+    type=int,
+    default=4,
+    help='Figure width multiplier [default]'
+)
 def genotype_heatmap(
     directory, match_data, outdir, scale, reverse_subset,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
@@ -97,6 +109,6 @@ def genotype_heatmap(
     sd.plot_genotype_heatmap(
         nextflow=directory, match_data=match_data, subset_column=subset_column, subset_values=subset_values,
         reverse_subset=reverse_subset, exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates,
-        scale=scale
+        scale=scale, height=height, width=width
     )
 
