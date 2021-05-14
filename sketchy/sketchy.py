@@ -293,7 +293,7 @@ class SketchyDiagnostics(PoreLogger):
             annot_kws={"size": 18 if time else 30, "weight": "bold"}
         )
         p1.tick_params(axis='both', which='major', labelsize=60, length=3, width=2)
-        p1.tick_params(axis='x', rotation=45, ha='left')
+        p1.set_xticklabels(labels=column_labels, rotation=40, ha='right')
         p1.tick_params(axis='y', rotation=0)
 
         ax.set_title(title, fontdict={'fontsize': 80})
