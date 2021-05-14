@@ -775,6 +775,8 @@ class SketchyDiagnostics(PoreLogger):
                             ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
                         ]
 
+                    print(rdata)
+
                     accuracy = accuracy_score(rdata['reference'], rdata['call'])
                     precision = precision_score(rdata['reference'], rdata['call'], average='binary')
                     recall = precision_score(rdata['reference'], rdata['call'], average='binary')
