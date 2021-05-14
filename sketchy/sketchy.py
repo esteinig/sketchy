@@ -771,7 +771,7 @@ class SketchyDiagnostics(PoreLogger):
                     if db == 'saureus':
                         rdata = rdata[~rdata['genotype'].isin(['mlst', 'meca', 'pvl', 'scc'])]
                         for col in rdata.columns:
-                            rdata[col] = rdata[col].str.upper()
+                            print(col, rdata[col].nunique())
                     elif db == 'kpneumoniae':
                         rdata = rdata[~rdata['genotype'].isin(
                             ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
