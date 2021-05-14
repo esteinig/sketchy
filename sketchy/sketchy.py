@@ -771,8 +771,8 @@ class SketchyDiagnostics(PoreLogger):
                     # Remove multiclass predictions for binary a-p-r scores
                     if db == 'saureus':
                         rdata = rdata[~rdata['genotype'].isin(['mlst', 'meca', 'pvl', 'scc'])]
-                        rdata['call'] = rdata['call'].str.upper()
-                        rdata['reference'] = rdata['reference'].str.upper()
+                        rdata['call'] = [0 if d == 'S' else 1 for d in rdata['call'].str.upper()]
+                        rdata['reference'] = [0 if d == 'S' else 1 for d in rdata['reference'].str.upper()]
                     elif db == 'kpneumoniae':
                         rdata = rdata[~rdata['genotype'].isin(
                             ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
