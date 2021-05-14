@@ -150,8 +150,8 @@ class SketchyDiagnostics(PoreLogger):
                     re.findall(r"\d+", x)[0]
                 )
             )
-            df = df.set_index('name') \
-                .reindex(names_sorted).reset_index(level=0)
+            df = df.reindex(names_sorted).reset_index(drop=True)
+
         except TypeError:
             self.logger.info(
                 'Could not extract index using regex from'
