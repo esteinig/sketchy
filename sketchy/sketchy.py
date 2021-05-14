@@ -137,20 +137,16 @@ class SketchyDiagnostics(PoreLogger):
                 plt.tight_layout()
                 fig.savefig(f"{self.outdir / f'{mode}.{db}'}.svg")
 
-    def str_num_sort_col(self, df: pandas.DataFrame, col: str = None):
+    def natsort_index(self, df: pandas.DataFrame):
 
         try:
-            if col == 'index':
-                c = df.index
-            else:
-                c = df[col]
 
             names_sorted = sorted(
-                c.tolist(), key=lambda x: int(
+                df.index.tolist(), key=lambda x: int(
                     re.findall(r"\d+", x)[0]
                 )
             )
-            df = df.reindex(names_sorted).reset_index()
+            df = df.reindex(names_sorted)
 
         except TypeError:
             self.logger.info(
