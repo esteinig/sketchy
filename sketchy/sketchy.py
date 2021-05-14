@@ -763,8 +763,8 @@ class SketchyDiagnostics(PoreLogger):
         print(f"Samples in data: {df['sample'].nunique()}")
 
         for method, mdata in data.groupby("method"):
-            for db, ddata in data.groupby("db"):
-                for read_limit, rdata in data.groupby("read_limit"):
+            for db, ddata in mdata.groupby("db"):
+                for read_limit, rdata in ddata.groupby("read_limit"):
                     accuracy = accuracy_score(rdata['reference'], rdata['call'])
                     precision = precision_score(rdata['reference'], rdata['call'], average='macro')
                     recall = precision_score(rdata['reference'], rdata['call'], average='macro')
