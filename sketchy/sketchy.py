@@ -16,6 +16,8 @@ from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
 from matplotlib.colors import LinearSegmentedColormap
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+
 
 RE = Fore.RESET
 C = Fore.CYAN
@@ -672,6 +674,7 @@ class SketchyDiagnostics(PoreLogger):
             comparisons = []
             for db, db_data in data.groupby("db"):
                 for read_limit, read_data in db_data.groupby("read_limit"):
+
                     for _, row in read_data.iterrows():
                         sample = row.name
                         replicate = row['replicate']
@@ -759,6 +762,17 @@ class SketchyDiagnostics(PoreLogger):
 
         print(f"Samples in data: {df['sample'].nunique()}")
 
+        for method, mdata in data.groupby("method"):
+            for db, ddata in data.groupby("db"):
+                for read_limit, rdata in data.groupby("read_limit"):
+                    accuracy = accuracy_score(rdata['reference'], rdata['call'])
+                    precision = precision_score(rdata['reference'], rdata['call'])
+                    recall = precision_score(rdata['reference'], rdata['call'])
+
+                    print(
+                        f"Method: {method} DB: {db} Reads: {read_limit} "
+                        f"Accuracy: {accuracy} Precision: {precision} Recall: {recall}"
+                    )
 
 class SketchyDatabase(PoreLogger):
 
