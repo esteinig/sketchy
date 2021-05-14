@@ -770,14 +770,16 @@ class SketchyDiagnostics(PoreLogger):
 
                     if db == 'saureus':
                         rdata = rdata[~rdata['genotype'].isin(['mlst', 'meca', 'pvl', 'scc'])]
+                        for col in rdata.columns:
+                            rdata[col] = rdata[col].str.upper()
                     elif db == 'kpneumoniae':
                         rdata = rdata[~rdata['genotype'].isin(
                             ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
                         ]
 
                     print(rdata)
-                    rdata = rdata.str.upper()  # r prediction --> R
-                    
+
+
                     accuracy = accuracy_score(rdata['reference'], rdata['call'])
                     precision = precision_score(rdata['reference'], rdata['call'], average='binary')
                     recall = precision_score(rdata['reference'], rdata['call'], average='binary')
