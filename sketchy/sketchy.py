@@ -106,7 +106,7 @@ class SketchyDiagnostics(PoreLogger):
 
                     print(_predictions)
 
-                    _predictions = self.str_num_sort_col(_predictions, 'index')
+                    _predictions = self.natsort_index(_predictions)
 
                     print(_predictions)
 
