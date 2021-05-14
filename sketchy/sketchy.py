@@ -766,27 +766,26 @@ class SketchyDiagnostics(PoreLogger):
             for db, ddata in mdata.groupby("db"):
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
-                    # Remove multiclass predictions for binary a-p-r scores
+                    accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
 
+                    # Remove multiclass predictions for binary a-p-r scores
                     if db == 'saureus':
                         rdata = rdata[~rdata['genotype'].isin(['mlst', 'meca', 'pvl', 'scc'])]
-                        for col in rdata.columns:
-                            print(col, rdata[col].nunique())
+                        rdata['call'] = rdata['call'].str.upper()
+                        rdata['reference'] = rdata['reference'].str.upper()
                     elif db == 'kpneumoniae':
                         rdata = rdata[~rdata['genotype'].isin(
                             ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus'])
                         ]
 
-                    print(rdata)
-
-
-                    accuracy = accuracy_score(rdata['reference'], rdata['call'])
+                    # Binary features only:
+                    accuracy2 = accuracy_score(rdata['reference'], rdata['call'])
                     precision = precision_score(rdata['reference'], rdata['call'], average='binary')
                     recall = precision_score(rdata['reference'], rdata['call'], average='binary')
 
                     print(
-                        f"Method: {method} DB: {db} Reads: {read_limit} "
-                        f"Accuracy: {accuracy} Precision: {precision} Recall: {recall}"
+                        f"Method: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1} "
+                        f"Accuracy (binary features): {accuracy2} Precision: {precision} Recall: {recall}"
                     )
 
 class SketchyDatabase(PoreLogger):
