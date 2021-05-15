@@ -807,8 +807,6 @@ class SketchyDiagnostics(PoreLogger):
 
                     for genotype, gdata in rdata.groupby("genotype", sort=False):
 
-                        print(gdata)
-
                         accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
