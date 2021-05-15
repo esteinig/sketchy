@@ -818,10 +818,7 @@ class SketchyDiagnostics(PoreLogger):
                             average, pos_label = 'macro', 1
                         else:
                             average, pos_label = 'binary', 'R'
-
-                        with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
-                            print(gdata)
-
+                            
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
