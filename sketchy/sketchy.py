@@ -655,7 +655,6 @@ class SketchyDiagnostics(PoreLogger):
                         raise ValueError('Other databases currently not supported.')
 
                     # Binary features only:
-
                     accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
                     precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
                     recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
@@ -680,9 +679,9 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = 'weighted', 1
+                            average, pos_label = 'macro', 1
                         else:
-                            average, pos_label = 'macro', 'R'
+                            average, pos_label = 'binary', 'R'
 
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
