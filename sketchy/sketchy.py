@@ -772,7 +772,12 @@ class SketchyDiagnostics(PoreLogger):
                     ddata['call'] = ['R' if d == 'r' else d for d in ddata['call']]
                     ddata['reference'] = ['R' if d == 'r' else d for d in ddata['reference']]
 
+
+
                 for read_limit, rdata in ddata.groupby("read_limit"):
+
+                    with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+                        print(rdata)
 
                     # Scores across all features:
                     accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
@@ -798,8 +803,6 @@ class SketchyDiagnostics(PoreLogger):
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=None)
                     recall3 = precision_score(mdata['reference'], mdata['call'], average=None)
 
-                    with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
-                        print(rdata)
 
                     print(
                         f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
