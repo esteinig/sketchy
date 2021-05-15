@@ -661,8 +661,8 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average='micro')
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average='micro')
+                    precision3 = precision_score(mdata['reference'], mdata['call'], average='macro')
+                    recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
 
 
                     print(
@@ -679,7 +679,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = 'micro', 1
+                            average, pos_label = 'macro', 1
                         else:
                             average, pos_label = 'binary', 'R'
 
