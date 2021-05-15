@@ -796,16 +796,17 @@ class SketchyDiagnostics(PoreLogger):
                     # Scores across samples for each feature:
 
                     for genotype, gdata in ddata.groupby("genotype", sort=False):
-                        accuracy3 = accuracy_score(gdata['reference'], rdata['call'])
+                        accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            precision2 = precision_score(rdata['reference'], rdata['call'], average='macro')
-                            recall2 = precision_score(rdata['reference'], rdata['call'], average='macro')
+                            average = 'macro'
                         else:
-                            precision2 = precision_score(rdata['reference'], rdata['call'], average='binary')
-                            recall2 = precision_score(rdata['reference'], rdata['call'], average='binary')
+                            average = 'binary'
 
+                        precision2 = precision_score(gdata['reference'], gdata['call'], average=average)
+                        recall2 = precision_score(gdata['reference'], gdata['call'], average=average)
+                        
                         print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision2} Recall: {recall2}")
 
 
