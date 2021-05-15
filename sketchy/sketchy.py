@@ -765,14 +765,11 @@ class SketchyDiagnostics(PoreLogger):
         sa_multilabel = ['mlst', 'pvl', 'scc']
         kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
 
+        data['call'] = ['R' if d == 'r' else d for d in data['call']]
+        data['reference'] = ['R' if d == 'r' else d for d in data['reference']]
+
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
-
-                if db == 'saureus':
-                    ddata['call'] = ['R' if d == 'r' else d for d in ddata['call']]
-                    ddata['reference'] = ['R' if d == 'r' else d for d in ddata['reference']]
-
-
 
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
@@ -795,13 +792,13 @@ class SketchyDiagnostics(PoreLogger):
                     # Binary features only:
 
                     accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
-                    precision2 = precision_score(bdata['reference'], bdata['call'], average='macro')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='macro')
+                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary')
+                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary')
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average=None)
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average=None)
+                    precision3 = precision_score(mdata['reference'], mdata['call'], average='macro')
+                    recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
 
 
                     print(
