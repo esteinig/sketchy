@@ -798,7 +798,7 @@ class SketchyDiagnostics(PoreLogger):
                     recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
 
                     print(
-                        f"Method: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
+                        f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                         f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
                         f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
                     )
