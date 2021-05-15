@@ -762,7 +762,7 @@ class SketchyDiagnostics(PoreLogger):
 
         print(f"Samples in data: {df['sample'].nunique()}")
 
-        sa_multilabel = ['mlst', 'pvl', 'scc']
+        sa_multilabel = ['mlst', 'pvl', 'scc', 'meca']
         kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
 
         data['call'] = ['R' if d == 'r' else d for d in data['call']]
