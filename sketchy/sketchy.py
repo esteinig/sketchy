@@ -762,7 +762,7 @@ class SketchyDiagnostics(PoreLogger):
 
         print(f"Samples in data: {df['sample'].nunique()}")
 
-        sa_multilabel = ['mlst', 'meca', 'pvl', 'scc']
+        sa_multilabel = ['mlst', 'pvl', 'scc']
         kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
 
         for method, mdata in data.groupby("method"):
@@ -794,8 +794,8 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average='samples')
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average='samples')
+                    precision3 = precision_score(mdata['reference'], mdata['call'], average=None)
+                    recall3 = precision_score(mdata['reference'], mdata['call'], average=None)
 
                     print(
                         f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
@@ -811,7 +811,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average = 'samples'
+                            average = None
                         else:
                             average = 'binary'
 
