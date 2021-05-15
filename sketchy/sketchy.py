@@ -769,8 +769,8 @@ class SketchyDiagnostics(PoreLogger):
             for db, ddata in mdata.groupby("db"):
 
                 if db == 'saureus':
-                    ddata['call'] = [0 if d == 'S' else 1 for d in ddata['call'].str.upper()]
-                    ddata['reference'] = [0 if d == 'S' else 1 for d in ddata['reference'].str.upper()]
+                    ddata['call'] = ['R' if d == 'r' else d for d in ddata['call']]
+                    ddata['reference'] = ['R' if d == 'r' else d for d in ddata['reference']]
 
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
@@ -788,9 +788,10 @@ class SketchyDiagnostics(PoreLogger):
                         raise ValueError('Other databases currently not supported.')
 
                     # Binary features only:
+
                     accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
-                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary')
+                    precision2 = precision_score(bdata['reference'], bdata['call'], average='macro')
+                    recall2 = precision_score(bdata['reference'], bdata['call'], average='macro')
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
@@ -814,7 +815,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average = None
+                            average = 'macro'
                         else:
                             average = 'binary'
 
