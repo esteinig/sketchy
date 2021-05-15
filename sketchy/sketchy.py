@@ -792,8 +792,8 @@ class SketchyDiagnostics(PoreLogger):
                     # Binary features only:
 
                     accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
-                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary')
+                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
@@ -815,15 +815,19 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average = 'macro'
+                            average, pos_label = 'macro', 1
                         else:
-                            average = 'binary'
+                            average, pos_label = 'binary', 'R'
 
                         with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
                             print(gdata)
 
-                        precision3 = precision_score(gdata['reference'], gdata['call'], average=average)
-                        recall3 = precision_score(gdata['reference'], gdata['call'], average=average)
+                        precision3 = precision_score(
+                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        )
+                        recall3 = precision_score(
+                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        )
 
                         print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
 
