@@ -626,6 +626,73 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
+    def get_metrics(self, data: Path):
+
+        data = pandas.read_csv(data, sep='\t', header=0)
+
+        sa_multilabel = ['mlst', 'pvl', 'scc', 'meca']
+        kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
+
+        data['call'] = ['R' if d == 'r' else d for d in data['call']]
+        data['reference'] = ['R' if d == 'r' else d for d in data['reference']]
+
+        for method, mdata in data.groupby("method"):
+            for db, ddata in mdata.groupby("db"):
+
+                for read_limit, rdata in ddata.groupby("read_limit"):
+
+                    # Scores across all features:
+                    accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
+
+                    # Remove multiclass predictions for binary a-p-r scores
+                    if db == 'saureus':
+                        bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
+                        mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
+                    elif db == 'kpneumoniae':
+                        bdata = rdata[~rdata['genotype'].isin(kp_multilabel)]
+                        mdata = rdata[rdata['genotype'].isin(kp_multilabel)]
+                    else:
+                        raise ValueError('Other databases currently not supported.')
+
+                    # Binary features only:
+
+                    accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
+                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+
+                    # Multilabel features:
+                    accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
+                    precision3 = precision_score(mdata['reference'], mdata['call'], average='macro')
+                    recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
+
+
+                    print(
+                        f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
+                        f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
+                        f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
+                    )
+
+                    # Scores across samples for each feature:
+
+                    for genotype, gdata in rdata.groupby("genotype", sort=False):
+
+                        accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
+
+                        if (db == 'saureus' and genotype in sa_multilabel) or \
+                                (db == 'kpneumoniae' and genotype in kp_multilabel):
+                            average, pos_label = 'weighted', 1
+                        else:
+                            average, pos_label = 'macro', 'R'
+
+                        precision3 = precision_score(
+                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        )
+                        recall3 = precision_score(
+                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        )
+
+                        print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+
     def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
 
@@ -761,69 +828,6 @@ class SketchyDiagnostics(PoreLogger):
         print(data)
 
         print(f"Samples in data: {df['sample'].nunique()}")
-
-        sa_multilabel = ['mlst', 'pvl', 'scc', 'meca']
-        kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
-
-        data['call'] = ['R' if d == 'r' else d for d in data['call']]
-        data['reference'] = ['R' if d == 'r' else d for d in data['reference']]
-
-        for method, mdata in data.groupby("method"):
-            for db, ddata in mdata.groupby("db"):
-
-                for read_limit, rdata in ddata.groupby("read_limit"):
-
-                    # Scores across all features:
-                    accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
-
-                    # Remove multiclass predictions for binary a-p-r scores
-                    if db == 'saureus':
-                        bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
-                        mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
-                    elif db == 'kpneumoniae':
-                        bdata = rdata[~rdata['genotype'].isin(kp_multilabel)]
-                        mdata = rdata[rdata['genotype'].isin(kp_multilabel)]
-                    else:
-                        raise ValueError('Other databases currently not supported.')
-
-                    # Binary features only:
-
-                    accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
-                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
-
-                    # Multilabel features:
-                    accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average='macro')
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
-
-
-                    print(
-                        f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
-                        f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
-                        f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
-                    )
-
-                    # Scores across samples for each feature:
-
-                    for genotype, gdata in rdata.groupby("genotype", sort=False):
-
-                        accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
-
-                        if (db == 'saureus' and genotype in sa_multilabel) or \
-                                (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = 'weighted', 1
-                        else:
-                            average, pos_label = 'macro', 'R'
-
-                        precision3 = precision_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
-                        recall3 = precision_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
-
-                        print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
 
 
 class SketchyDatabase(PoreLogger):
