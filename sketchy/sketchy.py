@@ -797,6 +797,9 @@ class SketchyDiagnostics(PoreLogger):
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=None)
                     recall3 = precision_score(mdata['reference'], mdata['call'], average=None)
 
+                    with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+                        print(rdata)
+
                     print(
                         f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                         f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
@@ -814,6 +817,9 @@ class SketchyDiagnostics(PoreLogger):
                             average = None
                         else:
                             average = 'binary'
+
+                        with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+                            print(gdata)
 
                         precision3 = precision_score(gdata['reference'], gdata['call'], average=average)
                         recall3 = precision_score(gdata['reference'], gdata['call'], average=average)
