@@ -669,11 +669,12 @@ class SketchyDiagnostics(PoreLogger):
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
 
-                    print(
-                        f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
-                        f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
-                        f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
-                    )
+                    if read_limit in (200, 500):
+                        print(
+                            f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
+                            f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
+                            f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
+                        )
 
                     # Scores across samples for each feature:
 
@@ -687,8 +688,6 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-
-
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
@@ -696,17 +695,19 @@ class SketchyDiagnostics(PoreLogger):
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
 
-                        print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
-                        if average == 'binary':
+                        if read_limit in (200, 500):
+                            print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+                            if average == 'binary':
 
-                            tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
-                                self.binary_metrics_manual(df=gdata)
+                                tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
+                                    self.binary_metrics_manual(df=gdata)
 
-                            print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
-                            for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
-                                print(f"{m[0]}:{m[1]}")
-                                
+                                print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                                for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
+                                    print(f"{m[0]}:{m[1]}")
+
                     # Score across genotype for each individual and make violin plot!
+
 
     def binary_metrics_manual(self, df):
 
