@@ -686,11 +686,15 @@ class SketchyDiagnostics(PoreLogger):
 
                         # accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
 
+                        print(f"Genotype: {genotype}")
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
                             average, pos_label = multi_average, 1
+                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), False)
                         else:
                             average, pos_label = 'binary', 'R'
+                            self.compute_metrics(confusion_matrix(mdata['reference'], gdata['call']), True)
+
 
                         # precision3 = precision_score(
                         #     gdata['reference'], gdata['call'], average=average, pos_label=pos_label
@@ -699,7 +703,6 @@ class SketchyDiagnostics(PoreLogger):
                         #     gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         # )
 
-                        print(f"Genotype: {genotype}")
 
                     # Score across genotype for each individual and make violin plot!
 
