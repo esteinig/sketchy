@@ -705,11 +705,13 @@ class SketchyDiagnostics(PoreLogger):
 
     def compute_metrics(self, confusion_matrix: pandas.DataFrame, multilabel: bool = False):
 
+        print(confusion_matrix)
+
         if multilabel:
             FP = confusion_matrix.sum(axis=0) - diag(confusion_matrix)
             FN = confusion_matrix.sum(axis=1) - diag(confusion_matrix)
             TP = diag(confusion_matrix)
-            TN = confusion_matrix.values.sum() - (FP + FN + TP)
+            TN = confusion_matrix.sum() - (FP + FN + TP)
         else:
             TN = confusion_matrix[0][0]
             FN = confusion_matrix[1][0]
