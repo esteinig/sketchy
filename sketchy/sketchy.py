@@ -9,14 +9,14 @@ import json
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from numpy import array, where
+from numpy import array, diag
 from numpy import nan
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
 from matplotlib.colors import LinearSegmentedColormap
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import confusion_matrix
 
 
 RE = Fore.RESET
@@ -642,14 +642,14 @@ class SketchyDiagnostics(PoreLogger):
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
                     # Scores across all features:
-                    accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
+                    # accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
 
                     if db == 'saureus':
                         # Fix these for binary computations:
                         for column in ('call', 'reference'):
-                            for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}
+                            for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}.items():
                                 rdata[column] = rdata[column].replace(v, r)
-                                
+
                         bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
                     elif db == 'kpneumoniae':
@@ -658,28 +658,33 @@ class SketchyDiagnostics(PoreLogger):
                     else:
                         raise ValueError('Other databases currently not supported.')
 
-                    # Binary features only:
-                    accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
-                    precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    # # Binary features only:
+                    # accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
+                    # precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    # recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    #
+                    # # Multilabel features:
+                    # accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
+                    # precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
+                    # recall3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
+                    #
+                    #
+                    # print(
+                    #     f"\nMethod: {method} DB: {db} Reads: {read_limit}"
+                    #     f"Accuracy (all features): {accuracy1}\n"
+                    #     f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
+                    #     f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
+                    # )
 
-                    # Multilabel features:
-                    accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
-
-
-                    print(
-                        f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
-                        f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
-                        f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
-                    )
-
+                    print(f"Method: {method} DB: {db} Reads: {read_limit}")
+                    self.compute_metrics(confusion_matrix(bdata), False)
+                    self.compute_metrics(confusion_matrix(mdata), True)
+                    
                     # Scores across samples for each feature:
 
                     for genotype, gdata in rdata.groupby("genotype", sort=False):
 
-                        accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
+                        # accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
@@ -687,16 +692,49 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-                        precision3 = precision_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
-                        recall3 = precision_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
+                        # precision3 = precision_score(
+                        #     gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        # )
+                        # recall3 = precision_score(
+                        #     gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                        # )
 
-                        print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+                        print(f"Genotype: {genotype}")
 
                     # Score across genotype for each individual and make violin plot!
+
+    def compute_metrics(self, confusion_matrix: pandas.DataFrame, multilabel: bool = False):
+
+        if multilabel:
+            FP = confusion_matrix.sum(axis=0) - diag(confusion_matrix)
+            FN = confusion_matrix.sum(axis=1) - diag(confusion_matrix)
+            TP = diag(confusion_matrix)
+            TN = confusion_matrix.values.sum() - (FP + FN + TP)
+        else:
+            TN = confusion_matrix.values[0][0]
+            FN = confusion_matrix.values[1][0]
+            TP = confusion_matrix.values[1][1]
+            FP = confusion_matrix.values[0][1]
+
+        # Sensitivity, hit rate, recall, or true positive rate
+        tpr = TP / (TP + FN)
+        # Specificity or true negative rate
+        tnr = TN / (TN + FP)
+        # Precision or positive predictive value
+        ppv = TP / (TP + FP)
+        # Negative predictive value
+        npv = TN / (TN + FN)
+        # Fall out or false positive rate
+        fpr = FP / (FP + TN)
+        # False negative rate
+        fnr = FN / (TP + FN)
+        # False discovery rate
+        fdr = FP / (TP + FP)
+
+        # Overall accuracy
+        acc = (TP + TN) / (TP + FP + FN + TN)
+
+        print(f"TPR: {tpr} TNR: {tnr} PPV: {ppv} NPV: {npv} FPR: {fpr} FNR: {fnr} FDR: {fdr} ACC: {acc}")
 
     def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
