@@ -693,7 +693,7 @@ class SketchyDiagnostics(PoreLogger):
                             self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), False)
                         else:
                             average, pos_label = 'binary', 'R'
-                            self.compute_metrics(confusion_matrix(mdata['reference'], gdata['call']), True)
+                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), True)
 
 
                         # precision3 = precision_score(
