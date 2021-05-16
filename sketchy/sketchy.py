@@ -630,7 +630,7 @@ class SketchyDiagnostics(PoreLogger):
 
         data = pandas.read_csv(data, sep='\t', header=0)
 
-        sa_multilabel = ['mlst', 'pvl', 'scc', 'meca']
+        sa_multilabel = ['mlst', 'scc']
         kp_multilabel = ['st', 'virulence_score', 'resistance_score', 'k_locus', 'o_locus']
 
         data['call'] = ['R' if d == 'r' else d for d in data['call']]
@@ -644,28 +644,14 @@ class SketchyDiagnostics(PoreLogger):
                     # Scores across all features:
                     accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
 
-                    # Remove multiclass predictions for binary a-p-r scores
                     if db == 'saureus':
+                        # Fix these for binary computations:
+                        for column in ('call', 'reference'):
+                            for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}
+                                rdata[column] = rdata[column].replace(v, r)
+                                
                         bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
-
-                        # For the paper treat pvl (pvl+, pvl-, pvl*) and meca (mssa, mrsa)
-                        # as binary features (pvl* --> pvl-) with S (0) and R (1) for
-                        # metric computation
-
-                        rdata['call'] = rdata['call'].replace('pvl*', 'pvl-')
-                        rdata['call'] = rdata['call'].replace('pvl+', 'R')
-                        rdata['call'] = rdata['call'].replace('pvl-', 'S')
-
-                        rdata['reference'] = rdata['reference'].replace('pvl*', 'pvl-')
-                        rdata['reference'] = rdata['reference'].replace('pvl-', 'S')
-                        rdata['reference'] = rdata['reference'].replace('pvl+', 'R')
-
-                        rdata['call'] = rdata['call'].replace('mssa', 'S')
-                        rdata['call'] = rdata['call'].replace('mrsa', 'R')
-                        rdata['reference'] = rdata['reference'].replace('mssa', 'S')
-                        rdata['reference'] = rdata['reference'].replace('mrsa', 'R')
-
                     elif db == 'kpneumoniae':
                         bdata = rdata[~rdata['genotype'].isin(kp_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(kp_multilabel)]
@@ -779,6 +765,10 @@ class SketchyDiagnostics(PoreLogger):
                         comparison["reference"] = [
                             r.strip() if isinstance(r, str) else r for r in comparison['reference']
                         ]
+
+                        if db == 'saureus':
+                            # Temporary replacement until sketches are fixed:
+                            comparison['call'] = comparison['call'].replace('PVL*', 'PVL-')
 
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
