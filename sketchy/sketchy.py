@@ -687,7 +687,9 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-                            self.binary_metrics_manual(df=gdata, feature=genotype)
+
+                            tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
+                                self.binary_metrics_manual(df=gdata)
 
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
@@ -700,9 +702,10 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Score across genotype for each individual and make violin plot!
 
-    def binary_metrics_manual(self, df, feature):
+    def binary_metrics_manual(self, df):
 
-        cm = confusion_matrix(df['reference'], df['call'])
+        cm = confusion_matrix(df['reference'], df['call'], labels=["S", "R"])
+
 
         tp = cm[0][0]
         fn = cm[0][1]
@@ -727,8 +730,7 @@ class SketchyDiagnostics(PoreLogger):
         # Overall accuracy
         acc = (tp + tn) / (tp + fp + fn + tn)
 
-        print(f"Binary feature: {feature} --> {tp} TP, {fp} FP, {tn} TN, {fn} FN")
-        print(f"Binary feature: {feature} --> {acc}, {tpr} TPR, {tnr} TNR, {ppv} PPV, {npv} NPV ")
+        return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
 
     def match_reference(self, nextflow, reference, exclude_isolates):
