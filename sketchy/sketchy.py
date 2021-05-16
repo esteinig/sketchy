@@ -711,10 +711,10 @@ class SketchyDiagnostics(PoreLogger):
             TP = diag(confusion_matrix)
             TN = confusion_matrix.values.sum() - (FP + FN + TP)
         else:
-            TN = confusion_matrix.values[0][0]
-            FN = confusion_matrix.values[1][0]
-            TP = confusion_matrix.values[1][1]
-            FP = confusion_matrix.values[0][1]
+            TN = confusion_matrix[0][0]
+            FN = confusion_matrix[1][0]
+            TP = confusion_matrix[1][1]
+            FP = confusion_matrix[0][1]
 
         # Sensitivity, hit rate, recall, or true positive rate
         tpr = TP / (TP + FN)
