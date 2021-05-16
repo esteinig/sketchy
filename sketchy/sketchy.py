@@ -9,14 +9,14 @@ import json
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from numpy import array, confusion_matrix
+from numpy import array
 from numpy import nan
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
 from matplotlib.colors import LinearSegmentedColormap
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
 
 RE = Fore.RESET
@@ -661,12 +661,12 @@ class SketchyDiagnostics(PoreLogger):
                     # Binary features only:
                     accuracy2 = accuracy_score(bdata['reference'], bdata['call'])
                     precision2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
-                    recall2 = precision_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
+                    recall2 = recall_score(bdata['reference'], bdata['call'], average='binary', pos_label='R')
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
+                    recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
 
                     print(
@@ -692,7 +692,7 @@ class SketchyDiagnostics(PoreLogger):
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
-                        recall3 = precision_score(
+                        recall3 = recall_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
 
