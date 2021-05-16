@@ -9,7 +9,7 @@ import json
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from numpy import array, diag
+from numpy import array, confusion_matrix
 from numpy import nan
 from pathlib import Path
 from sketchy.utils import run_cmd, PoreLogger
@@ -687,6 +687,8 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
+                            self.binary_manual(df=gdata, feature=genotype)
+
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
@@ -697,6 +699,31 @@ class SketchyDiagnostics(PoreLogger):
                         print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
 
                     # Score across genotype for each individual and make violin plot!
+
+    def binary_manual(self, df, feature):
+
+        tn, fp, fn, tp = confusion_matrix(df['reference'], df['call']).ravel()
+
+        # Sensitivity, hit rate, recall, or true positive rate
+        tpr = tp / (tp + fn)
+        # Specificity or true negative rate
+        tnr = tn / (tn + fp)
+        # Precision or positive predictive value
+        ppv = tp / (tp + fp)
+        # Negative predictive value
+        npv = tn / (tn + fn)
+        # Fall out or false positive rate
+        fpr = fp / (fp + tn)
+        # False negative rate
+        fnr = fn / (tp + fn)
+        # False discovery rate
+        fdr = fp / (tp + fp)
+
+        # Overall accuracy
+        acc = (tp + tn) / (tp + fp + fn + tn)
+
+        print(f"Binary feature: {feature} --> {tp} TP, {fp} FP, {tn} TN, {fn} FN")
+        print(f"Binary feature: {feature} --> {acc}, {tpr} TPR, {tnr} TNR, {ppv} PPV, {npv} NPV ")
 
 
     def match_reference(self, nextflow, reference, exclude_isolates):
@@ -771,7 +798,7 @@ class SketchyDiagnostics(PoreLogger):
                             # Temporary replacement until sketches are fixed:
                             comparison['call'] = comparison['call'].replace('PVL*', 'PVL-')
                             comparison['reference'] = comparison['reference'].replace('PVL*', 'PVL-')
-                            
+
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
                         true_calls = sum([1 for v in comparison['match'] if v == True])
