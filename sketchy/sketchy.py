@@ -626,7 +626,7 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
-    def get_metrics(self, data: Path):
+    def get_metrics(self, data: Path, multi_average: str = 'micro'):
 
         data = pandas.read_csv(data, sep='\t', header=0)
 
@@ -648,6 +648,24 @@ class SketchyDiagnostics(PoreLogger):
                     if db == 'saureus':
                         bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
+
+                        # For the paper treat pvl (pvl+, pvl-, pvl*) and meca (mssa, mrsa)
+                        # as binary features (pvl* --> pvl-) with S (0) and R (1) for
+                        # metric computation
+
+                        rdata['call'] = rdata['call'].replace('pvl*', 'pvl-')
+                        rdata['call'] = rdata['call'].replace('pvl+', 'R')
+                        rdata['call'] = rdata['call'].replace('pvl-', 'S')
+
+                        rdata['reference'] = rdata['reference'].replace('pvl*', 'pvl-')
+                        rdata['reference'] = rdata['reference'].replace('pvl-', 'S')
+                        rdata['reference'] = rdata['reference'].replace('pvl+', 'R')
+
+                        rdata['call'] = rdata['call'].replace('mssa', 'S')
+                        rdata['call'] = rdata['call'].replace('mrsa', 'R')
+                        rdata['reference'] = rdata['reference'].replace('mssa', 'S')
+                        rdata['reference'] = rdata['reference'].replace('mrsa', 'R')
+
                     elif db == 'kpneumoniae':
                         bdata = rdata[~rdata['genotype'].isin(kp_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(kp_multilabel)]
@@ -661,8 +679,8 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Multilabel features:
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
-                    precision3 = precision_score(mdata['reference'], mdata['call'], average='macro')
-                    recall3 = precision_score(mdata['reference'], mdata['call'], average='macro')
+                    precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
+                    recall3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
 
 
                     print(
@@ -679,7 +697,7 @@ class SketchyDiagnostics(PoreLogger):
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = 'macro', 1
+                            average, pos_label = multi_average, 1
                         else:
                             average, pos_label = 'binary', 'R'
 
@@ -691,6 +709,8 @@ class SketchyDiagnostics(PoreLogger):
                         )
 
                         print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+
+                    # Score across genotype for each individual and make violin plot!
 
     def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
