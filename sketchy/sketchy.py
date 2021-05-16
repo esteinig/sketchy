@@ -677,9 +677,9 @@ class SketchyDiagnostics(PoreLogger):
                     # )
 
                     print(f"Method: {method} DB: {db} Reads: {read_limit}")
-                    self.compute_metrics(confusion_matrix(bdata), False)
-                    self.compute_metrics(confusion_matrix(mdata), True)
-                    
+                    self.compute_metrics(confusion_matrix(bdata['reference'], bdata['call']), False)
+                    self.compute_metrics(confusion_matrix(mdata['reference'], mdata['call']), True)
+
                     # Scores across samples for each feature:
 
                     for genotype, gdata in rdata.groupby("genotype", sort=False):
