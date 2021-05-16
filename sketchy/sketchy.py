@@ -669,7 +669,7 @@ class SketchyDiagnostics(PoreLogger):
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
 
-                    if read_limit in (200, 500):
+                    if method == 'stream'  and read_limit in (200, 500):
                         print(
                             f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                             f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
@@ -695,7 +695,7 @@ class SketchyDiagnostics(PoreLogger):
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
 
-                        if read_limit in (200, 500):
+                        if method == 'stream' and read_limit in (200, 500):
                             print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
                             if average == 'binary':
 
