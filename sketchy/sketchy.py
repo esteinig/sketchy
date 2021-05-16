@@ -646,9 +646,9 @@ class SketchyDiagnostics(PoreLogger):
 
                     if db == 'saureus':
                         # Fix these for binary computations:
-                        for column in ('call', 'reference'):
-                            for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}.items():
-                                rdata[column] = rdata[column].replace(v, r)
+                        # for column in ('call', 'reference'):
+                        #     for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}.items():
+                        #         rdata[column] = rdata[column].replace(v, r)
 
                         bdata = rdata[~rdata['genotype'].isin(sa_multilabel)]
                         mdata = rdata[rdata['genotype'].isin(sa_multilabel)]
@@ -689,11 +689,10 @@ class SketchyDiagnostics(PoreLogger):
                         print(f"Genotype: {genotype}")
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = multi_average, 1
-                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), False)
+                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), True)
                         else:
                             average, pos_label = 'binary', 'R'
-                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), True)
+                            self.compute_metrics(confusion_matrix(gdata['reference'], gdata['call']), False)
 
 
                         # precision3 = precision_score(
