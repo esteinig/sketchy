@@ -687,9 +687,10 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-
                             tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
                                 self.binary_metrics_manual(df=gdata)
+                            print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                            print(f"{genotype} --> {acc} ACC {tpr} TPR {tnr} TNR {ppv} PPV {npv} NPV")
 
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
