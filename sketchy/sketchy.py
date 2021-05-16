@@ -697,7 +697,7 @@ class SketchyDiagnostics(PoreLogger):
                         print(f"Genotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
 
                     # Score across genotype for each individual and make violin plot!
-                    
+
 
     def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
@@ -770,7 +770,8 @@ class SketchyDiagnostics(PoreLogger):
                         if db == 'saureus':
                             # Temporary replacement until sketches are fixed:
                             comparison['call'] = comparison['call'].replace('PVL*', 'PVL-')
-
+                            comparison['reference'] = comparison['reference'].replace('PVL*', 'PVL-')
+                            
                         comparison["match"] = comparison["call"] == comparison["reference"]
 
                         true_calls = sum([1 for v in comparison['match'] if v == True])
