@@ -687,7 +687,7 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-                            self.binary_manual(df=gdata, feature=genotype)
+                            self.binary_metrics_manual(df=gdata, feature=genotype)
 
                         precision3 = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
@@ -700,9 +700,14 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Score across genotype for each individual and make violin plot!
 
-    def binary_manual(self, df, feature):
+    def binary_metrics_manual(self, df, feature):
 
-        tn, fp, fn, tp = confusion_matrix(df['reference'], df['call']).ravel()
+        cm = confusion_matrix(df['reference'], df['call'])
+
+        tp = cm[0][0]
+        fn = cm[0][1]
+        fp = cm[1][0]
+        tn = cm[1][1]
 
         # Sensitivity, hit rate, recall, or true positive rate
         tpr = tp / (tp + fn)
