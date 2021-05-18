@@ -742,7 +742,7 @@ class SketchyDiagnostics(PoreLogger):
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
 
-    def match_reference(self, nextflow, reference, exclude_isolates, outdir):
+    def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
 
         ref = pandas.read_csv(reference, sep="\t", header=0, index_col=0)
