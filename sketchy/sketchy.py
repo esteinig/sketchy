@@ -54,9 +54,8 @@ class SketchyDiagnostics(PoreLogger):
 
         fastq_files = directory.glob(f"*{ext}")
 
-        counts = [pyfastx.Fastq(str(f)) for f in fastq_files]
-        for f in counts:
-            print(f)
+        counts = [len(pyfastx.Fastq(str(f))) for f in fastq_files]
+
         names = [f.name.replace(ext, "") for f in fastq_files]
 
         print(names, counts)
@@ -80,6 +79,10 @@ class SketchyDiagnostics(PoreLogger):
         plt.tight_layout()
         fig.savefig(f"{self.outdir / f'{prefix}barcodes.svg'}")
         fig.savefig(f"{self.outdir / f'{prefix}barcodes.pdf'}")
+
+        fxi_files = directory.glob(f"*.fxi")
+        for fxi_file in fxi_files:
+            fxi_file.unlink()
 
     def plot_genotype_heatmap(
         self, nextflow: Path, match_data: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
