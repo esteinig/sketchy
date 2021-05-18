@@ -52,7 +52,7 @@ class SketchyDiagnostics(PoreLogger):
 
     def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
 
-        fastq_files = directory.glob("*{ext}")
+        fastq_files = directory.glob(f"*{ext}")
 
         data = pandas.DataFrame(
             {
