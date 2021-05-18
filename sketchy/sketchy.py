@@ -61,25 +61,28 @@ class SketchyDiagnostics(PoreLogger):
         data = pandas.DataFrame(
             {
                 "counts": counts,
-                "names": names
+                "name": names
              }
         ).set_index('names')
 
-        data.loc['names', 'unclassified'] = '9999999999'
+        data.loc['unclassified', 'name'] = '9999999999'
 
         print(data)
 
         data = self.natsort_index(data)
 
-        data.loc['names', '9999999999'] = 'unclassified'
+        data.loc['9999999999', 'name'] = 'unclassified'
 
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
         )
 
         p = sns.barplot(
-            data=data, x="names", y="counts", ci=None, ax=axes, palette="colorblind"
+            data=data, x="name", y="counts", ci=None, ax=axes, palette="colorblind"
         )
+
+        plt.xlabel('')
+        plt.ylabel('Read count\n')
 
         plt.tight_layout()
         fig.savefig(f"{self.outdir / f'{prefix}barcodes.svg'}")
