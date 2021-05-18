@@ -56,7 +56,7 @@ class SketchyDiagnostics(PoreLogger):
 
         counts = [len(pyfastx.Fastq(str(f))) for f in fastq_files]
 
-        names = [f.name.replace(ext, "") for f in fastq_files]
+        names = [f.name.replace(ext, "") if f != f'unclassfied{ext}' else '99999' for f in fastq_files]
 
         data = pandas.DataFrame(
             {
@@ -65,13 +65,9 @@ class SketchyDiagnostics(PoreLogger):
              }
         ).set_index('name')
 
-        data.at['name', 'unclassified'] = '9999999999'
-
-        print(data)
-
         data = self.natsort_index(data)
 
-        data.at['name', '9999999999'] = 'unclassified'
+        data.index = [d if d != '99999' else 'unclassified' for d in data.index.tolist()]
 
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
