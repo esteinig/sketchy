@@ -65,7 +65,7 @@ class SketchyDiagnostics(PoreLogger):
              }
         ).set_index('name')
 
-        data.loc['name', 'unclassified'] = '9999999999'
+        data.at['name', 'unclassified'] = '9999999999'
 
         print(data)
 
