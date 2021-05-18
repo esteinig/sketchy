@@ -14,6 +14,7 @@ from numpy import array
 from numpy import nan
 from pathlib import Path
 
+from random import choices
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
@@ -72,7 +73,7 @@ class SketchyDiagnostics(PoreLogger):
         data.index = [d if d != '99999' else 'unclassified' for d in data.index.tolist()]
         data.index.name = 'name'
         data['name'] = data.index.tolist()
-        
+
         print(data)
 
         fig, axes = plt.subplots(
@@ -95,9 +96,17 @@ class SketchyDiagnostics(PoreLogger):
             fxi_file.unlink()
 
     def plot_genotype_heatmap(
-        self, nextflow: Path, match_data: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,
-        exclude_isolates: list = None, exclude_genotypes: list = None, scale: float = 1.0, height: int = 8,
-        width: int = 8, chunk: int = 0
+        self,
+        nextflow: Path,
+        match_data: Path,
+        subset_column: str,
+        subset_values: str,
+        reverse_subset: bool = False,
+        exclude_isolates: list = None,
+        exclude_genotypes: list = None,
+        scale: float = 1.0,
+        height: int = 8,
+        width: int = 8
     ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
@@ -758,7 +767,6 @@ class SketchyDiagnostics(PoreLogger):
                     # for name, sdata in rdata.groupby('sample'):
 
 
-
     def binary_metrics_manual(self, df):
 
         cm = confusion_matrix(df['reference'], df['call'], labels=["R", "S"])
@@ -971,6 +979,34 @@ class SketchyDatabase(PoreLogger):
             self.genotypes = None
 
         self.lineage_column = lineage_column
+
+    def bootstrap_sample(self, fasta_dir: Path, samples: int, outdir: Path, outdb: Path, fasta_glob: str = "*.fasta"):
+
+        # Sample files with replacement
+        files = list(fasta_dir.glob(fasta_glob))
+        sampled_files = choices(files, n=samples)
+
+        gids = [file.stem for file in sampled_files]
+
+        data = []
+        for gid in gids:
+            data.append(
+                self.genotypes.loc[self.genotypes['id'] == gid].tolist()
+            )
+
+        bootstrap_genotypes = pandas.DataFrame(data, columns=self.genotypes.columns)
+
+        print(bootstrap_genotypes)
+
+        bootstrap_genotypes.to_csv(f"{outdb / f'{outdb.name}.tsv'}", sep='\t', header=True, index=False)
+
+        outdir.mkdir(parents=True, exist_ok=True)
+
+        self.logger.info(f'Symlinking genome assemblies to: {outdir}')
+        for file in sampled_files:
+            file.symlink_to(outdir, target_is_directory=True)
+
+        self.logger.info(f'Database genotype file in: {outdb}')
 
     def create_database(
         self, outdir: Path = "sketchy-db", drop: str = None, numeric: bool = False

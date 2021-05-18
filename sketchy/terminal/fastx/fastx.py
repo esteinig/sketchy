@@ -1,6 +1,5 @@
 import click
 
-
 from .filter import filter
 from .sample import sample
 from .sort import sort
