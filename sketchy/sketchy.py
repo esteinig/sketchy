@@ -133,6 +133,7 @@ class SketchyDiagnostics(PoreLogger):
 
                 plt.tight_layout()
                 fig.savefig(f"{self.outdir / f'{mode}.{db}'}.svg")
+                fig.savefig(f"{self.outdir / f'{mode}.{db}'}.pdf")
 
     def natsort_index(self, df: pandas.DataFrame):
 
