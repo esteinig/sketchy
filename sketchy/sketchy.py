@@ -56,7 +56,7 @@ class SketchyDiagnostics(PoreLogger):
 
         counts = [len(pyfastx.Fastq(str(f))) for f in fastq_files]
 
-        names = [f.name.replace(ext, "") if f != f'unclassfied{ext}' else '99999' for f in fastq_files]
+        names = [f.name.replace(ext, "") if f != f'unclassified{ext}' else '99999' for f in fastq_files]
 
         data = pandas.DataFrame(
             {
