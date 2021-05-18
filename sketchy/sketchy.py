@@ -742,7 +742,7 @@ class SketchyDiagnostics(PoreLogger):
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
 
-    def match_reference(self, nextflow, reference, exclude_isolates):
+    def match_reference(self, nextflow, reference, exclude_isolates, outdir):
         """ Match predictions from collected Nextflow results to reference table """
 
         ref = pandas.read_csv(reference, sep="\t", header=0, index_col=0)
@@ -873,10 +873,10 @@ class SketchyDiagnostics(PoreLogger):
             p.set_ylabel('Correct prediction (%)\n', fontsize=9)
 
             plt.tight_layout()
-            fig.savefig(f"{db}.summary.svg")
-            db_data.to_csv(f"{db}.summary.tsv", sep="\t", index=False)
+            fig.savefig(f"{self.outdir / f'{db}.summary.svg'}")
+            db_data.to_csv(f"{self.outdir / f'{db}.summary.tsv'}", sep="\t", index=False)
 
-            data[data['db'] == db].to_csv(f"{db}.match.tsv", sep='\t', index=False)
+            data[data['db'] == db].to_csv(f"{self.outdir / f'{db}.match.tsv'}", sep='\t', index=False)
 
         print(df)
         print(data)
