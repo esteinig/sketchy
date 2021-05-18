@@ -65,13 +65,13 @@ class SketchyDiagnostics(PoreLogger):
              }
         ).set_index('name')
 
-        data.loc['unclassified', 'name'] = '9999999999'
+        data.loc['name', 'unclassified'] = '9999999999'
 
         print(data)
 
         data = self.natsort_index(data)
 
-        data.loc['9999999999', 'name'] = 'unclassified'
+        data.at['name', '9999999999'] = 'unclassified'
 
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
