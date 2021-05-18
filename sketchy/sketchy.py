@@ -874,6 +874,7 @@ class SketchyDiagnostics(PoreLogger):
 
             plt.tight_layout()
             fig.savefig(f"{self.outdir / f'{db}.summary.svg'}")
+            fig.savefig(f"{self.outdir / f'{db}.summary.pdf'}")
             db_data.to_csv(f"{self.outdir / f'{db}.summary.tsv'}", sep="\t", index=False)
 
             data[data['db'] == db].to_csv(f"{self.outdir / f'{db}.match.tsv'}", sep='\t', index=False)
