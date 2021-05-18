@@ -984,8 +984,10 @@ class SketchyDatabase(PoreLogger):
 
         # Sample files with replacement
         files = list(fasta_dir.glob(fasta_glob))
-        sampled_files = choices(files, k=samples)
+        # Do not consider assemblies in fasta_dir that do not occur in the reference genotypes
+        files = [file for file in files if file.stem in self.genotypes['id'].tolist()]
 
+        sampled_files = choices(files, k=samples)
         gids = [file.stem for file in sampled_files]
 
         data = [self.genotypes.loc[self.genotypes['id'] == gid] for gid in gids]
