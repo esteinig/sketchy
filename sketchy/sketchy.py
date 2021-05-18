@@ -984,7 +984,7 @@ class SketchyDatabase(PoreLogger):
 
         # Sample files with replacement
         files = list(fasta_dir.glob(fasta_glob))
-        sampled_files = choices(files, n=samples)
+        sampled_files = choices(files, k=samples)
 
         gids = [file.stem for file in sampled_files]
 
