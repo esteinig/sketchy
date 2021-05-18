@@ -1,5 +1,6 @@
 import click
 
+from .barcode_counts import barcode_counts
 from .genotype_diagnostics import genotype_diagnostics
 from .genotype_heatmap import genotype_heatmap
 from .raw_heatmap import raw_heatmap
@@ -10,6 +11,7 @@ def plot():
     pass
 
 
+plot.add_command(barcode_counts)
 plot.add_command(raw_heatmap)
 plot.add_command(genotype_diagnostics)
 plot.add_command(genotype_heatmap)

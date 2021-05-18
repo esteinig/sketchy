@@ -6,12 +6,14 @@ import shutil
 import logging
 import pandas
 import json
+import pyfastx
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 from numpy import array
 from numpy import nan
 from pathlib import Path
+
 from sketchy.utils import run_cmd, PoreLogger
 from collections import OrderedDict
 from colorama import Fore
@@ -47,6 +49,28 @@ class SketchyDiagnostics(PoreLogger):
         PoreLogger.__init__(
             self, level=logging.INFO if verbose else logging.ERROR
         )
+
+    def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
+
+        fastq_files = directory.glob("*{ext}")
+
+        data = pandas.DataFrame(
+            {
+                "counts": [len(pyfastx.Fastq(f, build_index=False)) for f in fastq_files],
+                "names": [f.name.replace(ext, "") for f in fastq_files]
+             }
+        )
+        fig, axes = plt.subplots(
+            nrows=1, ncols=1, figsize=(14, 10)
+        )
+
+        p = sns.barplot(
+            data=data, x="names", y="counts", ci=None, ax=axes, palette="colorblind"
+        )
+
+        plt.tight_layout()
+        fig.savefig(f"{self.outdir / f'{prefix}barcodes.svg'}")
+        fig.savefig(f"{self.outdir / f'{prefix}barcodes.pdf'}")
 
     def plot_genotype_heatmap(
         self, nextflow: Path, match_data: Path, subset_column: str, subset_values: str, reverse_subset: bool = False,

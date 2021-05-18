@@ -29,7 +29,6 @@ setup(
         'pyfastx',
         'braceexpand',
         'networkx',
-        'pyfastx',
         'watchdog',
         'psutil',
         'dendropy'
