@@ -69,7 +69,7 @@ class SketchyDiagnostics(PoreLogger):
 
         data = self.natsort_index(data)
 
-        data.index = [d if d != '99999' else 'unclassified' for d in data.index.tolist()]
+        data['name'] = [d if d != '99999' else 'unclassified' for d in data.index.tolist()]
 
         print(data)
 
