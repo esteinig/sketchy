@@ -992,8 +992,9 @@ class SketchyDatabase(PoreLogger):
 
         data = []
         for gid in gids:
+            print(self.genotypes.loc[self.genotypes['id'] == gid])
             data.append(
-                self.genotypes.loc[self.genotypes['id'] == gid].tolist()
+                self.genotypes.loc[self.genotypes['id'] == gid]
             )
 
         bootstrap_genotypes = pandas.DataFrame(data, columns=self.genotypes.columns)
