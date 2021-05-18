@@ -988,22 +988,14 @@ class SketchyDatabase(PoreLogger):
 
         gids = [file.stem for file in sampled_files]
 
-        print(gids)
-
-        data = []
-        for gid in gids:
-            print(self.genotypes.loc[self.genotypes['id'] == gid])
-            data.append(
-                self.genotypes.loc[self.genotypes['id'] == gid]
-            )
-
+        data = [self.genotypes.loc[self.genotypes['id'] == gid] for gid in gids]
         bootstrap_genotypes = pandas.concat(data)
 
         if bootstrap_genotypes.empty:
             raise ValueError('Bootstrapped genotypes should not be empty, hmmm.')
         if len(bootstrap_genotypes) != samples:
             raise ValueError('Bootstrapped genotypes missing some samples, hmmm.')
-        
+
         print(bootstrap_genotypes)
 
         bootstrap_genotypes.to_csv(f"{outdb / f'{outdb.name}.tsv'}", sep='\t', header=True, index=False)
