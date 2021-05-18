@@ -708,11 +708,13 @@ class SketchyDiagnostics(PoreLogger):
 
                     # Score across genotype for each individual and make violin plot!
 
+                    # for name, sdata in rdata.groupby('sample'):
+
+
 
     def binary_metrics_manual(self, df):
 
         cm = confusion_matrix(df['reference'], df['call'], labels=["R", "S"])
-
 
         tp = cm[0][0]
         fn = cm[0][1]

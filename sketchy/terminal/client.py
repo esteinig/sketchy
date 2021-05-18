@@ -5,7 +5,6 @@ from .match import match
 from .fastx import fastx
 from .database import database
 from .online import online
-from .survey import survey
 from .plot import plot
 from .collect import collect
 
@@ -23,7 +22,6 @@ terminal_client.add_command(metrics)
 terminal_client.add_command(match)
 terminal_client.add_command(collect)
 terminal_client.add_command(plot)
-terminal_client.add_command(survey)
 terminal_client.add_command(online)
 terminal_client.add_command(fastx)
 terminal_client.add_command(database)
