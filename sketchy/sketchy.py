@@ -52,11 +52,11 @@ class SketchyDiagnostics(PoreLogger):
 
     def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
 
-        fastq_files = directory.glob(f"*{ext}")
+        fastq_files = list(directory.glob(f"*{ext}"))
 
         counts = [len(pyfastx.Fastq(str(f))) for f in fastq_files]
 
-        names = [f.stem for f in fastq_files]
+        names = [f.name.replace(ext, "") for f in fastq_files]
 
         print(names, counts)
 
