@@ -63,7 +63,7 @@ class SketchyDiagnostics(PoreLogger):
                 "counts": counts,
                 "name": names
              }
-        ).set_index('names')
+        ).set_index('name')
 
         data.loc['unclassified', 'name'] = '9999999999'
 
