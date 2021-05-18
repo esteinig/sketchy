@@ -56,7 +56,7 @@ class SketchyDiagnostics(PoreLogger):
 
         counts = [len(pyfastx.Fastq(str(f))) for f in fastq_files]
 
-        names = [f.name.replace(ext, "") for f in fastq_files]
+        names = [f.stem for f in fastq_files]
 
         print(names, counts)
 
