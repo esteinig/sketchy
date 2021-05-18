@@ -65,9 +65,13 @@ class SketchyDiagnostics(PoreLogger):
              }
         ).set_index('name')
 
+        print(data)
+
         data = self.natsort_index(data)
 
         data.index = [d if d != '99999' else 'unclassified' for d in data.index.tolist()]
+
+        print(data)
 
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
