@@ -64,8 +64,10 @@ class SketchyDiagnostics(PoreLogger):
                 "names": names
              }
         ).set_index('names')
-        
+
         data.loc['names', 'unclassified'] = '9999999999'
+
+        print(data)
 
         data = self.natsort_index(data)
 
