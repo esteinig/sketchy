@@ -982,6 +982,9 @@ class SketchyDatabase(PoreLogger):
 
     def bootstrap_sample(self, fasta_dir: Path, samples: int, outdir: Path, outdb: Path, fasta_glob: str = "*.fasta"):
 
+        outdir.mkdir(parents=True, exist_ok=True)
+        outdb.mkdir(parents=True, exist_ok=True)
+
         # Sample files with replacement
         files = list(fasta_dir.glob(fasta_glob))
         # Do not consider assemblies in fasta_dir that do not occur in the reference genotypes
@@ -1001,8 +1004,6 @@ class SketchyDatabase(PoreLogger):
         print(bootstrap_genotypes)
 
         bootstrap_genotypes.to_csv(f"{outdb / f'{outdb.name}.tsv'}", sep='\t', header=True, index=False)
-
-        outdir.mkdir(parents=True, exist_ok=True)
 
         self.logger.info(f'Symlinking genome assemblies to: {outdir}')
         for file in sampled_files:
@@ -1141,7 +1142,6 @@ class SketchyDatabase(PoreLogger):
 
         run_cmd(f'mash info -t {self.sketch_file} > info.tmp', shell=True)
 
-        converters = {'fname': lambda x: Path(x).stem}
         mash_info = pandas.read_csv(
             f'info.tmp',
             sep='\t',
@@ -1151,7 +1151,7 @@ class SketchyDatabase(PoreLogger):
             engine='c',
             usecols=[2],
             names=['fname'],
-            converters=converters,
+            converters={'fname': lambda x: Path(x).stem},
         )
         os.remove('info.tmp')
 

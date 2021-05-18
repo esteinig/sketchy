@@ -22,7 +22,7 @@ from sketchy.sketchy import SketchyDatabase
     help='Output path to symlink assembly files for sketch construction in Mash [bootstrap_fasta]'
 )
 @click.option(
-    '--outdb', '-o', type=Path, required=False, default=Path('bootstrap_db'),
+    '--outdb', '-o', type=Path, required=False, default=Path.cwd(),
     help='Output path to database directory with genotype file sub-set to bootstrap sample [bootstrap_db]'
 )
 def bootstrap(fasta_directory, reference_database, bootstrap_samples, outdir, outdb):
