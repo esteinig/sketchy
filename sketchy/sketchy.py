@@ -55,7 +55,8 @@ class SketchyDiagnostics(PoreLogger):
         fastq_files = directory.glob(f"*{ext}")
 
         counts = [pyfastx.Fastq(str(f), build_index=False) for f in fastq_files]
-        counts = [len(f) for f in counts]
+        for f in counts:
+            print(f)
         names = [f.name.replace(ext, "") for f in fastq_files]
 
         print(names, counts)
