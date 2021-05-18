@@ -60,6 +60,8 @@ class SketchyDiagnostics(PoreLogger):
                 "names": [f.name.replace(ext, "") for f in fastq_files]
              }
         )
+        print(data)
+
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
         )
