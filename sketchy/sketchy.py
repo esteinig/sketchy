@@ -54,10 +54,15 @@ class SketchyDiagnostics(PoreLogger):
 
         fastq_files = directory.glob(f"*{ext}")
 
+        counts = [len(pyfastx.Fastq(str(f), build_index=False)) for f in fastq_files]
+        names = [f.name.replace(ext, "") for f in fastq_files]
+
+        print(names, counts)
+
         data = pandas.DataFrame(
             {
-                "counts": [len(pyfastx.Fastq(str(f), build_index=False)) for f in fastq_files],
-                "names": [f.name.replace(ext, "") for f in fastq_files]
+                "counts": counts,
+                "names": names
              }
         )
         print(data)
