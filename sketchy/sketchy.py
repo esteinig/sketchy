@@ -58,15 +58,14 @@ class SketchyDiagnostics(PoreLogger):
 
         names = [f.name.replace(ext, "") for f in fastq_files]
 
-        print(names, counts)
-
         data = pandas.DataFrame(
             {
                 "counts": counts,
                 "names": names
              }
-        )
-        print(data)
+        ).set_index('names')
+
+        data = self.natsort_index(data)
 
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
@@ -141,7 +140,7 @@ class SketchyDiagnostics(PoreLogger):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
-                    _predictions = self.natsort_index(_predictions)
+                    _predictions = self.natsort_index(_predictions)  # TODO check here if possible without numerics!
 
                     _values = []
                     _index_labels = []
