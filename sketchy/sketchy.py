@@ -724,8 +724,7 @@ class SketchyDiagnostics(PoreLogger):
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
-
-                    if method == 'stream'  and read_limit in (200, 500):
+                    if method == 'stream' and read_limit in (200, 500):
                         print(
                             f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                             f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
@@ -766,9 +765,15 @@ class SketchyDiagnostics(PoreLogger):
 
                     # for name, sdata in rdata.groupby('sample'):
 
+    def multilabel_metrics_manual(self, df):
+
+        cm = confusion_matrix(df['reference'], df['call'])
+
+
 
     def binary_metrics_manual(self, df):
 
+        # Currently all binary labels should be designated R / S - check for K. pneumoniae
         cm = confusion_matrix(df['reference'], df['call'], labels=["R", "S"])
 
         tp = cm[0][0]
@@ -983,7 +988,6 @@ class SketchyDatabase(PoreLogger):
     def bootstrap_sample(self, fasta_dir: Path, samples: int, outdir: Path, outdb: Path, fasta_glob: str = "*.fasta"):
 
         outdir.mkdir(parents=True, exist_ok=True)
-        outdb.mkdir(parents=True, exist_ok=True)
 
         # Sample files with replacement
         files = list(fasta_dir.glob(fasta_glob))
@@ -1003,7 +1007,7 @@ class SketchyDatabase(PoreLogger):
 
         print(bootstrap_genotypes)
 
-        bootstrap_genotypes.to_csv(f"{outdb / f'{outdb.name}.tsv'}", sep='\t', header=True, index=False)
+        bootstrap_genotypes.to_csv(f"{outdb}.tsv", sep='\t', header=True, index=False)
 
         self.logger.info(f'Symlinking genome assemblies to: {outdir}')
         for file in sampled_files:
