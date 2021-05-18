@@ -988,6 +988,8 @@ class SketchyDatabase(PoreLogger):
 
         gids = [file.stem for file in sampled_files]
 
+        print(gids)
+
         data = []
         for gid in gids:
             data.append(
