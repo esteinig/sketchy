@@ -1012,15 +1012,15 @@ class SketchyDatabase(PoreLogger):
 
         bootstrap_genotypes['source'] = [str(s) for s in sampled_files]
         bootstrap_genotypes['target'] = [
-            id if duplicate_numbers[i] == 0 else f'{id}_{duplicate_numbers[i]}'
-            for i, id in enumerate(bootstrap_genotypes['id'])
+            f'{identifier}' if duplicate_numbers[i] == 0 else f'{identifier}_{duplicate_numbers[i]}'
+            for i, identifier in enumerate(bootstrap_genotypes['id'])
         ]
 
-        print(bootstrap_genotypes)
+        print(bootstrap_genotypes['target'].tolist())
 
         self.logger.info(f'Symlinking genome assemblies to: {outdir}')
         for i, row in bootstrap_genotypes.iterrows():
-            os.symlink(f'{row["source"]}', str(outdir / f'{row["target"]}'))
+            os.symlink(f'{row["source"]}', str(outdir / f'{row["target"]}.fasta'))
 
         bootstrap_genotypes = bootstrap_genotypes.drop(columns=['source', 'id']).rename(columns={'target': 'id'})
 
