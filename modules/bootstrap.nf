@@ -3,7 +3,7 @@ process BootstrapBuild {
 
     tag { "Bootstrap : $sample : $replicate" }
 
-    label "bbuild"
+    label "build"
 
     publishDir "${params.outdir}/bootstrap"
 
