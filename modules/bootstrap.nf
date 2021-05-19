@@ -29,9 +29,9 @@ process SketchyStream {
     label "sketchy"
     tag { id }
 
-    publishDir "${params.outdir}/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.tsv"
-    publishDir "${params.outdir}/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.sssh"
-    publishDir "${params.outdir}/${sample}/${read_limit}", mode: "copy", pattern: "header.txt"
+    publishDir "${params.outdir}/stream/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.tsv"
+    publishDir "${params.outdir}/stream/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.sssh"
+    publishDir "${params.outdir}/stream/${sample}/", mode: "copy", pattern: "header.txt", overwrite: true
 
     input:
     tuple val(id), val(read_limit), file(fx), val(sample), val(replicate), file(db)
