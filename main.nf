@@ -85,11 +85,11 @@ if (params.reads) {
 }
 
 if (params.fasta_directory){
-    fasta_directory = file(fasta_directory)
+    fasta_directory = file(params.fasta_directory)
 }
 
 if (params.reference_database){
-    reference_database = file(reference_database)
+    reference_database = file(params.reference_database)
 }
 
 
