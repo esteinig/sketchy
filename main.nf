@@ -154,7 +154,7 @@ workflow {
         println fasta_directory
         
 
-        dbs = BootstrapBuild(fasta_directory, samples, reps)
+        dbs = BootstrapBuild(fasta_directory, reference_database, samples, reps)
 
         BootstrapStream(ont, dbs)
 
