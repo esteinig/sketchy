@@ -34,8 +34,7 @@ process SketchyStream {
     publishDir "${params.outdir}/${sample}/${read_limit}", mode: "copy", pattern: "header.txt"
 
     input:
-    tuple val(id), val(read_limit), file(fx)
-    tuple val(sample), val(replicate), file(db)
+    tuple val(id), val(read_limit), file(fx), val(sample), val(replicate), file(db)
 
     output:
     file("${id}_${replicate}.tsv")

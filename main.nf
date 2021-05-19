@@ -151,13 +151,12 @@ workflow {
 
     if (params.workflow == 'bootstrap_database') {
         ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, bootstrap_read_limit, it) }
-
-        println fasta_directory
         
-
         dbs = BootstrapBuild(fasta_directory, reference_database, samples, reps)
 
-        BootstrapStream(ont, dbs)
+        combinations = ont.combine(dbs)
+
+        BootstrapStream(combinations)
 
 
     }
