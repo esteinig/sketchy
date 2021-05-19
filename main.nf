@@ -129,6 +129,7 @@ include { SketchyDist } from './modules/sketchy'
 include { Bootstrap } from './modules/sketchy'
 include { ReadLimit } from './modules/sketchy'
 
+include { PublishHeader } from './modules/bootstrap'
 include { BootstrapBuild } from './modules/bootstrap'
 include { SketchyStream as BootstrapStream } from './modules/bootstrap'
 
@@ -152,11 +153,11 @@ workflow {
     if (params.workflow == 'bootstrap_database') {
         ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, bootstrap_read_limit, it) }
         
-        dbs = BootstrapBuild(fasta_directory, reference_database, samples, reps)
+        bootstrap_dbs = BootstrapBuild(fasta_directory, reference_database, samples, reps)
+        bootstrap_replicates = ont.combine(bootstrap_dbs)
+        BootstrapStream(bootstrap_replicates)
 
-        combinations = ont.combine(dbs)
-
-        BootstrapStream(combinations)
+        PublishHeader(reference_database, samples)
 
 
     }

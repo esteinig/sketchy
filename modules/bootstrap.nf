@@ -31,15 +31,13 @@ process SketchyStream {
 
     publishDir "${params.outdir}/stream/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.tsv"
     publishDir "${params.outdir}/stream/${sample}/${read_limit}", mode: "copy", pattern: "${id}_${replicate}.sssh"
-    publishDir "${params.outdir}/stream/${sample}/", mode: "copy", pattern: "header.txt", overwrite: "true"
-
+    
     input:
     tuple val(id), val(read_limit), file(fx), val(sample), val(replicate), file(db)
 
     output:
     file("${id}_${replicate}.tsv")
     file("${id}_${replicate}.sssh")
-    file("header.txt")
     
     script:
 
@@ -50,7 +48,23 @@ process SketchyStream {
     head -$_read_limit $fx | sketchy stream --db $db --ranks $params.ranks --stability $params.stability --threads $task.cpus > ${id}_${replicate}.sssh
     cat  ${id}_${replicate}.sssh | sketchy predict --db $db --limit $params.limit --genotype > predict.tsv
     tail -n $params.limit predict.tsv > ${id}_${replicate}.tsv
-    sketchy head --db $db > header.txt
     """
 
+}
+
+process PublishHeader {
+
+    label "sketchy"
+    tag { id }
+
+    input:
+    file(reference_database)
+    each sample
+
+    publishDir "${params.outdir}/stream/${sample}/", mode: "copy", pattern: "header.txt"
+
+    """
+    SKETCHY_PATH=\$PWD
+    sketchy head --db $reference_database > header.txt
+    """
 }
