@@ -16,7 +16,7 @@ process BootstrapBuild {
     tuple val(sample), val(replicate), file("s${sample}_r${replicate}")
 
     """
-    sketchy-utils database bootstrap --fasta_directory $fasta_directory --bootstrap_sample $sample --outdir bootstrap_${replicate} --genotypes bootstrap_${replicate}
+    sketchy-utils database bootstrap --fasta_directory $fasta_directory --bootstrap_samples $sample --outdir bootstrap_${replicate} --genotypes bootstrap_${replicate}
     mash sketch -k 15 -s 1000 -o bootstrap_$replicate replicate_${replicate}/*.fasta
     sketchy-utils database create --sketch bootstrap_${replicate}.msh --genotypes bootstrap_${replicate}.tsv $params.create_options --outdir s${sample}_r${replicate}
     """
