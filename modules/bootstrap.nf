@@ -13,7 +13,7 @@ process BootstrapBuild {
     each replicate
 
     output:
-    set val(sample), val(replicate), file("s${sample}_r${replicate}")
+    tuple val(sample), val(replicate), file("s${sample}_r${replicate}")
 
     """
     sketchy-utils database bootstrap --fasta_directory $fasta_directory --bootstrap_sample $sample --outdir bootstrap_${replicate} --genotypes bootstrap_${replicate}
