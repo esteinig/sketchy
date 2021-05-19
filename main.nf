@@ -69,33 +69,40 @@ params.ranks = 10
 params.stability = 100
 params.replicates = 0
 
-params.fasta_directory = ""
-if (params.fasta_directory){
-    fasta_directory = file(fasta_directory)
-} else {
-    fasta_directory = ""
-}
+if (params.workflow == "genotype"){
 
-samples = [200, 500, 1000, 2000, 4000, 8000, 16000, 32000, 38000]
-bootstrap_read_limit = 1000
+    if (params.db) {
+        dbs = params.db.split(",").collect { file(it) }
+    } else {
+        println("You need to specify one or multiple database paths (--db)")
+        println("Example: nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
+        System.exit(1)
+    }
+
+    if (params.reads) {
+        read_limits = params.reads.split(",").collect { it.toInteger() }
+    } else {
+        println("You need to specify one or multiple prediction end points (--reads)")
+        println("Example: nextflow run esteinig/sketchy --reads 100,500")
+        System.exit(1)
+    }
+
+} else {
+
+    params.fasta_directory = ""
+    if (params.fasta_directory){
+        fasta_directory = file(fasta_directory)
+    } else {
+        fasta_directory = ""
+    }
+
+    samples = [200, 500, 1000, 2000, 4000, 8000, 16000, 32000, 38000]
+    bootstrap_read_limit = 1000
+
+}
 
 reps = 1..params.replicates
 
-if (params.db) {
-    dbs = params.db.split(",").collect { file(it) }
-} else {
-    println("You need to specify one or multiple database paths (--db)")
-    println("Example: nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
-    System.exit(1)
-}
-
-if (params.reads) {
-    read_limits = params.reads.split(",").collect { it.toInteger() }
-} else {
-    println("You need to specify one or multiple prediction end points (--reads)")
-    println("Example: nextflow run esteinig/sketchy --reads 100,500")
-    System.exit(1)
-}
 
 
 def startMessage() {
