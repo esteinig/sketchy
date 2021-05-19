@@ -93,7 +93,16 @@ if (params.workflow == "genotype"){
     if (params.fasta_directory){
         fasta_directory = file(fasta_directory)
     } else {
-        fasta_directory = ""
+        println("You need to specify a --fasta_directory")
+        System.exit(1)
+    }
+
+    params.reference_database = ""
+    if (params.reference_database){
+        reference_database = file(reference_database)
+    } else {
+        println("You need to specify a --reference_database")
+        System.exit(1)
     }
 
     samples = [200, 500, 1000, 2000, 4000, 8000, 16000, 32000, 38000]
