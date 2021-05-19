@@ -997,21 +997,35 @@ class SketchyDatabase(PoreLogger):
         sampled_files = choices(files, k=samples)
         gids = [file.stem for file in sampled_files]
 
-        data = [self.genotypes.loc[self.genotypes['id'] == gid] for gid in gids]
-        bootstrap_genotypes = pandas.concat(data)
+        bootstrap_genotypes = pandas.concat(
+            [self.genotypes.loc[self.genotypes['id'] == gid] for gid in gids]
+        )
 
         if bootstrap_genotypes.empty:
             raise ValueError('Bootstrapped genotypes should not be empty, hmmm.')
         if len(bootstrap_genotypes) != samples:
             raise ValueError('Bootstrapped genotypes missing some samples, hmmm.')
 
+        duplicate_numbers = bootstrap_genotypes.groupby(['id']).cumcount()
+        bootstrap_genotypes['source'] = [str(s) for s in sampled_files]
+        bootstrap_genotypes['target'] = [
+            id if duplicate_numbers[i] == 0 else f'{id}_{duplicate_numbers[i]}'
+            for i, id in enumerate(bootstrap_genotypes['id'])
+        ]
+
         print(bootstrap_genotypes)
 
+        self.logger.info(f'Symlinking genome assemblies to: {outdir}')
+        for i, row in bootstrap_genotypes.iterrows():
+            os.symlink(f'{row["source"]}', str(outdir / f'{row["target"]}'))
+
+        bootstrap_genotypes = bootstrap_genotypes.drop(columns=['source', 'id']).rename(columns={'target': 'id'})
+
+
+        print(bootstrap_genotypes)
+        
         bootstrap_genotypes.to_csv(f"{outdb}.tsv", sep='\t', header=True, index=False)
 
-        self.logger.info(f'Symlinking genome assemblies to: {outdir}')
-        for file in sampled_files:
-            os.symlink(str(file), f"{outdir / f'{file.name}'}")
 
         self.logger.info(f'Database genotype file in: {outdb}')
 
