@@ -1011,7 +1011,7 @@ class SketchyDatabase(PoreLogger):
 
         self.logger.info(f'Symlinking genome assemblies to: {outdir}')
         for file in sampled_files:
-            file.symlink_to(f"{outdir / f'{file.name}'}")
+            os.symlink(str(file), f"{outdir / f'{file.name}'}")
 
         self.logger.info(f'Database genotype file in: {outdb}')
 
