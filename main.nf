@@ -161,6 +161,9 @@ workflow {
     if (params.workflow == 'bootstrap_database') {
         ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, bootstrap_read_limit, it) }
 
+        println samples
+        
+
         dbs = BootstrapBuild(fasta_directory, samples, reps)
 
         BootstrapStream(ont, dbs)

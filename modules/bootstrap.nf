@@ -9,8 +9,8 @@ process BootstrapBuild {
 
     input:
     file(fasta_directory)
-    each val(sample)
-    each val(replicate)
+    each sample
+    each replicate
 
     output:
     set val(sample), val(replicate), file("s${sample}_r${replicate}")
