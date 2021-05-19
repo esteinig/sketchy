@@ -23,68 +23,73 @@ def collect(
 
     """ Collect predictions and summarize results from Nextflow """
 
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    comparison_data = {}
+
     if workflow == "comparison":
+        dirs = (directory / 'dist', directory / 'screen', directory / 'screen_winner', directory / 'stream')
+    else:
+        dirs = (directory / 'stream', )
+        
+    for path in dirs:
+        database_paths = [p for p in path.glob("*") if p.is_dir()]
 
-        outdir.mkdir(parents=True, exist_ok=True)
+        database_data = []
+        for db_path in database_paths:
+            print(db_path)
+            db_header = pandas.read_csv(
+                db_path / 'header.txt', sep="\t", header=None, index_col=None
+            ).iloc[0].tolist()
 
-        comparison_data = {}
-        for path in (directory / 'dist', directory / 'screen', directory / 'screen_winner', directory / 'stream'):
-            database_paths = [p for p in path.glob("*") if p.is_dir()]
+            if id_last:
+                db_header1 = db_header + ['id', 'replicate']  # use for saureus
+            else:
+                db_header1 = ['id'] + db_header + ['replicate']  # quick fix
 
-            database_data = []
-            for db_path in database_paths:
-                print(db_path)
-                db_header = pandas.read_csv(
-                    db_path / 'header.txt', sep="\t", header=None, index_col=None
-                ).iloc[0].tolist()
+            read_limit_paths = [p for p in db_path.glob("*") if p.is_dir()]
 
-                if id_last:
-                    db_header1 = db_header + ['id', 'replicate']  # use for saureus
-                else:
-                    db_header1 = ['id'] + db_header + ['replicate']  # quick fix
+            read_limit_data = []
+            for read_limit_path in read_limit_paths:
+                result_files = read_limit_path.glob("*.tsv")
 
-                read_limit_paths = [p for p in db_path.glob("*") if p.is_dir()]
+                result_data = []
+                for file in result_files:
+                    try:
+                        df = pandas.read_csv(file, sep="\t", header=None)
+                        name = file.name.strip(".tsv").split("_")
+                        df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
+                        df['replicate'] = [name[-1] for _ in df.iterrows()]
 
-                read_limit_data = []
-                for read_limit_path in read_limit_paths:
-                    result_files = read_limit_path.glob("*.tsv")
+                        if path.name == "stream":
+                            df.columns = ["read"] + db_header + ['replicate']
+                        elif path.name == "dist":
+                            df.columns = ["rank", "distance", "shared_hashes"] + db_header1
+                        elif path.name == "screen" or path.name == "screen_winner":
+                            df.columns = ["rank", "identity", "shared_hashes"] + db_header1
+                        else:
+                            df.columns = ["read"] + db_header + ['replicate']
+                            # raise ValueError("Something went seriously wrong, dude! Get your shit together.")
 
-                    result_data = []
-                    for file in result_files:
-                        try:
-                            df = pandas.read_csv(file, sep="\t", header=None)
-                            name = file.name.strip(".tsv").split("_")
-                            df.index = ["_".join(name[:-1]) for _ in df.iterrows()]
-                            df['replicate'] = [name[-1] for _ in df.iterrows()]
+                    except pandas.errors.EmptyDataError:
+                        # This can happen to 'screen' if very few reads are used
+                        print(f"Could not read results from: {file} - skipping ...")
+                        continue
 
-                            if path.name == "stream":
-                                df.columns = ["read"] + db_header + ['replicate']
-                            elif path.name == "dist":
-                                df.columns = ["rank", "distance", "shared_hashes"] + db_header1
-                            elif path.name == "screen" or path.name == "screen_winner":
-                                df.columns = ["rank", "identity", "shared_hashes"] + db_header1
-                            else:
-                                raise ValueError("Something went seriously wrong, dude! Get your shit together.")
+                    result_data.append(df)
 
-                        except pandas.errors.EmptyDataError:
-                            # This can happen to 'screen' if very few reads are used
-                            print(f"Could not read results from: {file} - skipping ...")
-                            continue
+                results = pandas.concat(result_data)
+                results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
+                read_limit_data.append(results)
 
-                        result_data.append(df)
+            read_limits = pandas.concat(read_limit_data)
+            read_limits['db'] = [db_path.name for _ in read_limits.iterrows()]
+            database_data.append(read_limits)
 
-                    results = pandas.concat(result_data)
-                    results['read_limit'] = [read_limit_path.name for _ in results.iterrows()]
-                    read_limit_data.append(results)
+        dbs = pandas.concat(database_data)
+        dbs['mode'] = [path.name for _ in dbs.iterrows()]
+        comparison_data[path.name] = dbs
 
-                read_limits = pandas.concat(read_limit_data)
-                read_limits['db'] = [db_path.name for _ in read_limits.iterrows()]
-                database_data.append(read_limits)
-
-            dbs = pandas.concat(database_data)
-            dbs['mode'] = [path.name for _ in dbs.iterrows()]
-            comparison_data[path.name] = dbs
-
-        for k, v in comparison_data.items():
-            v.to_csv(f"{outdir / k}.tsv", sep="\t", index=True, header=True)
+    for k, v in comparison_data.items():
+        v.to_csv(f"{outdir / k}.tsv", sep="\t", index=True, header=True)
 
