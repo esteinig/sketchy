@@ -59,6 +59,7 @@ def helpMessage() {
 
 
 params.outdir = "nxf-sketchy"
+params.workflow = "genotype"
 params.fastq = "*.fastq"
 params.db = ""                               // must be actual path
 params.reads = "20,50,100,200,500,1000,2000,5000,10000"
@@ -68,6 +69,15 @@ params.ranks = 10
 params.stability = 100
 params.replicates = 0
 
+params.fasta_directory = ""
+if (params.fasta_directory){
+    fasta_directory = file(fasta_directory)
+} else {
+    fasta_directory = ""
+}
+
+samples = [200, 500, 1000, 2000, 4000, 8000, 16000, 32000, 38000]
+bootstrap_read_limit = 1000
 
 reps = 1..params.replicates
 
@@ -104,6 +114,10 @@ def startMessage() {
     Prediction limit:       ${params.limit} [1 = best prediction]
     Prediction ranks:       ${params.ranks}
     Prediction stability:   ${params.stability}
+    
+    Fasta directory:        ${fasta_directory}
+    Bootstrap samples:      ${params.samples}
+    Bootstrap read limit:   ${bootstrap_read_limit}
 
     =========================================
 
@@ -117,19 +131,35 @@ include { SketchyDist } from './modules/sketchy'
 include { Bootstrap } from './modules/sketchy'
 include { ReadLimit } from './modules/sketchy'
 
+include { BootstrapBuild } from './modules/bootstrap'
+include { BootstrapSketchyStream } from './modules/bootstrap'
+
 workflow {
 
-    ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
-    
-    if (params.replicates > 0) {
-        fq = Bootstrap(ont, reps, read_limits)
-    } else {
-        fq = ReadLimit(ont, read_limits)
-    }
+    if (params.workflow == "genotype"){
+        ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, it) }
+        
+        if (params.replicates > 0) {
+            fq = Bootstrap(ont, reps, read_limits)
+        } else {
+            fq = ReadLimit(ont, read_limits)
+        }
 
-    SketchyStream(fq, dbs)
-    SketchyScreen(fq, dbs)
-    SketchyDist(fq, dbs)
-    SketchyScreenWinner(fq, dbs)
+        SketchyStream(fq, dbs)
+        SketchyScreen(fq, dbs)
+        SketchyDist(fq, dbs)
+        SketchyScreenWinner(fq, dbs)
+    } 
+
+    if (params.workflow == 'bootstrap_database') {
+        ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, bootstrap_read_limit, it) }
+
+        dbs = BootstrapBuild(fasta_directory, params.samples, reps)
+
+        BootstrapSketchyStream(ont, dbs)
+
+
+    }
+   
 
 }
