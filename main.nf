@@ -139,7 +139,7 @@ include { Bootstrap } from './modules/sketchy'
 include { ReadLimit } from './modules/sketchy'
 
 include { BootstrapBuild } from './modules/bootstrap'
-include { BootstrapSketchyStream } from './modules/bootstrap'
+include { SketchyStream as BootstrapStream } from './modules/bootstrap'
 
 workflow {
 
@@ -163,7 +163,7 @@ workflow {
 
         dbs = BootstrapBuild(fasta_directory, params.samples, reps)
 
-        BootstrapSketchyStream(ont, dbs)
+        BootstrapStream(ont, dbs)
 
 
     }
