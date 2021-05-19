@@ -123,7 +123,7 @@ def startMessage() {
     Prediction stability:   ${params.stability}
     
     Fasta directory:        ${fasta_directory}
-    Bootstrap samples:      ${params.samples}
+    Bootstrap samples:      ${samples}
     Bootstrap read limit:   ${bootstrap_read_limit}
 
     =========================================
@@ -161,7 +161,7 @@ workflow {
     if (params.workflow == 'bootstrap_database') {
         ont = channel.fromPath("${params.fastq}", type: 'file').map { tuple(it.simpleName, bootstrap_read_limit, it) }
 
-        dbs = BootstrapBuild(fasta_directory, params.samples, reps)
+        dbs = BootstrapBuild(fasta_directory, samples, reps)
 
         BootstrapStream(ont, dbs)
 
