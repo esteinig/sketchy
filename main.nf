@@ -76,34 +76,20 @@ reps = 1..params.replicates
 samples = [200, 500, 1000, 2000, 4000, 8000, 16000, 32000, 38000]
 bootstrap_read_limit = 1000
 
-if (params.db && params.workflow == "genotype") {
+if (params.db) {
     dbs = params.db.split(",").collect { file(it) }
-} else {
-    println("You need to specify one or multiple database paths (--db)")
-    println("Example: nextflow run esteinig/sketchy --db ~/.sketchy/saureus")
-    System.exit(1)
 }
 
-if (params.reads && params.workflow == "genotype") {
+if (params.reads) {
     read_limits = params.reads.split(",").collect { it.toInteger() }
-} else {
-    println("You need to specify one or multiple prediction end points (--reads)")
-    println("Example: nextflow run esteinig/sketchy --reads 100,500")
-    System.exit(1)
 }
 
-if (params.fasta_directory && params.workflow == "bootstrap_database"){
+if (params.fasta_directory){
     fasta_directory = file(fasta_directory)
-} else {
-    println("You need to specify a --fasta_directory")
-    System.exit(1)
 }
 
-if (params.reference_database && params.workflow == "bootstrap_database"){
+if (params.reference_database){
     reference_database = file(reference_database)
-} else {
-    println("You need to specify a --reference_database")
-    System.exit(1)
 }
 
 
