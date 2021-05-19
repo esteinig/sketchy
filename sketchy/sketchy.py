@@ -1006,7 +1006,10 @@ class SketchyDatabase(PoreLogger):
         if len(bootstrap_genotypes) != samples:
             raise ValueError('Bootstrapped genotypes missing some samples, hmmm.')
 
-        duplicate_numbers = bootstrap_genotypes.groupby(['id']).cumcount()
+        duplicate_numbers = bootstrap_genotypes.groupby(['id']).cumcount().tolist()
+
+        print(duplicate_numbers)
+
         bootstrap_genotypes['source'] = [str(s) for s in sampled_files]
         bootstrap_genotypes['target'] = [
             id if duplicate_numbers[i] == 0 else f'{id}_{duplicate_numbers[i]}'
@@ -1023,7 +1026,7 @@ class SketchyDatabase(PoreLogger):
 
 
         print(bootstrap_genotypes)
-        
+
         bootstrap_genotypes.to_csv(f"{outdb}.tsv", sep='\t', header=True, index=False)
 
 
