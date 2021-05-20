@@ -10,7 +10,7 @@ import pyfastx
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from numpy import array
+from numpy import array, diag
 from numpy import nan
 from pathlib import Path
 
@@ -692,6 +692,7 @@ class SketchyDiagnostics(PoreLogger):
         data['call'] = ['R' if d == 'r' else d for d in data['call']]
         data['reference'] = ['R' if d == 'r' else d for d in data['reference']]
 
+        binary_data = []
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
                 if force_db:
@@ -740,7 +741,7 @@ class SketchyDiagnostics(PoreLogger):
 
                     for genotype, gdata in rdata.groupby("genotype", sort=False):
 
-                        accuracy3 = accuracy_score(gdata['reference'], gdata['call'])
+                        accuracy_scikit = accuracy_score(gdata['reference'], gdata['call'])
 
                         if (db == 'saureus' and genotype in sa_multilabel) or \
                                 (db == 'kpneumoniae' and genotype in kp_multilabel):
@@ -748,33 +749,72 @@ class SketchyDiagnostics(PoreLogger):
                         else:
                             average, pos_label = 'binary', 'R'
 
-                        precision3 = precision_score(
+                        precision_scikit = precision_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
-                        recall3 = recall_score(
+                        recall_scikit = recall_score(
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
 
                         if method == 'stream' and read_limit in (200, 500):
-                            print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+                            print(
+                                f"\nGenotype: {genotype} [Scikit-learn] Accuracy: {accuracy_scikit} "
+                                f"Precision: {precision_scikit} Recall: {recall_scikit}"
+                                )
                             if average == 'binary':
-
                                 tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
                                     self.binary_metrics_manual(df=gdata)
+                            else:
+                                print(genotype)
+                                tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
+                                    self.multilabel_metrics_manual(df=gdata)
+                                return
 
-                                print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
-                                for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
-                                    print(f"{m[0]}:{m[1]}")
+                            print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                            for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
+                                print(f"{m[0]}:{m[1]}")
+
+                            binary_data.append([method, real_db, read_limit, tp, tn, fp, fn, acc, ppv, tpr, tnr])
 
                     # Score across genotype for each individual and make violin plot!
 
                     # for name, sdata in rdata.groupby('sample'):
 
+            binary_df = pandas.DataFrame(binary_data, columns=[
+                    'method', 'db', 'read_limit', 'true_positives', 'true_negatives', 'false_positives', 'false_negatives',
+                    'accuracy', 'precision', 'recall', 'specificity'
+            ])
+
     def multilabel_metrics_manual(self, df):
 
         cm = confusion_matrix(df['reference'], df['call'])
 
+        fp = confusion_matrix.sum(axis=0) - diag(confusion_matrix)
+        fn = confusion_matrix.sum(axis=1) - diag(confusion_matrix)
+        tp = diag(confusion_matrix)
+        tn = confusion_matrix.values.sum() - (fp + fn + tp)
 
+        print(fp, fn, tp, tn)
+
+        # Sensitivity, hit rate, recall, or true positive rate
+        tpr = tp / (tp + fn)
+        # Specificity or true negative rate
+        tnr = tn / (tn + fp)
+        # Precision or positive predictive value
+        ppv = tp / (tp + fp)
+        # Negative predictive value
+        npv = tn / (tn + fn)
+        # Fall out or false positive rate
+        fpr = fp / (fp + tn)
+        # False negative rate
+        fnr = fn / (tp + fn)
+        # False discovery rate
+        fdr = fp / (tp + fp)
+
+        # Overall accuracy
+        acc = (tp + tn) / (tp + fp + fn + tn)
+
+        return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
     def binary_metrics_manual(self, df):
 
