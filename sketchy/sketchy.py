@@ -87,9 +87,9 @@ class SketchyDiagnostics(PoreLogger):
             nrows=1, ncols=1, figsize=(14, 10)
         )
 
-        sns.lineplot(
-            data=metrics, x="db", y="percent", hue="genotype", style="metric", palette='colorblind',
-            markers=True, ax=axes, err_style="bars", ci=95
+        sns.relplot(
+            data=metrics, x="db", y="percent", hue="metric", palette='colorblind',
+            markers=True, ax=axes, err_style="bars", ci=95, kind="genotype"
         )
         plt.ylabel('Percent (%)')
         plt.xlabel('Database size (n)\n')
@@ -823,7 +823,6 @@ class SketchyDiagnostics(PoreLogger):
                                     d = [replicate, genotype, False, method, real_db, read_limit, nan, nan, nan, nan,
                                          accuracy_scikit, precision_scikit, recall_scikit, nan]
 
-
                                 fdata.append(d)
 
                     # Score across genotype for each individual and make violin plot!
@@ -831,7 +830,7 @@ class SketchyDiagnostics(PoreLogger):
                     # for name, sdata in rdata.groupby('sample'):
 
             fdf = pandas.DataFrame(fdata, columns=[
-                    'replicate', 'genotype', 'binary', 'method', 'db', 'replicate', 'read_limit', 'true_positives',
+                    'replicate', 'genotype', 'binary', 'method', 'db', 'read_limit', 'true_positives',
                     'true_negatives', 'false_positives', 'false_negatives',
                     'accuracy', 'precision', 'recall', 'specificity'
             ])
