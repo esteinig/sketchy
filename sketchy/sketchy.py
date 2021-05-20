@@ -942,6 +942,7 @@ class SketchyDiagnostics(PoreLogger):
                     for _, row in read_data.iterrows():
                         sample = row.name
                         replicate = row['replicate']
+                        print(f"{sample} {replicate} {read_limit} {db}")
 
                         row = row.drop(labels=['db', 'read_limit', 'replicate'])
 
@@ -995,7 +996,7 @@ class SketchyDiagnostics(PoreLogger):
             summary_df = pandas.DataFrame(
                 summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st', 'replicate']
             ).sort_values(['db', 'sample', 'read_limit'])
-            print(summary_df)
+
             summary_df['method'] = [method for _ in summary_df.iterrows()]
             methods_summary.append(summary_df)
 
