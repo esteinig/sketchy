@@ -88,10 +88,12 @@ class SketchyDiagnostics(PoreLogger):
         )
 
         sns.lineplot(
-            data=metrics, x="db", y="percent", hue="genotype", style="metric", palette='colorblind', markers=True, ax=axes
+            data=metrics, x="db", y="percent", hue="genotype", style="metric", palette='colorblind',
+            markers=True, ax=axes, err_style="bars", ci=95
         )
-        plt.xlabel('Percent (%)')
-        plt.ylabel('Database size (n)\n')
+        plt.ylabel('Percent (%)')
+        plt.xlabel('Database size (n)\n')
+
         plt.tight_layout()
         fig.savefig(f"{prefix}.svg")
         fig.savefig(f"{prefix}.pdf")
