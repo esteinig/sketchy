@@ -789,10 +789,10 @@ class SketchyDiagnostics(PoreLogger):
 
         cm = confusion_matrix(df['reference'], df['call'])
 
-        fp = confusion_matrix.sum(axis=0) - diag(confusion_matrix)
-        fn = confusion_matrix.sum(axis=1) - diag(confusion_matrix)
-        tp = diag(confusion_matrix)
-        tn = confusion_matrix.values.sum() - (fp + fn + tp)
+        fp = cm.sum(axis=0) - diag(cm)
+        fn = cm.sum(axis=1) - diag(cm)
+        tp = diag(cm)
+        tn = cm.values.sum() - (fp + fn + tp)
 
         print(fp, fn, tp, tn)
 
