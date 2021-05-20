@@ -62,12 +62,26 @@ class SketchyDiagnostics(PoreLogger):
         metrics = metrics.melt(
             id_vars=['db', 'genotype'],
             value_vars=['accuracy', 'precision', 'recall'],
-            value_name='percent'
+            value_name='percent', var_name="metric"
         )
 
-        print(metrics)
+        fig, axes = plt.subplots(
+            nrows=2, ncols=2, figsize=(14, 10)
+        )
 
-        #sns.lineplot(data=metrics, x="db", y="percent", hue="genotype")
+        genotypes, metric_data = list(metrics.groupby('genotype'))
+
+        print(genotypes)
+        print(metrics)
+        
+        i = 0
+        for row in range(2):
+            for col in range(2):
+                sns.lineplot(
+                    data=metric_data[i], x="db", y="percent", hue="metric", palette='colorblind', ax=axes[row][col]
+                )
+                i += 1
+
 
     def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
 
