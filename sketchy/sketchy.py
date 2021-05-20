@@ -779,6 +779,7 @@ class SketchyDiagnostics(PoreLogger):
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
                     if method == 'stream' and read_limit in (200, 500):
+                        # Across all replicates if bootstrapped
                         print(
                             f"\nMethod: {method} DB: {real_db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                             f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
@@ -786,51 +787,53 @@ class SketchyDiagnostics(PoreLogger):
                         )
 
                     # Scores across samples for each feature:
+                    for replicate, repdata in rdata.groupby("replicate", sort=False):
+                        for genotype, gdata in repdata.groupby("genotype", sort=False):
 
-                    for genotype, gdata in rdata.groupby("genotype", sort=False):
+                            accuracy_scikit = accuracy_score(gdata['reference'], gdata['call'])
 
-                        accuracy_scikit = accuracy_score(gdata['reference'], gdata['call'])
-
-                        if (db == 'saureus' and genotype in sa_multilabel) or \
-                                (db == 'kpneumoniae' and genotype in kp_multilabel):
-                            average, pos_label = multi_average, 1
-                        else:
-                            average, pos_label = 'binary', 'R'
-
-                        precision_scikit = precision_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
-                        recall_scikit = recall_score(
-                            gdata['reference'], gdata['call'], average=average, pos_label=pos_label
-                        )
-
-                        if method == 'stream' and read_limit in (200, 500):
-                            print(
-                                f"\nGenotype: {genotype} [Scikit-learn] Accuracy: {accuracy_scikit} "
-                                f"Precision: {precision_scikit} Recall: {recall_scikit}"
-                                )
-                            if average == 'binary':
-                                tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
-                                    self.binary_metrics_manual(df=gdata)
-                                d = [genotype, True, method, real_db, read_limit, tp, tn, fp, fn, acc, ppv, tpr, tnr]
-
-                                print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
-                                for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
-                                    print(f"{m[0]}:{m[1]}")
+                            if (db == 'saureus' and genotype in sa_multilabel) or \
+                                    (db == 'kpneumoniae' and genotype in kp_multilabel):
+                                average, pos_label = multi_average, 1
                             else:
-                                d = [genotype, True, method, real_db, read_limit, nan, nan, nan, nan,
-                                     accuracy_scikit, precision_scikit, recall_scikit, nan]
+                                average, pos_label = 'binary', 'R'
+
+                            precision_scikit = precision_score(
+                                gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                            )
+                            recall_scikit = recall_score(
+                                gdata['reference'], gdata['call'], average=average, pos_label=pos_label
+                            )
+
+                            if method == 'stream' and read_limit in (200, 500):
+                                print(
+                                    f"\n Replicate: {replicate} Genotype: {genotype} [Scikit-learn] Accuracy: {accuracy_scikit} "
+                                    f"Precision: {precision_scikit} Recall: {recall_scikit}"
+                                    )
+                                if average == 'binary':
+                                    tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
+                                        self.binary_metrics_manual(df=gdata)
+
+                                    print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                                    for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
+                                        print(f"{m[0]}:{m[1]}")
+                                    d = [replicate, genotype, True, method, real_db, read_limit, tp, tn, fp, fn, acc, ppv, tpr, tnr]
+
+                                else:
+                                    d = [replicate, genotype, False, method, real_db, read_limit, nan, nan, nan, nan,
+                                         accuracy_scikit, precision_scikit, recall_scikit, nan]
 
 
-                            fdata.append(d)
+                                fdata.append(d)
 
                     # Score across genotype for each individual and make violin plot!
 
                     # for name, sdata in rdata.groupby('sample'):
 
             fdf = pandas.DataFrame(fdata, columns=[
-                    'genotype', 'binary', 'method', 'db', 'read_limit', 'true_positives', 'true_negatives', 'false_positives', 'false_negatives',
-                    'accuracy', 'precision', 'recall', 'specificity',
+                    'replicate', 'genotype', 'binary', 'method', 'db', 'replicate', 'read_limit', 'true_positives',
+                    'true_negatives', 'false_positives', 'false_negatives',
+                    'accuracy', 'precision', 'recall', 'specificity'
             ])
 
             fdf.to_csv(f'{outfile}', sep='\t', header=True, index=False)
