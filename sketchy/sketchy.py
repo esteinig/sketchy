@@ -51,6 +51,20 @@ class SketchyDiagnostics(PoreLogger):
             self, level=logging.INFO if verbose else logging.ERROR
         )
 
+    def plot_bootstrap_metrics(self, metrics: Path, prefix: str):
+
+        metrics = pandas.read_csv(metrics, sep='\t', header=0)
+
+        genotypes = ['mlst', 'meca', 'pvl', 'scc']
+
+        metrics = metrics[metrics['genotype'].isin(genotypes)]
+
+        metrics = metrics.melt(id_vars=['db'], value_vars=['accuracy', 'precision', 'recall', 'sensitivity'])
+
+        print(metrics)
+
+        #sns.lineplot(data=metrics, x="db", y="percent", hue="genotype")
+
     def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
 
         fastq_files = list(directory.glob(f"*{ext}"))
