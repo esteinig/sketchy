@@ -755,16 +755,16 @@ class SketchyDiagnostics(PoreLogger):
                             gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                         )
 
-                        if method == 'stream' and read_limit in (200, 500):
-                            print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
-                            if average == 'binary':
-
-                                tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
-                                    self.binary_metrics_manual(df=gdata)
-
-                                print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
-                                for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
-                                    print(f"{m[0]}:{m[1]}")
+                        # if method == 'stream' and read_limit in (200, 500):
+                        #     print(f"\nGenotype: {genotype} Accuracy: {accuracy3} Precision: {precision3} Recall: {recall3}")
+                        #     if average == 'binary':
+                        #
+                        #         tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
+                        #             self.binary_metrics_manual(df=gdata)
+                        #
+                        #         print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                        #         for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
+                        #             print(f"{m[0]}:{m[1]}")
 
                     # Score across genotype for each individual and make violin plot!
 
