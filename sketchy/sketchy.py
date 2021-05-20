@@ -59,7 +59,7 @@ class SketchyDiagnostics(PoreLogger):
 
         metrics = metrics[metrics['genotype'].isin(genotypes)]
 
-        metrics = metrics.melt(id_vars=['db'], value_vars=['accuracy', 'precision', 'recall', 'sensitivity'])
+        metrics = metrics.melt(id_vars=['db'], value_vars=['accuracy', 'precision', 'recall'])
 
         print(metrics)
 
