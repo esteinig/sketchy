@@ -55,7 +55,7 @@ process SketchyStream {
 process PublishHeader {
 
     label "sketchy"
-    tag { id }
+    tag { sample }
 
     input:
     file(reference_database)
