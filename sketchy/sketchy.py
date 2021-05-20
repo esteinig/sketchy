@@ -906,7 +906,7 @@ class SketchyDiagnostics(PoreLogger):
         for collected in nextflow.glob("*.tsv"):
             method = collected.stem
             data = pandas.read_csv(collected, sep="\t", header=0, index_col=0)
-
+            print(f"Method: {method}")
             if exclude_isolates:
                 data = data[~data.index.isin(exclude_isolates)]
 
