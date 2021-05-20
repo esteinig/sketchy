@@ -849,6 +849,8 @@ class SketchyDiagnostics(PoreLogger):
             summary = []
             comparisons = []
             for db, db_data in data.groupby("db"):
+                if force_db:
+                    db = force_db
                 for read_limit, read_data in db_data.groupby("read_limit"):
 
                     for _, row in read_data.iterrows():
