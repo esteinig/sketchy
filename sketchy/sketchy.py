@@ -65,24 +65,6 @@ class SketchyDiagnostics(PoreLogger):
             value_name='percent', var_name="metric"
         )
 
-        # fig, axes = plt.subplots(
-        #     nrows=2, ncols=2, figsize=(14, 10)
-        # )
-        #
-        # metric_data = list([m[1] for m in metrics.groupby('genotype')])
-        #
-        # print(metric_data)
-        #
-        # i = 0
-        # for row in range(2):
-        #     for col in range(2):
-        #         sns.lineplot(
-        #             data=metric_data[i], x="db", y="percent", hue="metric", palette='colorblind', markers=True, ax=axes[row][col]
-        #         )
-        #         plt.xlabel('Percent (%)')
-        #         plt.ylabel('Database size (n)\n')
-        #         i += 1
-
         fig, axes = plt.subplots(
             nrows=1, ncols=1, figsize=(14, 10)
         )
@@ -208,8 +190,12 @@ class SketchyDiagnostics(PoreLogger):
                         _drop_for_labels.append('id')
 
                     _predictions = predictions.drop(columns=_drop_for_labels).sort_index()
-                    _predictions = self.natsort_index(_predictions)  # TODO check here if possible without numerics!
 
+                    try:
+                        _predictions = self.natsort_index(_predictions)  # TODO check here if possible without numerics!
+                    except IndexError:
+                        _predictions = _predictions.sort_index()
+                        
                     _values = []
                     _index_labels = []
                     _column_labels = None
