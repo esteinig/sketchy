@@ -682,7 +682,7 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
-    def get_metrics(self, data: Path, multi_average: str = 'micro', force_db: str = ""):
+    def get_metrics(self, data: Path, outfile: Path, multi_average: str = 'micro', force_db: str = ""):
 
         data = pandas.read_csv(data, sep='\t', header=0)
 
@@ -692,7 +692,7 @@ class SketchyDiagnostics(PoreLogger):
         data['call'] = ['R' if d == 'r' else d for d in data['call']]
         data['reference'] = ['R' if d == 'r' else d for d in data['reference']]
 
-        binary_data = []
+        fdata = []
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
                 if force_db:
@@ -764,26 +764,28 @@ class SketchyDiagnostics(PoreLogger):
                             if average == 'binary':
                                 tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
                                     self.binary_metrics_manual(df=gdata)
+                                d = [genotype, True, method, real_db, read_limit, tp, tn, fp, fn, acc, ppv, tpr, tnr]
+
+                                print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
+                                for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
+                                    print(f"{m[0]}:{m[1]}")
                             else:
-                                print(genotype)
-                                tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = \
-                                    self.multilabel_metrics_manual(df=gdata)
-                                return
+                                d = [genotype, True, method, real_db, read_limit, nan, nan, nan, nan,
+                                     accuracy_scikit, precision_scikit, recall_scikit, nan]
 
-                            print(f"{genotype} --> {tp} TP {tn} TN {fp} FP {fn} FN")
-                            for m in [('Accuracy', acc), ('Precision', ppv), ('Recall', tpr), ('Specificity', tnr)]:
-                                print(f"{m[0]}:{m[1]}")
 
-                            binary_data.append([method, real_db, read_limit, tp, tn, fp, fn, acc, ppv, tpr, tnr])
+                            fdata.append(d)
 
                     # Score across genotype for each individual and make violin plot!
 
                     # for name, sdata in rdata.groupby('sample'):
 
-            binary_df = pandas.DataFrame(binary_data, columns=[
-                    'method', 'db', 'read_limit', 'true_positives', 'true_negatives', 'false_positives', 'false_negatives',
-                    'accuracy', 'precision', 'recall', 'specificity'
+            fdf = pandas.DataFrame(fdata, columns=[
+                    'genotype', 'binary', 'method', 'db', 'read_limit', 'true_positives', 'true_negatives', 'false_positives', 'false_negatives',
+                    'accuracy', 'precision', 'recall', 'specificity',
             ])
+
+            fdf.to_csv(f'{outfile}', sep='\t', header=True, index=False)
 
     def multilabel_metrics_manual(self, df):
 
@@ -813,8 +815,6 @@ class SketchyDiagnostics(PoreLogger):
 
         # Overall accuracy
         acc = (tp + tn) / (tp + fp + fn + tn)
-
-        print(acc.mean(), ppv.mean(), tpr.mean(), tnr.mean())
 
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 

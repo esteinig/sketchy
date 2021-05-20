@@ -13,6 +13,14 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Path to match data from task'
 )
 @click.option(
+    '--outfile',
+    '-o',
+    required=False,
+    type=Path,
+    default=Path("metrics.tsv"),
+    help='Path to metric output file [metrics.tsv]'
+)
+@click.option(
     '--average',
     '-a',
     required=False,
@@ -29,10 +37,10 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Force database [none]'
 )
 def metrics(
-    match_data, average, force_db
+    match_data, average, force_db, outfile
 ):
 
     """ Compute {accuracy, precision, recall, F1} for matched data """
 
     sd = SketchyDiagnostics(outdir=None, verbose=True, mpl_backend=None)
-    sd.get_metrics(data=match_data, multi_average=average, force_db=force_db)
+    sd.get_metrics(data=match_data, outfile=outfile, multi_average=average, force_db=force_db)
