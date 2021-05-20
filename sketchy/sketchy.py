@@ -55,7 +55,7 @@ class SketchyDiagnostics(PoreLogger):
 
         metrics = pandas.read_csv(metrics, sep='\t', header=0)
 
-        genotypes = ['mlst', 'meca', 'pvl', 'scc']
+        genotypes = ['mlst', 'pvl', 'scc']
 
         metrics = metrics[metrics['genotype'].isin(genotypes)]
 
