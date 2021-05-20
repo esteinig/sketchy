@@ -1003,7 +1003,7 @@ class SketchyDiagnostics(PoreLogger):
             comparisons_method = pandas.concat(comparisons)
             comparisons_method['method'] = [method for _ in comparisons_method.iterrows()]
             methods_data.append(comparisons_method)
-
+        print(methods_data)
         data = pandas.concat(methods_data).reset_index(drop=True)
 
         df = pandas.concat(methods_summary).reset_index(drop=True)
@@ -1036,6 +1036,7 @@ class SketchyDiagnostics(PoreLogger):
 
         data.to_csv(f"{ self.outdir / f'matches.tsv'}", sep='\t', index=False)
         df.to_csv(f"{self.outdir / f'summary.tsv'}", sep='\t', index=False)
+
 
 class SketchyDatabase(PoreLogger):
 
