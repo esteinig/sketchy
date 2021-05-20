@@ -801,7 +801,6 @@ class SketchyDiagnostics(PoreLogger):
 
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
-
     def match_reference(self, nextflow, reference, exclude_isolates):
         """ Match predictions from collected Nextflow results to reference table """
 
@@ -918,6 +917,7 @@ class SketchyDiagnostics(PoreLogger):
         data = pandas.concat(methods_data).reset_index(drop=True)
 
         df = pandas.concat(methods_summary).reset_index(drop=True)
+
         for db, db_data in df.groupby("db"):
             fig, axes = plt.subplots(
                 nrows=1, ncols=1, figsize=(14, 10)
@@ -943,6 +943,8 @@ class SketchyDiagnostics(PoreLogger):
         print(data)
 
         print(f"Samples in data: {df['sample'].nunique()}")
+
+        data.to_csv(f"{ self.outdir / f'matches.tsv'}", sep='\t', index=False)
 
 
 class SketchyDatabase(PoreLogger):

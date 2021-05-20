@@ -31,7 +31,7 @@ def collect(
         dirs = (directory / 'dist', directory / 'screen', directory / 'screen_winner', directory / 'stream')
     else:
         dirs = (directory / 'stream', )
-        
+
     for path in dirs:
         database_paths = [p for p in path.glob("*") if p.is_dir()]
 
