@@ -87,9 +87,9 @@ class SketchyDiagnostics(PoreLogger):
             nrows=1, ncols=1, figsize=(14, 10)
         )
 
-        sns.relplot(
-            data=metrics, x="db", y="percent", hue="metric", col="genotype", palette='colorblind',
-            markers=True, ax=axes, err_style="bars", ci=95, kind="line"
+        sns.lineplot(
+            data=metrics, x="db", y="percent", hue="genotype", style="metric", palette='colorblind',
+            markers=True, ax=axes, err_style="bars", ci=95,
         )
         plt.ylabel('Percent (%)')
         plt.xlabel('Database size (n)\n')
