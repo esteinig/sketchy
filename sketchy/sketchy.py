@@ -695,7 +695,11 @@ class SketchyDiagnostics(PoreLogger):
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
                 if force_db:
+                    real_db = db
                     db = force_db
+                else:
+                    real_db = db
+
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
                     # Scores across all features:
@@ -727,7 +731,7 @@ class SketchyDiagnostics(PoreLogger):
 
                     if method == 'stream' and read_limit in (200, 500):
                         print(
-                            f"\nMethod: {method} DB: {db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
+                            f"\nMethod: {method} DB: {real_db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
                             f"Accuracy (binary labels): {accuracy2} Precision: {precision2} Recall: {recall2}\n"
                             f"Accuracy (multiclass labels): {accuracy3} Precision: {precision3} Recall: {recall3}\n"
                         )
@@ -850,7 +854,11 @@ class SketchyDiagnostics(PoreLogger):
             comparisons = []
             for db, db_data in data.groupby("db"):
                 if force_db:
+                    real_db = db
                     db = force_db
+                else:
+                    real_db = db
+
                 for read_limit, read_data in db_data.groupby("read_limit"):
 
                     for _, row in read_data.iterrows():
@@ -898,7 +906,7 @@ class SketchyDiagnostics(PoreLogger):
                             [sample, db, read_limit, true_calls, total_calls, true_percent, true_st, replicate]
                         )
 
-                        comparison['db'] = [db for _ in comparison.iterrows()]
+                        comparison['db'] = [real_db for _ in comparison.iterrows()]
                         comparison['read_limit'] = [read_limit for _ in comparison.iterrows()]
                         comparison['sample'] = [sample for _ in comparison.iterrows()]
                         comparison['replicate'] = [replicate for _ in comparison.iterrows()]
