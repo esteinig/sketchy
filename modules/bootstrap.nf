@@ -60,6 +60,9 @@ process PublishHeader {
     input:
     file(reference_database)
     each sample
+    
+    output:
+    file("header.txt")
 
     publishDir "${params.outdir}/stream/${sample}/", mode: "copy", pattern: "header.txt"
 
