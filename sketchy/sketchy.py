@@ -195,7 +195,7 @@ class SketchyDiagnostics(PoreLogger):
                         _predictions = self.natsort_index(_predictions)  # TODO check here if possible without numerics!
                     except IndexError:
                         _predictions = _predictions.sort_index()
-                        
+
                     _values = []
                     _index_labels = []
                     _column_labels = None
@@ -995,7 +995,7 @@ class SketchyDiagnostics(PoreLogger):
             summary_df = pandas.DataFrame(
                 summary, columns=['sample', 'db', 'read_limit', 'true_calls', 'total_calls', 'true_percent', 'true_st', 'replicate']
             ).sort_values(['db', 'sample', 'read_limit'])
-
+            print(summary_df)
             summary_df['method'] = [method for _ in summary_df.iterrows()]
             methods_summary.append(summary_df)
 
