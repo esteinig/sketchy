@@ -814,6 +814,8 @@ class SketchyDiagnostics(PoreLogger):
         # Overall accuracy
         acc = (tp + tn) / (tp + fp + fn + tn)
 
+        print(acc, ppv, tpr, tnr)
+
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
     def binary_metrics_manual(self, df):
