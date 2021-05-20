@@ -682,7 +682,7 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
-    def get_metrics(self, data: Path, multi_average: str = 'micro'):
+    def get_metrics(self, data: Path, multi_average: str = 'micro', force_db: str = ""):
 
         data = pandas.read_csv(data, sep='\t', header=0)
 
@@ -694,7 +694,8 @@ class SketchyDiagnostics(PoreLogger):
 
         for method, mdata in data.groupby("method"):
             for db, ddata in mdata.groupby("db"):
-
+                if force_db:
+                    db = force_db
                 for read_limit, rdata in ddata.groupby("read_limit"):
 
                     # Scores across all features:
@@ -945,7 +946,7 @@ class SketchyDiagnostics(PoreLogger):
         print(f"Samples in data: {df['sample'].nunique()}")
 
         data.to_csv(f"{ self.outdir / f'matches.tsv'}", sep='\t', index=False)
-
+        df.to_csv(f"{self.outdir / f'summary.tsv'}", sep='\t', index=False)
 
 class SketchyDatabase(PoreLogger):
 
