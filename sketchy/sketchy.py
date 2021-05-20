@@ -814,7 +814,7 @@ class SketchyDiagnostics(PoreLogger):
         # Overall accuracy
         acc = (tp + tn) / (tp + fp + fn + tn)
 
-        print(acc, ppv, tpr, tnr)
+        print(acc.mean(), ppv.mean(), tpr.mean(), tnr.mean())
 
         return tp, fp, tn, fn, acc, tpr, tnr, ppv, npv
 
