@@ -77,12 +77,13 @@ class SketchyDiagnostics(PoreLogger):
         for row in range(2):
             for col in range(2):
                 sns.lineplot(
-                    data=metric_data[i], x="db", y="percent", hue="metric", palette='colorblind', ax=axes[row][col]
+                    data=metric_data[i], x="db", y="percent", hue="metric", palette='colorblind', markers=True, ax=axes[row][col]
                 )
+                plt.xlabel('Percent (%)')
+                plt.ylabel('Database size (n)\n')
                 i += 1
 
-        plt.xlabel('Percent (%)')
-        plt.ylabel('Database size (n)\n')
+
 
         plt.tight_layout()
         fig.savefig(f"{prefix}.svg")
