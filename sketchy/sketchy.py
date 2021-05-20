@@ -792,7 +792,7 @@ class SketchyDiagnostics(PoreLogger):
         fp = cm.sum(axis=0) - diag(cm)
         fn = cm.sum(axis=1) - diag(cm)
         tp = diag(cm)
-        tn = cm.values.sum() - (fp + fn + tp)
+        tn = cm.sum() - (fp + fn + tp)
 
         print(fp, fn, tp, tn)
 
