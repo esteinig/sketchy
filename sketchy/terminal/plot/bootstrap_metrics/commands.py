@@ -21,8 +21,8 @@ from sketchy.sketchy import SketchyDiagnostics
 @click.option(
     '--prefix',
     type=str,
-    default="",
-    help='Output plot prefix [none]'
+    default="bootstrap",
+    help='Output plot prefix [bootstrap]'
 )
 def bootstrap_metrics(
     metrics, mpl_backend, prefix

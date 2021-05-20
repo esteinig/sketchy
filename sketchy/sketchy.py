@@ -81,6 +81,13 @@ class SketchyDiagnostics(PoreLogger):
                 )
                 i += 1
 
+        plt.xlabel('Percent (%)')
+        plt.ylabel('Database size (n)\n')
+
+        plt.tight_layout()
+        fig.savefig(f"{prefix}.svg")
+        fig.savefig(f"{prefix}.pdf")
+
 
     def plot_barcode_barplot(self, directory, ext: str = ".fastq", prefix: str = ""):
 
