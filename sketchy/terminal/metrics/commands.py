@@ -29,7 +29,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Force database [none]'
 )
 def metrics(
-    match_data, average
+    match_data, average, force_db
 ):
 
     """ Compute {accuracy, precision, recall, F1} for matched data """
