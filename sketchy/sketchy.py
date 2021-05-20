@@ -69,9 +69,9 @@ class SketchyDiagnostics(PoreLogger):
             nrows=2, ncols=2, figsize=(14, 10)
         )
 
-        metric_data = list(metrics.groupby('genotype'))
+        metric_data = list([m[1] for m in metrics.groupby('genotype')])
 
-        print(metrics)
+        print(metric_data)
 
         i = 0
         for row in range(2):
