@@ -10,7 +10,7 @@ from sketchy.sketchy import SketchyDiagnostics
     '-s',
     type=Path,
     required=True,
-    help='Path to raw prediction data from `sketchy predict -w` [required]',
+    help='Path to raw prediction data from `sketchy predict` [required]',
 )
 @click.option(
     '--outdir',

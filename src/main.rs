@@ -35,7 +35,7 @@ fn main() -> Result<(), Error> {
             .about("\npredict genotypes from sum of shared hashes stream")
             .version("0.5.0")
             .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [10]"))
+            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [1]"))
             .arg(Arg::with_name("GENOTYPE").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
         )
         .subcommand(SubCommand::with_name("screen")
