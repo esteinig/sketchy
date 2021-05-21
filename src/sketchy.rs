@@ -669,13 +669,8 @@ pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
     /* Get sketch files from database path and perform checks */
 
     
-    let _db_path = Path::new(&db);
-    let _db_name = _db_path.file_name().unwrap().to_str().unwrap();
-
-
-    // Check if database is in SKETCHY_PATH ENV
-
-    let db_path = Path::new(&sketchy_path).join(_db_name);
+    let db_path = Path::new(&db);
+    let _db_name = db_path.file_name().unwrap().to_str().unwrap();
 
     if !db_path.exists() {
         clap::Error::with_description("Database sketch directory is not available", clap::ErrorKind::InvalidValue).exit();
