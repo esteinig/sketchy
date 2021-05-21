@@ -138,11 +138,13 @@ def plot_overview(df, ax, color=None):
 
     if unclassified.empty:
         un = 0
+        un_reads = 0
     else:
         un = unclassified.percent
+        un_reads = unclassified.reads
 
 
-    return float(human), float(un), int(unclassified.reads)
+    return float(human), float(un), int(un_reads)
 
 
 def plot_major_composition(df, ax, level, other=0., color=None):
