@@ -91,6 +91,7 @@ def kraken_report(report, prefix, level, top, color, title, sub):
         fig.savefig(f'{prefix}.svg', pad_inches=0.5)
         fig.savefig(f'{prefix}.pdf', pad_inches=0.5)
 
+
 def plot_overview(df, ax, color=None):
 
     target = sns.color_palette(color, 2)[-1]
