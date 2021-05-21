@@ -248,7 +248,10 @@ class SketchyDiagnostics(PoreLogger):
     ):
 
         # Something odd with colors, need reverse palettes:
-        if not color.endswith('_r'):
+
+        if color == 'colorblind':
+            pass
+        elif color.endswith('_r'):
             color += '_r'
 
         number_features = len(sssh_data)
