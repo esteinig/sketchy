@@ -105,6 +105,8 @@ def plot_overview(df, ax, color=None):
         )
         overview_labels.append(f'Human [{float(human.percent)}%]')
 
+    print(df)
+
     unclassified = df[df['taxonomy'] == 'unclassified']
 
     if not unclassified.empty:
@@ -139,7 +141,6 @@ def plot_overview(df, ax, color=None):
     else:
         un = unclassified.percent
 
-    print(unclassified)
 
     return float(human), float(un), int(unclassified.reads)
 
