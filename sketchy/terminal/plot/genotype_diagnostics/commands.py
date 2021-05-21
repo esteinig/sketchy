@@ -22,8 +22,8 @@ from sketchy.sketchy import SketchyDiagnostics
 @click.option(
     '--plot',
     '-p',
-    type=Path,
-    default=Path("diagnostics.png"),
+    type=str,
+    default="diagnostics.png",
     help='Plot file, extension specifies format [diagnostics.png]'
 )
 @click.option(
