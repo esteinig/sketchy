@@ -719,7 +719,7 @@ pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
     let info = Command::new("mash")
         .args(&["info", "-H", &*format!("{}", sketch)])
         .output()
-        .expect(clap::Error::with_description("Failed to run Mash", clap::ErrorKind::InvalidValue).exit());
+        .expect("Failed to run MASH INFO");
 
     let info_lines = std::str::from_utf8(&info.stdout).unwrap().lines();
 
