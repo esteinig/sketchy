@@ -76,9 +76,11 @@ def kraken_report(report, prefix, level, top, color, title, sub):
         plot_minor_composition(df=df, ax=ax3, level=level, top=top)
 
         if sub:
-            ax1.title.set_text(f'Reads ({total})')
+            ax1.title.set_text(f'Reads ({total}) [{report.stem}]')
             ax2.title.set_text(f'Major Taxa (> 10%)')
             ax3.title.set_text('Minor Taxa (<= 10%)')
+
+
         # Final output
 
         plt.tight_layout()
