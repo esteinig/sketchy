@@ -1,5 +1,6 @@
 import click
 
+from .kraken_report import kraken_report
 from .bootstrap_metrics import bootstrap_metrics
 from .barcode_counts import barcode_counts
 from .genotype_diagnostics import genotype_diagnostics
@@ -12,6 +13,7 @@ def plot():
     pass
 
 
+plot.add_command(kraken_report)
 plot.add_command(bootstrap_metrics)
 plot.add_command(barcode_counts)
 plot.add_command(raw_heatmap)
