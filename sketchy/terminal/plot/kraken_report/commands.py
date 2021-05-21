@@ -9,7 +9,7 @@ import seaborn as sns
 
 @click.command()
 @click.option(
-    '--report', '-r', type=str, help='Path or file glob to tax report files'
+    '--report', '-r', type=Path, help='Path to tax report file or directory with report files'
 )
 @click.option(
     '--prefix', '-p', type=str, help='Output prefix for plot file.'
@@ -37,10 +37,8 @@ import seaborn as sns
 def kraken_report(report, prefix, level, top, color, title, sub):
     """ Generate metagenomic report plots from Kraken2 in Sketchy Nextflow """
 
-    if "*" in report:
-        reports = list(Path().glob(str(report)))
-    elif "," in report:
-        reports = [Path(p) for p in report.split(',')]
+    if report.is_dir():
+        reports = list(report.glob("*.report"))
     else:
         reports = [Path(report)]
 
