@@ -38,9 +38,7 @@ def kraken_report(report, prefix, level, top, color, title, sub):
     """ Generate metagenomic report plots from Kraken2 in Sketchy Nextflow """
 
     if "*" in report:
-        reports = list(Path().glob(
-            str(report)
-        ))
+        reports = list(Path().glob(str(report)))
     elif "," in report:
         reports = [Path(p) for p in report.split(',')]
     else:
@@ -140,6 +138,8 @@ def plot_overview(df, ax, color=None):
         un = 0
     else:
         un = unclassified.percent
+
+    print(unclassified)
 
     return float(human), float(un), int(unclassified.reads)
 
