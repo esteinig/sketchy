@@ -161,7 +161,6 @@ class SketchyDiagnostics(PoreLogger):
 
                 # same order across raw genotype order (can be different)
                 prediction = prediction.sort_values("genotype")
-                print(prediction)
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
                 samples.append(rpf.name.replace(".raw.tsv", ""))
@@ -432,7 +431,7 @@ class SketchyDiagnostics(PoreLogger):
             values[(pscores.values >= 0.6) & (values == 0)] = 1
             print(values)
 
-            palette = ["#faa91c", "#de8f05", "#029E73", "#03d098"]
+            palette = ["#de8f05", "#faa91c", "#029E73", "#03d098"]
 
         # color the zero values
         # values = where(values == 0, 0.1, values)
