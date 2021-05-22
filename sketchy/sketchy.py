@@ -155,19 +155,19 @@ class SketchyDiagnostics(PoreLogger):
                     rpf, sep='\t', header=0,
                     names=['read', 'genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
                 )
-                print(rpf.name)
+
                 pd = pd.loc[pd['read'] == pd['read'].max(), :]
                 prediction = pd.loc[pd['rank'] == 0, :]
-                print(prediction)
 
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
                 samples.append(rpf.name.replace(".raw.tsv", ""))
 
-            pscore_df = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
+            pscores = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
 
-            print(pscore_df)
-
+            print(pscores)
+        else:
+            pscores = None
 
         md = pandas.read_csv(match_data, sep="\t", header=0)
 
@@ -241,7 +241,7 @@ class SketchyDiagnostics(PoreLogger):
                     _values = array(_values)
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
-                        labels=_predictions, palette=cm,
+                        labels=_predictions, palette=cm, pscores=pscores,
                         title=f"\n{read_limit} Reads\n", ax=axes[i] if nrows > 1 else axes,
                         index_labels=_index_labels, column_labels=_column_labels
                     )
@@ -402,6 +402,7 @@ class SketchyDiagnostics(PoreLogger):
         threshold: float = 0.,
         time: bool = False,
         title: str = "",
+        pscores: pandas.DataFrame = None,
         evaluation: bool = False,
         index_labels: list = None,
         column_labels: list = None
@@ -414,6 +415,14 @@ class SketchyDiagnostics(PoreLogger):
             if labels is None:
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
+
+        if pscores:
+            pscores = pscores[column_labels]
+
+            if pscores.shape != values.shape:
+                raise ValueError(
+                    f"Preference score data is not the same shape as prediction data [{pscores.shape}|{values.shape}]"
+                )
 
         # color the zero values
         # values = where(values == 0, 0.1, values)
