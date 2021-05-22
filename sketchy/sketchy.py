@@ -149,7 +149,7 @@ class SketchyDiagnostics(PoreLogger):
 
             samples = []
             pscore_data = []
-            genotype_columns = []
+            genotype_columns = None
             for rpf in raw_prediction_files:
                 pd = pandas.read_csv(
                     rpf, sep='\t', header=0,
@@ -159,9 +159,9 @@ class SketchyDiagnostics(PoreLogger):
                 pd = pd.loc[pd['read'] == pd['read'].max(), :]
                 prediction = pd.loc[pd['rank'] == 0, :]
 
-                prediction = prediction.sort_values('genotype')
                 # same order across raw genotype order (can be different)
-
+                prediction = prediction.sort_values("genotype")
+                print(prediction)
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
                 samples.append(rpf.name.replace(".raw.tsv", ""))
