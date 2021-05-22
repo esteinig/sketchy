@@ -417,7 +417,7 @@ class SketchyDiagnostics(PoreLogger):
 
         if pscores is not None:
             pscores = pscores[column_labels]
-            pscores = pscores.reindex(index_labels)
+            pscores.reindex(index_labels)
             print(pscores)
             if pscores.shape != values.shape:
                 raise ValueError(
