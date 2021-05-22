@@ -136,12 +136,35 @@ class SketchyDiagnostics(PoreLogger):
         exclude_genotypes: list = None,
         scale: float = 1.0,
         height: int = 8,
-        width: int = 8
+        width: int = 8,
+        raw_data: Path = None
     ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
 
         nextflow_files = nextflow.glob("*.tsv")
+
+        if raw_data:
+            raw_prediction_files = raw_data.glob("*.raw.tsv")
+
+            samples = []
+            pscore_data = []
+            genotype_columns = None
+            for rpf in raw_prediction_files:
+                pd = pandas.read_csv(
+                    rpf, sep='\t', header=0, index_col=0,
+                    columns=['genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
+                )
+
+                prediction = pd[pd == len(pd)-1, pd['rank'] == 0]
+                genotype_columns = prediction['genotype'].tolist()
+                pscore_data.append(prediction['pscore'].tolist())
+                samples.append(rpf.name.replace(".raw.tsv", ""))
+
+            pscore_df = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
+
+            print(pscore_df)
+
 
         md = pandas.read_csv(match_data, sep="\t", header=0)
 

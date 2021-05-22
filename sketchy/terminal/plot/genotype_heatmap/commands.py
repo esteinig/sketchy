@@ -21,6 +21,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Output directory for plots [nfx-heatmaps]'
 )
 @click.option(
+    '--raw_data',
+    '-r',
+    type=Path,
+    default=None,
+    help='Input directory for raw prediction files to extract preference scores [none]'
+)
+@click.option(
     '--outdir',
     '-o',
     type=Path,
@@ -93,7 +100,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Figure width multiplier [default]'
 )
 def genotype_heatmap(
-    directory, match_data, outdir, scale, reverse_subset, width, height,
+    directory, match_data, raw_data, outdir, scale, reverse_subset, width, height,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
 ):
 
@@ -109,6 +116,6 @@ def genotype_heatmap(
     sd.plot_genotype_heatmap(
         nextflow=directory, match_data=match_data, subset_column=subset_column, subset_values=subset_values,
         reverse_subset=reverse_subset, exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates,
-        scale=scale, height=height, width=width
+        scale=scale, height=height, width=width, raw_data=raw_data
     )
 
