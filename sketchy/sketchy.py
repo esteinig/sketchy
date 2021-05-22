@@ -153,7 +153,7 @@ class SketchyDiagnostics(PoreLogger):
             for rpf in raw_prediction_files:
                 pd = pandas.read_csv(
                     rpf, sep='\t', header=0, index_col=0,
-                    columns=['genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
+                    names=['genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
                 )
 
                 prediction = pd[pd == len(pd)-1, pd['rank'] == 0]
