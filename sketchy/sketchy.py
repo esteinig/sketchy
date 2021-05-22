@@ -417,10 +417,13 @@ class SketchyDiagnostics(PoreLogger):
 
         if pscores is not None:
             pscores = pscores[column_labels]
+            pscores = pscores.reindex(index_labels)
+            print(pscores)
             if pscores.shape != values.shape:
                 raise ValueError(
                     f"Preference score data is not the same shape as prediction data [{pscores.shape}|{values.shape}]"
                 )
+            print(values)
             values[(pscores.values >= 0.6) & (values == 1)] = 4
             values[(pscores.values < 0.6) & (values == 1)] = 3
             values[(pscores.values < 0.6) & (values == 0)] = 2
