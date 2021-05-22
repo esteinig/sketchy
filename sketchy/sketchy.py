@@ -164,10 +164,9 @@ class SketchyDiagnostics(PoreLogger):
                 samples.append(rpf.name.replace(".raw.tsv", ""))
 
             pscores = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
+            print(pscores)
         else:
             pscores = None
-
-        print(pscores)
 
         md = pandas.read_csv(match_data, sep="\t", header=0)
 
@@ -239,7 +238,7 @@ class SketchyDiagnostics(PoreLogger):
                     ])
 
                     _values = array(_values)
-                    print(pscores)
+
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette=cm, pscores=pscores,
