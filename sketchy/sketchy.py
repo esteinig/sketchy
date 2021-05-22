@@ -164,9 +164,10 @@ class SketchyDiagnostics(PoreLogger):
                 samples.append(rpf.name.replace(".raw.tsv", ""))
 
             pscores = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
-
         else:
             pscores = None
+
+        print(pscores)
 
         md = pandas.read_csv(match_data, sep="\t", header=0)
 
@@ -238,6 +239,7 @@ class SketchyDiagnostics(PoreLogger):
                     ])
 
                     _values = array(_values)
+                    print(pscores)
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
                         labels=_predictions, palette=cm, pscores=pscores,
@@ -415,7 +417,6 @@ class SketchyDiagnostics(PoreLogger):
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
 
-        print(pscores)
         if pscores is not None:
             pscores = pscores[column_labels]
             print(pscores)
