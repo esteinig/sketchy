@@ -152,11 +152,11 @@ class SketchyDiagnostics(PoreLogger):
             genotype_columns = None
             for rpf in raw_prediction_files:
                 pd = pandas.read_csv(
-                    rpf, sep='\t', header=0, index_col=0,
-                    names=['genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
+                    rpf, sep='\t', header=0,
+                    names=['read', 'genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
                 )
 
-                prediction = pd.loc[pd.index == len(pd)-1, pd['rank'] == 0]
+                prediction = pd.loc[pd['read'] == pd['read'].max(), pd['rank'] == 0]
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
                 samples.append(rpf.name.replace(".raw.tsv", ""))
