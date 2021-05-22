@@ -423,8 +423,10 @@ class SketchyDiagnostics(PoreLogger):
                     f"Preference score data is not the same shape as prediction data [{pscores.shape}|{values.shape}]"
                 )
             print(values)
-            values = values[pscores.values >= 0.6 and values == 1]
-
+            values[pscores.values >= 0.6 and values == 1] = 4
+            values[pscores.values < 0.6 and values == 1] = 3
+            values[pscores.values < 0.6 and values == 0] = 2
+            values[pscores.values >= 0.6 and values == 0] = 1
             print(values)
 
         # color the zero values
