@@ -165,7 +165,6 @@ class SketchyDiagnostics(PoreLogger):
 
             pscores = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
 
-            print(pscores)
         else:
             pscores = None
 
@@ -416,7 +415,7 @@ class SketchyDiagnostics(PoreLogger):
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
 
-        if pscores:
+        if pscores is not None:
             pscores = pscores[column_labels]
             print(pscores)
             if pscores.shape != values.shape:
