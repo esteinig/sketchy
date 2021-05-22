@@ -164,7 +164,6 @@ class SketchyDiagnostics(PoreLogger):
                 samples.append(rpf.name.replace(".raw.tsv", ""))
 
             pscores = pandas.DataFrame(pscore_data, columns=genotype_columns, index=samples).sort_index()
-            print(pscores)
         else:
             pscores = None
 
@@ -418,11 +417,13 @@ class SketchyDiagnostics(PoreLogger):
 
         if pscores is not None:
             pscores = pscores[column_labels]
-            print(pscores)
             if pscores.shape != values.shape:
                 raise ValueError(
                     f"Preference score data is not the same shape as prediction data [{pscores.shape}|{values.shape}]"
                 )
+            print(values)
+            
+
 
         # color the zero values
         # values = where(values == 0, 0.1, values)
