@@ -156,6 +156,7 @@ class SketchyDiagnostics(PoreLogger):
                     names=['read', 'genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
                 )
                 last_read = pd['read'].max()
+                print(last_read)
                 prediction = pd.loc[pd['read'] == last_read, pd['rank'] == 0]
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
