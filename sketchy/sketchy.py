@@ -155,8 +155,8 @@ class SketchyDiagnostics(PoreLogger):
                     rpf, sep='\t', header=0,
                     names=['read', 'genotype', 'prediction', 'rank', 'sssh', 'limit', 'pscore']
                 )
-
-                prediction = pd.loc[pd['read'] == max(pd['read']), pd['rank'] == 0]
+                last_read = pd['read'].max()
+                prediction = pd.loc[pd['read'] == last_read, pd['rank'] == 0]
                 genotype_columns = prediction['genotype'].tolist()
                 pscore_data.append(prediction['pscore'].tolist())
                 samples.append(rpf.name.replace(".raw.tsv", ""))
