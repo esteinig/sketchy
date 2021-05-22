@@ -415,6 +415,7 @@ class SketchyDiagnostics(PoreLogger):
                 raise ValueError("If no values supplied, a label matrix is required")
             values = labels.replace(labels, 1.)
 
+        print(pscores)
         if pscores is not None:
             pscores = pscores[column_labels]
             print(pscores)
