@@ -49,6 +49,6 @@ def metrics(
 ):
 
     """ Compute {accuracy, precision, recall, F1} for matched data """
-    read_levels = [int(n.strip()) for n in read_levels]
+    read_levels = [int(n.strip()) for n in read_levels.split(',')]
     sd = SketchyDiagnostics(outdir=None, verbose=True, mpl_backend=None)
     sd.get_metrics(data=match_data, outfile=outfile, multi_average=average, force_db=force_db, read_levels=read_levels)
