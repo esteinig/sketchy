@@ -442,6 +442,8 @@ class SketchyDiagnostics(PoreLogger):
             pscores = pscores[column_labels]
 
             if pscores.index.tolist() != index_labels:
+                print(pscores.index.tolist())
+                print(index_labels)
                 raise ValueError("Preference score and prediction sample labels are not the same.")
 
             pscores.reindex(index_labels)
