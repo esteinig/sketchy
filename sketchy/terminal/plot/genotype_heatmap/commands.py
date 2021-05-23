@@ -62,6 +62,13 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Reverse the subset (selection NOT in column)'
 )
 @click.option(
+    '--startswith',
+    '-s',
+    type=str,
+    default=None,
+    help='Include only isolates whose identifiers start with [none]'
+)
+@click.option(
     '--exclude_isolates',
     '-ei',
     type=str,
@@ -100,7 +107,7 @@ from sketchy.sketchy import SketchyDiagnostics
     help='Figure width multiplier [default]'
 )
 def genotype_heatmap(
-    directory, match_data, raw_data, outdir, scale, reverse_subset, width, height,
+    directory, match_data, raw_data, outdir, scale, reverse_subset, width, height, startswith,
     subset_column, subset_values, mpl_backend, verbose, exclude_isolates, exclude_genotypes
 ):
 
@@ -116,6 +123,6 @@ def genotype_heatmap(
     sd.plot_genotype_heatmap(
         nextflow=directory, match_data=match_data, subset_column=subset_column, subset_values=subset_values,
         reverse_subset=reverse_subset, exclude_genotypes=exclude_genotypes, exclude_isolates=exclude_isolates,
-        scale=scale, height=height, width=width, raw_data=raw_data
+        scale=scale, height=height, width=width, raw_data=raw_data, startswith=startswith
     )
 

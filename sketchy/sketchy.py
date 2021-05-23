@@ -137,7 +137,8 @@ class SketchyDiagnostics(PoreLogger):
         scale: float = 1.0,
         height: int = 8,
         width: int = 8,
-        raw_data: Path = None
+        raw_data: Path = None,
+        startswith: str = None,
     ):
 
         """ Main access function for comparative feature heatmaps from Nextflow """
@@ -179,6 +180,9 @@ class SketchyDiagnostics(PoreLogger):
 
             if exclude_genotypes:
                 nxf = nxf.drop(columns=exclude_genotypes)
+
+            if startswith:
+                nxf = nxf[nxf.index.str.startswith(startswith)]
 
             if subset_column:
                 sv = [_.strip() for _ in subset_values.split(',')]
