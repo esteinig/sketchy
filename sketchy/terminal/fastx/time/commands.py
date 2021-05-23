@@ -87,5 +87,6 @@ def compute_time_delta(fx, read: int = 100, delta: str = None):
         start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)
         readd = read_time - start_time
 
+    print(f"Time to read {read}: {readd}")
 
     return readd
