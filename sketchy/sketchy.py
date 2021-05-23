@@ -181,9 +181,15 @@ class SketchyDiagnostics(PoreLogger):
             print('pscores')
             print(pscores.index)
             if exclude_isolates:
-                nxf = nxf.drop(exclude_isolates)
+                try:
+                    nxf = nxf.drop(exclude_isolates)
+                except KeyError:
+                    pass
                 if pscores is not None:
-                    pscores = pscores.drop(exclude_isolates)
+                    try:
+                        pscores = pscores.drop(exclude_isolates)
+                    except KeyError:
+                        pass
 
             if exclude_genotypes:
                 nxf = nxf.drop(columns=exclude_genotypes)
