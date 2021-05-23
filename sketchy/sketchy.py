@@ -174,8 +174,11 @@ class SketchyDiagnostics(PoreLogger):
         md = pandas.read_csv(match_data, sep="\t", header=0)
 
         for file in nextflow_files:
+            print(file)
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
+            print('index')
             print(nxf.index)
+            print('pscores')
             print(pscores.index)
             if exclude_isolates:
                 nxf = nxf.drop(exclude_isolates)
