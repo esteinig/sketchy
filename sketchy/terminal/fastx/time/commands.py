@@ -73,9 +73,7 @@ def time(fastq, read, index, prefix, delta):
 def compute_time_delta(fx, read: int = 100, delta: str = None):
 
     read_time = fx[fx.index == read]
-    read_time = read_time['start_time'].values
-    print(read_time)
-
+    read_time = read_time['start_time'].values[0]
 
     if delta == 'first':
         first_read = fx.iloc[0]
