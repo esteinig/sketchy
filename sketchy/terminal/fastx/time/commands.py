@@ -49,7 +49,7 @@ from sketchy.utils import SketchySimulator, MutuallyExclusiveOption
     type=str,
     help="Compute time delta between 'first' read or start time of run "
          "!! GMT !! in format: '20/11/20 16:20:00' [first]",
-    default=None,
+    default='first',
     required=False,
 )
 def time(fastq, read, index, prefix, delta):
