@@ -183,7 +183,7 @@ class SketchyDiagnostics(PoreLogger):
 
             if startswith:
                 nxf = nxf[nxf.index.str.startswith(startswith)]
-                if pscores:
+                if pscores is not None:
                     pscores = pscores[pscores.index.str.startswith(startswith)]
 
             if subset_column:
