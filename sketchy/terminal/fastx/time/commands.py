@@ -65,55 +65,25 @@ def time(fastq, evaluation, index, prefix, delta):
     else:
         fx = sim.get_run_index()
 
+    fx.index.name = 'read'
     fx.sort_index().to_csv(f'{prefix}.time.tsv', sep='\t', index_label='read')
 
-    if evaluation is not None:
-        feature_predictions = pandas.read_csv(
-            evaluation, sep='\t', header=0
-        )
 
-        dates = [
-            compute_feature_time_delta(fx, row, delta=delta)
-            for _, row in feature_predictions.iterrows()
-        ]
+def compute_time_delta(fx, read: int = 100, delta: str = None):
 
-        feature_predictions['time'] = dates
+    read_data = fx[fx['read'] == read]
 
-        feature_predictions.to_csv(
-            f'{prefix}.time.data.tsv', sep='\t', index=False
-        )
-
-
-def compute_feature_time_delta(fx, row, delta: str = None):
-
-    try:
-        stable = int(
-            row['stability']
-        )
-        if stable == -1:
-            stable_feature = None
-        else:
-            stable_feature = fx.iloc[stable]
-    except (TypeError, KeyError, ValueError):
-        stable_feature = None
-
-    if stable_feature is not None:
-        if delta:
-            if delta == 'first':
-                first_read = fx.iloc[0]
-                stable_feature_date = dp.parse(stable_feature.start_time) - \
-                    dp.parse(first_read.start_time)
-            elif delta == 'null':  # nextflow setting
-                stable_feature_data = dp.parse(stable_feature.start_time)
-                stable_feature_date = stable_feature_data.strftime("%d-%m-%Y %H:%M:%S")
-            else:
-                read_time = dp.parse(stable_feature.start_time).replace(tzinfo=None)
-                start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)
-                stable_feature_date = read_time - start_time
-        else:
-            stable_feature_data = dp.parse(stable_feature.start_time)
-            stable_feature_date = stable_feature_data.strftime("%d-%m-%Y %H:%M:%S")
+    if delta == 'first':
+        first_read = fx.iloc[0]
+        readd = dp.parse(read_data.start_time) - \
+            dp.parse(first_read.start_time)
+    elif delta == 'null':  # nextflow setting
+        readd = dp.parse(read_data.start_time)
+        readd = readd.strftime("%d-%m-%Y %H:%M:%S")
     else:
-        stable_feature_date = None
+        read_time = dp.parse(read_data.start_time).replace(tzinfo=None)
+        start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)
+        readd = read_time - start_time
 
-    return stable_feature_date
+
+    return readd

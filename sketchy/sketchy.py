@@ -420,7 +420,7 @@ class SketchyDiagnostics(PoreLogger):
         if pscores is not None:
             pscores = pscores[column_labels]
             pscores.reindex(index_labels)
-            print(pscores)
+
             if pscores.shape != values.shape:
                 raise ValueError(
                     f"Preference score data is not the same shape as prediction data [{pscores.shape}|{values.shape}]"
@@ -429,7 +429,6 @@ class SketchyDiagnostics(PoreLogger):
             values[(pscores.values < 0.6) & (values == 1)] = 3
             values[(pscores.values < 0.6) & (values == 0)] = 2
             values[(pscores.values >= 0.6) & (values == 0)] = 1
-            print(values)
 
             palette = ["#de8f05", "#faa91c", "#029E73", "#03d098"]
 
