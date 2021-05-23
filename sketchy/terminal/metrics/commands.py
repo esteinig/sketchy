@@ -36,11 +36,19 @@ from sketchy.sketchy import SketchyDiagnostics
     default="",
     help='Force database [none]'
 )
+@click.option(
+    '--read_levels',
+    '-r',
+    required=False,
+    type=str,
+    default="200,1000",
+    help='Force database [none]'
+)
 def metrics(
-    match_data, average, force_db, outfile
+    match_data, average, force_db, outfile, read_levels
 ):
 
     """ Compute {accuracy, precision, recall, F1} for matched data """
 
     sd = SketchyDiagnostics(outdir=None, verbose=True, mpl_backend=None)
-    sd.get_metrics(data=match_data, outfile=outfile, multi_average=average, force_db=force_db)
+    sd.get_metrics(data=match_data, outfile=outfile, multi_average=average, force_db=force_db, read_levels=read_levels)

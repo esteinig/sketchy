@@ -24,11 +24,18 @@ from sketchy.sketchy import SketchyDiagnostics
     default="bootstrap",
     help='Output plot prefix [bootstrap]'
 )
+@click.option(
+    '--print',
+    type=str,
+    default="200,1000",
+    help='Print metrics at these read thresholds [bootstrap]'
+)
 def bootstrap_metrics(
-    metrics, mpl_backend, prefix
+    metrics, mpl_backend, prefix, print
 ):
 
     """ Barplot plot of Fastq read counts in a directory """
+
 
     sd = SketchyDiagnostics(outdir=None, mpl_backend=mpl_backend)
     sd.plot_bootstrap_metrics(metrics=metrics, prefix=prefix)

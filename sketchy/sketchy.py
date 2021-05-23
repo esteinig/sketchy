@@ -795,7 +795,10 @@ class SketchyDiagnostics(PoreLogger):
 
             return df.set_index('idx')
 
-    def get_metrics(self, data: Path, outfile: Path, multi_average: str = 'micro', force_db: str = ""):
+    def get_metrics(
+        self, data: Path, outfile: Path, multi_average: str = 'micro',
+        force_db: str = "", read_levels: list = None
+    ):
 
         data = pandas.read_csv(data, sep='\t', header=0)
 
@@ -843,7 +846,7 @@ class SketchyDiagnostics(PoreLogger):
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
 
-                    if method == 'stream' and read_limit in (200, 500):
+                    if method == 'stream' and read_limit in read_levels:
                         # Across all replicates if bootstrapped
                         print(
                             f"\nMethod: {method} DB: {real_db} Reads: {read_limit} Accuracy (all features): {accuracy1}\n"
@@ -870,7 +873,7 @@ class SketchyDiagnostics(PoreLogger):
                                 gdata['reference'], gdata['call'], average=average, pos_label=pos_label
                             )
 
-                            if method == 'stream' and read_limit in (200, 500):
+                            if method == 'stream' and read_limit in read_levels:
                                 print(
                                     f"\n Replicate: {replicate} Genotype: {genotype} [Scikit-learn] Accuracy: {accuracy_scikit} "
                                     f"Precision: {precision_scikit} Recall: {recall_scikit}"
