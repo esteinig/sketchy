@@ -28,11 +28,11 @@ from sketchy.utils import SketchySimulator, MutuallyExclusiveOption
     mutually_exclusive=["fastx"]
 )
 @click.option(
-    "--evaluation",
-    "-e",
-    type=Path,
-    help="Path to evaluation file containing predictions (data.tsv)",
-    default=None,
+    "--read",
+    "-r",
+    type=int,
+    help="Print time delta at read [100]",
+    default=100,
     required=False,
 )
 @click.option(
@@ -52,7 +52,7 @@ from sketchy.utils import SketchySimulator, MutuallyExclusiveOption
     default=None,
     required=False,
 )
-def time(fastq, evaluation, index, prefix, delta):
+def time(fastq, read, index, prefix, delta):
 
     """ Compute time of prediction from reads and evaluations """
 
@@ -68,6 +68,7 @@ def time(fastq, evaluation, index, prefix, delta):
     fx.index.name = 'read'
     fx.sort_index().to_csv(f'{prefix}.time.tsv', sep='\t', index_label='read')
 
+    compute_time_delta(fx, read=read, delta=delta)
 
 def compute_time_delta(fx, read: int = 100, delta: str = None):
 
