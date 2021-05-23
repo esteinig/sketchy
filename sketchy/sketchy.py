@@ -243,6 +243,12 @@ class SketchyDiagnostics(PoreLogger):
                     except IndexError:
                         _predictions = _predictions.sort_index()
 
+                    if pscores is not None:
+                        try:
+                            pscores = self.natsort_index(pscores)
+                        except IndexError:
+                            pscores = pscores.sort_index()
+
                     _values = []
                     _index_labels = []
                     _column_labels = None
