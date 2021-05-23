@@ -174,12 +174,12 @@ class SketchyDiagnostics(PoreLogger):
 
         for file in nextflow_files:
             nxf = pandas.read_csv(file, sep="\t", index_col=0, header=0)
-
+            print(nxf.index.intersection(pscores.index))
             if exclude_isolates:
                 nxf = nxf.drop(exclude_isolates)
                 if pscores is not None:
                     pscores = pscores.drop(exclude_isolates)
-                    
+
             if exclude_genotypes:
                 nxf = nxf.drop(columns=exclude_genotypes)
                 if pscores is not None:
