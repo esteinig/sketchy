@@ -72,17 +72,17 @@ def time(fastq, read, index, prefix, delta):
 
 def compute_time_delta(fx, read: int = 100, delta: str = None):
 
-    read_data = fx[fx['read'] == read]
+    read_time = fx.at[fx['read'] == read, 'start_time']
 
     if delta == 'first':
         first_read = fx.iloc[0]
-        readd = dp.parse(read_data.start_time) - \
+        readd = dp.parse(read_time) - \
             dp.parse(first_read.start_time)
     elif delta == 'null':  # nextflow setting
-        readd = dp.parse(read_data.start_time)
+        readd = dp.parse(read_time)
         readd = readd.strftime("%d-%m-%Y %H:%M:%S")
     else:
-        read_time = dp.parse(read_data.start_time).replace(tzinfo=None)
+        read_time = dp.parse(read_time).replace(tzinfo=None)
         start_time = dp.parse(delta, dayfirst=True).replace(tzinfo=None)
         readd = read_time - start_time
 
