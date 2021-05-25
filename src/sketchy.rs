@@ -201,10 +201,10 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
      */
 
     let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-    let target = Path::new(db).path.join("default_sketches.tar.xz").to_string();
+    let target = Path::new(&db).path().join("default_sketches.tar.xz").to_string();
 
-
-    get_url(url, target)
+    println!("{:?} {:?}", url, target);
+    get_url(url, target);
  
 
     Ok(())
@@ -217,8 +217,8 @@ use std::io::Cursor;
 type DownloadResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
  
 #[tokio::main]
-async fn get_url(url: String, target) {
-    fetch_url(url, target.to_string()).await.unwrap();
+async fn get_url(url: String, target: String) {
+    fetch_url(url, target).await.unwrap();
 }
 
 async fn fetch_url(url: String, file_name: String) -> DownloadResult<()> {
