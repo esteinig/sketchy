@@ -202,7 +202,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().unwrap().to_string();
 
     println!("{:?} {:?}", url, target);
-    get_url(url, target);
+    fetch_url(url, target).await.unwrap();
  
 
     Ok(())
@@ -213,10 +213,6 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
 use std::io::Cursor;
 
 type DownloadResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
- 
-async fn get_url(url: String, target: String) {
-    fetch_url(url, target).await.unwrap();
-}
 
 async fn fetch_url(url: String, file_name: String) -> DownloadResult<()> {
     let response = reqwest::get(url).await?;
