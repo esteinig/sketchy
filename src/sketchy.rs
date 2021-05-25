@@ -225,7 +225,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
         File::create(fname).unwrap()
     };
 
-    let content = response.bytes().await?;
+    let content = response.text().await?;
     copy(&mut content.as_bytes(), &mut dest).unwrap();
 
     Ok(())
