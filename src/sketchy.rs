@@ -209,15 +209,17 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/dbs/default_sketches.tar.xz";
     let target = db_path.join("default_sketches.tar.xz").as_path().display().to_string();
 
-    let args = vec!["-O", &target, url, " && tar xf", &target];
+    let args1 = vec!["-O", &target, url, " && tar xf", &target];
 
     let _ = Command::new("wget") 
-        .args(&args)
-        .output()a
+        .args(&args1)
+        .output()
         .expect("Failed to run WGET");
 
-        let _ = Command::new("tar") 
-        .args(vec!["xf", &target])
+    let args2 = vec!["xf", &target];
+
+    let _ = Command::new("tar") 
+        .args(&args2)
         .output()
         .expect("Failed to run TAR");
 
