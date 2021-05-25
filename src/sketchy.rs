@@ -194,8 +194,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-#[tokio::main]
-pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
+pub fn get_databases(db: String) -> Result<(), reqwest::Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -209,24 +208,16 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
     }
     
     let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/dbs/default_sketches.tar.xz";
-    let response = reqwest::get(url).await?;
+    let target = db_path.join("default_sketches.tar.xz");
 
-    let mut dest = {
-        let fname = response
-            .url()
-            .path_segments()
-            .and_then(|segments| segments.last())
-            .and_then(|name| if name.is_empty() { None } else { Some(name) })
-            .unwrap_or("tmp.bin");
+    let args = vec![
+        "-O", &target, url, " && tar xf", &target
+    ];
 
-        println!("file to download: '{}'", fname);
-        let fname = db_path.join(fname);
-        println!("will be located under: '{:?}'", &fname);
-        File::create(fname).unwrap()
-    };
-
-    let content = response.text().await?;
-    copy(&mut content.as_bytes(), &mut dest).unwrap();
+    let _ = Command::new("wget") 
+        .args(&args)
+        .output()
+        .expect("Failed to run WGET and UNTAR default reference sketches");
 
     Ok(())
 
