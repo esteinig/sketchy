@@ -167,7 +167,7 @@ fn main() -> Result<(), Error> {
 
     if let Some(get) = matches.subcommand_matches("get") {
 
-        let db: String = predict.value_of("DB").unwrap_or_else(||
+        let db: String = get.value_of("DB").unwrap_or_else(||
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 

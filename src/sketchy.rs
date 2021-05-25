@@ -199,32 +199,38 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
     
      */
-     
-    fs::create_dir_all(db)?;
 
-    let target = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
-    let response = reqwest::get(target).await?;
+    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
+    let target = Path::new(db).path.join("default_sketches.tar.xz").to_string();
 
-    let mut dest = {
-        let fname = response
-            .url()
-            .path_segments()
-            .and_then(|segments| segments.last())
-            .and_then(|name| if name.is_empty() { None } else { Some(name) })
-            .unwrap_or("tmp.bin");
 
-        println!("file to download: '{}'", fname);
-        let fname = Path::new(db).path().join(fname);
-        println!("will be located under: '{:?}'", fname);
-        File::create(fname)?
-    };
-    let content =  response.text().await?;
-    copy(&mut content.as_bytes(), &mut dest)?;
+    get_url(url, target)
+ 
 
     Ok(())
 
 
 }
+
+use std::io::Cursor;
+
+type DownloadResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+ 
+#[tokio::main]
+async fn get_url(url: String, target) {
+    fetch_url(url, target.to_string()).await.unwrap();
+}
+
+async fn fetch_url(url: String, file_name: String) -> DownloadResult<()> {
+    let response = reqwest::get(url).await?;
+    let mut file = std::fs::File::create(file_name)?;
+    let mut content =  Cursor::new(response.bytes().await?);
+    std::io::copy(&mut content, &mut file)?;
+    Ok(())
+}
+
+
+
 pub fn dist(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash dist` and genomic neighbor inference
