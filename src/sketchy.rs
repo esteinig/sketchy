@@ -228,6 +228,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
     let content = response.text().await?;
     copy(&mut content.as_bytes(), &mut dest).unwrap();
 
+    Ok(())
 
 }
 
