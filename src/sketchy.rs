@@ -202,7 +202,6 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let db_path = Path::new(&db);
 
     if !db_path.exists() {
-        println!("DB path does not exist. Creating: {:?} ", db_path);
         fs::create_dir_all(db_path)?;
     }
     
