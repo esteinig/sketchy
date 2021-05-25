@@ -1,7 +1,7 @@
 extern crate dirs;
 extern crate cute;
 extern crate clap;
-extern crate reqwest;
+extern crate reqwest:
 extern crate indicatif;
 extern crate serde_json;
 extern crate prettytable;
@@ -172,7 +172,9 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-        sketchy::get_databases(db);
+        sketchy::get_databases(db).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
 
     }
 
@@ -204,12 +206,11 @@ fn main() -> Result<(), Error> {
 
     if let Some(_cite) = matches.subcommand_matches("cite") {
                 
-        println!("\nPlease cite the following authors whose work we used for Sketchy:\n");
-        
-        println!("Ondov  et al. (2016) : https://doi.org/10.1186/s13059-016-0997-x");
-        println!("Ondov  et al. (2019) : https://doi.org/10.1186/s13059-019-1841-x");
-        println!("Brinda et al. (2020) : https://doi.org/10.1038/s41564-019-0656-6\n");
-        
+        println!("\nPlease cite the following authors when using the sketchy client:\n");
+        println!("Ondov   et al. (2016)  : https://doi.org/10.1186/s13059-016-0997-x [stream, dist, screen]");
+        println!("Ondov   et al. (2019)  : https://doi.org/10.1186/s13059-019-1841-x [screen]");
+        println!("Brinda  et al. (2020)  : https://doi.org/10.1038/s41564-019-0656-6 [stream, dist, screen]");
+        println!("Steinig et al. (2021)  : https://doi.org/10.1038/s41564-019-0656-6 [stream, dist, screen]\n");
     }
 
     Ok(())
