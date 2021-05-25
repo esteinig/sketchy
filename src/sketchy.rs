@@ -191,7 +191,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
     Ok(())
 }
-pub async fn get_databases(db: String) -> Result<(), Error>  {
+pubfn get_databases(db: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -202,24 +202,14 @@ pub async fn get_databases(db: String) -> Result<(), Error>  {
     let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().unwrap().to_string();
 
     println!("{:?} {:?}", url, target);
-    fetch_url(url, target).await.unwrap();
+    let mut resp = reqwest::get(url).expect("request failed");
+    let mut out = File::create(target).expect("failed to create file");
+    io::copy(&mut resp, &mut out).expect("failed to copy content");
  
 
     Ok(())
 
 
-}
-
-use std::io::Cursor;
-
-type DownloadResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
-
-async fn fetch_url(url: String, file_name: String) -> DownloadResult<()> {
-    let response = reqwest::get(url).await?;
-    let mut file = std::fs::File::create(file_name)?;
-    let mut content =  Cursor::new(response.bytes().await?);
-    std::io::copy(&mut content, &mut file)?;
-    Ok(())
 }
 
 
