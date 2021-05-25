@@ -202,14 +202,16 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let db_path = Path::new(&db);
 
     if !db_path.exists() {
-        println!("DB path {:?} does not exist. Creating.", db_path);
+        println!("DB path does not exist. Creating: {:?} ", db_path);
         fs::create_dir_all(db_path)?;
     }
     
-    let u = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
+    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
     let dest = db_path.join("default_sketches.tar.xz").to_string();
-    let content = reqwest::blocking::get(u).text().await?;
+    println!("Downlaoding compressed defaul sketches to: {:?} ", dest);
+    let content = reqwest::blocking::get(url)?.text().await?;
     copy(&mut content.as_bytes(), &mut dest)?;
+
     Ok(())
 
 
