@@ -172,9 +172,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
 
-        sketchy::get_databases(db).await.map_err(
-            |err| println!("{:?}", err)
-        ).ok();
+        sketchy::get_databases(db);
 
     }
 
