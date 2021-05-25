@@ -213,8 +213,13 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
 
     let _ = Command::new("wget") 
         .args(&args)
-        .output()
-        .expect("Failed to run WGET and UNTAR default reference sketches");
+        .output()a
+        .expect("Failed to run WGET");
+
+        let _ = Command::new("tar") 
+        .args(vec!["xf", &target])
+        .output()a
+        .expect("Failed to run WGET");
 
     Ok(())
 
