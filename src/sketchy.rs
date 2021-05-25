@@ -191,7 +191,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
     Ok(())
 }
-pubfn get_databases(db: String) -> Result<(), Error>  {
+pub fn get_databases(db: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)

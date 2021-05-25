@@ -171,8 +171,9 @@ fn main() -> Result<(), Error> {
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
 
-
-        sketchy::get_databases(db);
+        sketchy::get_databases(db).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
 
     }
 
