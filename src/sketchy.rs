@@ -195,7 +195,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 }
 
 #[tokio::main]
-pub async fn get_databases(db: String) {
+pub async fn get_databases(db: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
