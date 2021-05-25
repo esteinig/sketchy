@@ -216,12 +216,14 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
         .output()
         .expect("Failed to run WGET");
 
-    let args2 = vec![&target];
+    let args2 = vec!["xf", &target];
 
     let _ = Command::new("tar") 
         .args(&args2)
         .output()
         .expect("Failed to run TAR");
+
+    let args3 = vec![&target];
 
     let _ = Command::new("rm") 
         .args(&args3)
