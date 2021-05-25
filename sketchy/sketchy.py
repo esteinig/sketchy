@@ -463,7 +463,7 @@ class SketchyDiagnostics(PoreLogger):
             values[(pscores.values < 0.6) & (values == 0)] = 2
             values[(pscores.values >= 0.6) & (values == 0)] = 1
 
-            palette = ["#de8f05", "#CC78BC", "#029E73", "#03d098"]
+            palette = ["#de8f05", "#de3005", "#029E73", "#03d098"]
 
         # color the zero values
         # values = where(values == 0, 0.1, values)
