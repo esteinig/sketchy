@@ -198,15 +198,12 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
     
      */
+    let db_path = Path::new(&db);
 
-    let url: String = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-    let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().unwrap().to_string();
-
-    println!("{:?} {:?}", url, target);
-    let mut resp = reqwest::blocking::get(url)?;
-    let mut out = File::create(target).expect("failed to create file");
-    io::copy(&mut resp, &mut out).expect("failed to copy content");
- 
+    if !db_path.exists() {
+        println!("DB path {:?} does not exist. Creating.", db_path);
+        fs::create_dir_all(db_path)?;
+    }
 
     Ok(())
 
