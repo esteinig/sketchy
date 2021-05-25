@@ -220,7 +220,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
             .unwrap_or("tmp.bin");
 
         println!("file to download: '{}'", fname);
-        let fname = db_path.join(fname).to_str().unwrap();
+        let fname = db_path.join(fname);
         println!("will be located under: '{:?}'", &fname);
         File::create(fname).unwrap()
     };
