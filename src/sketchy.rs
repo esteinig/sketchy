@@ -209,7 +209,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
     }
     
     let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
-    let response = reqwest::get(url).await?;
+    let response = reqwest::blocking::get(url).await?;
 
     let mut dest = {
         let fname = response
@@ -220,7 +220,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
             .unwrap_or("tmp.bin");
 
         println!("file to download: '{}'", fname);
-        let fname = db_path.join(fname);
+        let fname = db_path.join(fname).to_str();
         println!("will be located under: '{:?}'", fname);
         File::create(fname).unwrap()
     };
