@@ -7,7 +7,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 */
 
-use std::io;
+use std::fs;
 use cute::c;
 use std::fs::File;
 use std::path::Path;
