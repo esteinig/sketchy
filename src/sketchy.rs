@@ -8,8 +8,6 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 */
 
 use cute::c;
-use std::env;
-use std::io::copy;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
