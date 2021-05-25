@@ -211,7 +211,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let client = Client::new();
     match client.get(&u).send() {
         Ok(res) => {
-            let file = File::create(db_path.join("default_sketches.tar.xz").to_string())?;
+            let file = File::create(db_path.join("default_sketches.tar.xz"))?;
             ::std::io::copy(res, file)?;
         },
         Err(e) => eprintln!("failed to send request: {}", e),
