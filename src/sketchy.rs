@@ -195,7 +195,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 }
 
 #[tokio::main]
-pub async fn get_databases(db: String) -> Result<reqwest::blocking::Response, reqwest::Error>  {
+pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -210,7 +210,7 @@ pub async fn get_databases(db: String) -> Result<reqwest::blocking::Response, re
     
     let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
     let response = reqwest::blocking::get(url).await?;
-reqwest::blocking::Response,
+
     let mut dest = {
         let fname = response
             .url()
@@ -225,8 +225,8 @@ reqwest::blocking::Response,
         File::create(fname).unwrap()
     };
 
-    let content = response.text().await?;
-    copy(&mut content.as_bytes(), &mut dest).unwrap();
+    let content = response.bytes().await?;
+    copy(&mut content, &mut dest).unwrap();
 
     Ok(())
 
