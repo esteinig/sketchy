@@ -9,6 +9,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 use cute::c;
 use std::env;
+use std::io::copy;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
@@ -192,7 +193,38 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 
     Ok(())
 }
+pub fn get_databases(db: String) -> Result<(), Error>  {
 
+    /*
+     Download compressed default databases from GitHub repository (k = 15, s = 1000)
+    
+     */
+     
+    fs::create_dir_all(db)?;
+
+    let target = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
+    let response = reqwest::get(target).await?;
+
+    let mut dest = {
+        let fname = response
+            .url()
+            .path_segments()
+            .and_then(|segments| segments.last())
+            .and_then(|name| if name.is_empty() { None } else { Some(name) })
+            .unwrap_or("tmp.bin");
+
+        println!("file to download: '{}'", fname);
+        let fname = Path::new(db).path().join(fname);
+        println!("will be located under: '{:?}'", fname);
+        File::create(fname)?
+    };
+    let content =  response.text().await?;
+    copy(&mut content.as_bytes(), &mut dest)?;
+
+    Ok(())
+
+
+}
 pub fn dist(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
     
     /* Sketchy screening of species-wide reference sketches using `mash dist` and genomic neighbor inference
