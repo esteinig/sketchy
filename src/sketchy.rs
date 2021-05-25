@@ -207,7 +207,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     }
     
     let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-    let dest = db_path.join("default_sketches.tar.xz").to_str()?.to_string();
+    let dest = db_path.join("default_sketches.tar.xz").to_str().unwrap().to_string();
     println!("Downlaoding compressed defaul sketches to: {:?} ", dest);
     let content = reqwest::blocking::get(url)?.text().await?;
     copy(&mut content.as_bytes(), &mut dest)?;
