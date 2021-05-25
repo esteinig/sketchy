@@ -159,7 +159,7 @@ fn main() -> Result<(), Error> {
 
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
-        sketchy::predict(genotype_key, limit, !genotype).await.map_err(
+        sketchy::predict(genotype_key, limit, !genotype)map_err(
             |err| println!("{:?}", err)
         ).ok();
 
@@ -172,7 +172,7 @@ fn main() -> Result<(), Error> {
         ).to_string();
 
 
-        sketchy::get_databases(db).map_err(
+        sketchy::get_databases(db).await.map_err(
             |err| println!("{:?}", err)
         ).ok();
 
