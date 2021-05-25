@@ -221,7 +221,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
 
         println!("file to download: '{}'", fname);
         let fname = db_path.join(fname).to_str().unwrap();
-        println!("will be located under: '{:?}'", fname);
+        println!("will be located under: '{:?}'", &fname);
         File::create(fname).unwrap()
     };
 
