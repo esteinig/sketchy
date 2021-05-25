@@ -194,7 +194,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn get_databases(db: String) -> Result<(), reqwest::Error>  {
+pub fn get_databases(db: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -204,15 +204,13 @@ pub fn get_databases(db: String) -> Result<(), reqwest::Error>  {
 
     if !db_path.exists() {
         println!("DB path does not exist. Creating: {:?} ", db_path);
-        fs::create_dir_all(db_path).unwrap();
+        fs::create_dir_all(db_path)?;
     }
     
     let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/dbs/default_sketches.tar.xz";
-    let target = db_path.join("default_sketches.tar.xz");
+    let target = db_path.join("default_sketches.tar.xz")?;
 
-    let args = vec![
-        "-O", &target, url, " && tar xf", &target
-    ];
+    let args = vec!["-O", &target, url, " && tar xf", &target];
 
     let _ = Command::new("wget") 
         .args(&args)
