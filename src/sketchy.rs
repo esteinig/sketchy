@@ -214,7 +214,6 @@ use std::io::Cursor;
 
 type DownloadResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
  
-#[tokio::main]
 async fn get_url(url: String, target: String) {
     fetch_url(url, target).await.unwrap();
 }
