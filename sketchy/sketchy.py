@@ -845,7 +845,6 @@ class SketchyDiagnostics(PoreLogger):
                     accuracy3 = accuracy_score(mdata['reference'], mdata['call'])
                     precision3 = precision_score(mdata['reference'], mdata['call'], average=multi_average)
                     recall3 = recall_score(mdata['reference'], mdata['call'], average=multi_average)
-                    specificity3 = recall_score(mdata['reference'], mdata['call'], average=multi_average, pos_label=0)
 
                     if method == 'stream' and read_limit in read_levels:
                         # Across all replicates if bootstrapped

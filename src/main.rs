@@ -38,6 +38,11 @@ fn main() -> Result<(), Error> {
             .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [1]"))
             .arg(Arg::with_name("GENOTYPE").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
         )
+        .subcommand(SubCommand::with_name("get")
+            .about("\nget default databases")
+            .version("0.5.0")
+            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("output directory to extract the databases to [SKETCHY_HOME]"))
+        )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
             .version("0.5.0")
@@ -155,6 +160,19 @@ fn main() -> Result<(), Error> {
         let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
 
         sketchy::predict(genotype_key, limit, !genotype).map_err(
+            |err| println!("{:?}", err)
+        ).ok();
+
+    }
+
+    if let Some(get) = matches.subcommand_matches("get") {
+
+        let db: String = predict.value_of("DB").unwrap_or_else(||
+            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
+        ).to_string();
+
+
+        sketchy::get_databases(db).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
