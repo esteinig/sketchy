@@ -203,7 +203,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().unwrap().to_string();
 
     println!("{:?} {:?}", url, target);
-    let mut resp = reqwest::get(url);
+    let mut resp = reqwest::get(url).await?.text().await?;
     let mut out = File::create(target).expect("failed to create file");
     io::copy(&mut resp, &mut out).expect("failed to copy content");
  
