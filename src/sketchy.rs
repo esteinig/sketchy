@@ -7,6 +7,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 */
 
+use std::io;
 use cute::c;
 use std::fs::File;
 use std::path::Path;
@@ -202,7 +203,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().unwrap().to_string();
 
     println!("{:?} {:?}", url, target);
-    let mut resp = reqwest::get(url).expect("request failed");
+    let mut resp = reqwest::get(url).await.expect("request failed");
     let mut out = File::create(target).expect("failed to create file");
     io::copy(&mut resp, &mut out).expect("failed to copy content");
  
