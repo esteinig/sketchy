@@ -208,14 +208,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     
     let u = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
 
-    let client = Client::new();
-    match client.get(&u).send() {
-        Ok(res) => {
-            let file = File::create(db_path.join("default_sketches.tar.xz"))?;
-            ::std::io::copy(res, &mut file)?;
-        },
-        Err(e) => eprintln!("failed to send request: {}", e),
-    };
+    let res = reqwest::blocking::get(u)?;
 
     Ok(())
 
