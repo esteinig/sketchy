@@ -198,8 +198,8 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     
      */
 
-    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-    let target = Path::new(&db).join("default_sketches.tar.xz").to_string();
+    let url: String = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
+    let target: String = Path::new(&db).join("default_sketches.tar.xz").to_str().to_string();
 
     println!("{:?} {:?}", url, target);
     get_url(url, target);
