@@ -195,7 +195,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
 }
 
 #[tokio::main]
-pub async fn get_databases(db: String) -> Result<(), Error>  {
+pub async fn get_databases(db: String) {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -208,8 +208,9 @@ pub async fn get_databases(db: String) -> Result<(), Error>  {
         fs::create_dir_all(db_path)?;
     }
     
-    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-    let response = reqwest::get(target).await?;
+    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
+    let response = reqwest::get(url).await?;
+
     let mut dest = {
         let fname = response
             .url()
@@ -219,14 +220,13 @@ pub async fn get_databases(db: String) -> Result<(), Error>  {
             .unwrap_or("tmp.bin");
 
         println!("file to download: '{}'", fname);
-        let fname = tmp_dir.path().join(fname);
+        let fname = db_path.path().join(fname);
         println!("will be located under: '{:?}'", fname);
         File::create(fname)?
     };
+
     let content = response.text().await?;
     copy(&mut content.as_bytes(), &mut dest)?;
-
-    Ok(())
 
 
 }
