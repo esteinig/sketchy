@@ -9,7 +9,7 @@ Sketchy computes the sum of shared hashes from STDOUT of MASH
 
 use std::fs;
 use cute::c;
-use reqwest::Client;
+use std::io::copy;
 use std::fs::File;
 use std::path::Path;
 use std::cmp::Reverse;
@@ -207,9 +207,9 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     }
     
     let u = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz".to_string();
-
-    let res = reqwest::blocking::get(u)?;
-
+    let dest = db_path.join("default_sketches.tar.xz").to_string();
+    let content = reqwest::blocking::get(u).text().await?;
+    copy(&mut content.as_bytes(), &mut dest)?;
     Ok(())
 
 
