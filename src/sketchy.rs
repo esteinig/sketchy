@@ -205,7 +205,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
 
     if !db_path.exists() {
         println!("DB path does not exist. Creating: {:?} ", db_path);
-        fs::create_dir_all(db_path)?;
+        fs::create_dir_all(db_path).unwrap();
     }
     
     let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
@@ -220,9 +220,9 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
             .unwrap_or("tmp.bin");
 
         println!("file to download: '{}'", fname);
-        let fname = db_path.path().join(fname);
+        let fname = db_path.join(fname);
         println!("will be located under: '{:?}'", fname);
-        File::create(fname)?
+        File::create(fname).unwrap()
     };
 
     let content = response.text().await?;
