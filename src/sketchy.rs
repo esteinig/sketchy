@@ -208,7 +208,7 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     }
     
     let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/dbs/default_sketches.tar.xz";
-    let target = db_path.join("default_sketches.tar.xz").to_str().unwrap();;
+    let target = db_path.join("default_sketches.tar.xz");
 
     let args = vec!["-O", &target, url, " && tar xf", &target];
 
