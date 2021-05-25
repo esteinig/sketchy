@@ -1,7 +1,7 @@
 extern crate dirs;
 extern crate cute;
 extern crate clap;
-extern crate reqwest:
+extern crate reqwest;
 extern crate indicatif;
 extern crate serde_json;
 extern crate prettytable;
