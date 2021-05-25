@@ -208,7 +208,7 @@ pub async fn get_databases(db: String) -> Result<(), reqwest::Error>  {
         fs::create_dir_all(db_path).unwrap();
     }
     
-    let url = "https://raw.githubusercontent.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz";
+    let url = "https://github.com/esteinig/sketchy/blob/v0.5.0/dbs/default_sketches.tar.xz?raw=true";
     let response = reqwest::get(url).await?;
 
     let mut dest = {
