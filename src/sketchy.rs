@@ -212,6 +212,9 @@ pub fn get_file(outdir: String, file_name: String) -> Result<(), Error>  {
 
     let args1 = vec!["-O", &target, &url, " && tar xf", &target];
 
+    
+    println!("{:?}", &args1);
+
     let _ = Command::new("wget") 
         .args(&args1)
         .output()
