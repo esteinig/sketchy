@@ -42,7 +42,8 @@ fn main() -> Result<(), Error> {
         .subcommand(SubCommand::with_name("get")
             .about("\nget default databases")
             .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("output directory to extract the databases to [SKETCHY_HOME]"))
+            .arg(Arg::with_name("OUTDIR").short("o").long("outdir").takes_value(true).required(true).help("output directory to extract the databases to [required]"))
+            .arg(Arg::with_name("FNAME").short("f").long("file_name").takes_value(true).required(true).help("file name to pull from sketchy git repository data [default_sketches.tar.xz]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
@@ -168,11 +169,13 @@ fn main() -> Result<(), Error> {
 
     if let Some(get) = matches.subcommand_matches("get") {
 
-        let db: String = get.value_of("DB").unwrap_or_else(||
+        let outdir: String = get.value_of("OUTDIR").unwrap_or_else(||
             clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
         ).to_string();
+        
+        let file_name: String = get.value_of("FNAME").unwrap_or("default_sketches.tar.xz").to_string();
 
-        sketchy::get_databases(db).map_err(
+        sketchy::get_file(outdir, file_name).map_err(
             |err| println!("{:?}", err)
         ).ok();
 
