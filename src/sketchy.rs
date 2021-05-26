@@ -193,7 +193,7 @@ pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, li
     Ok(())
 }
 
-pub fn get_file(outdir: String) -> Result<(), Error>  {
+pub fn get_file(outdir: String, file_name: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
@@ -205,8 +205,8 @@ pub fn get_file(outdir: String) -> Result<(), Error>  {
         fs::create_dir_all(db_path)?;
     }
     
-    let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/data/default_sketches.tar.xz";
-    let target = db_path.join("default_sketches.tar.xz").as_path().display().to_string();
+    let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/data/" + file_name;
+    let target = db_path.join(file_name).as_path().display().to_string();
 
     let args1 = vec!["-O", &target, url, " && tar xf", &target];
 
