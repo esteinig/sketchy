@@ -822,7 +822,7 @@ class SketchyDiagnostics(PoreLogger):
                     # Scores across all features:
                     accuracy1 = accuracy_score(rdata['reference'], rdata['call'])
 
-                    if db == 'saureus':
+                    if db == 'saureus' or db == 'saureus_large':
                         # Fix these for binary computations:
                         for column in ('call', 'reference'):
                             for v, r in {'PVL+': 'R', 'MRSA': 'R', 'PVL-': 'S', 'MSSA': 'S'}.items():
