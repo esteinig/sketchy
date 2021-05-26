@@ -102,7 +102,7 @@ sketchy screen -f test.fastq -d saureus -p
 
 Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch.
 
-Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where very few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a re-infection of the same strain in a cystic fibrosis patient from less than ten reads and the diagnostic plots.
+Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where very few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a re-infection of the same strain in a cystic fibrosis patient from less than ten reads and the diagnostic plots. It also appeared to have an edge at low read threshold predictions in the *S. aureus* default reference sketch.
 
 Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches (> 30,000 genomes) and tens of thousands of reads, total runtime can be excruciating. However, generally not that many reads are required to make predictions (see preprint). Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
@@ -147,14 +147,6 @@ We also implement a non-streaming task to compute the `Mash` distance on a set o
 
 ```
 sketchy dist -f test.fastq -d saureus -p
-```
-
-### Online streaming analysis
-
-In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client. This has a slight advantage over the other methods especially at lower read numbers in the *S. aureus* reference sketch, but also takes an exceedingly long time for higher read numbers so it can be good to limit the prediction at e.g. 1000 reads (see preprint):
-
-```
-head -400 test.fastq | sketchy stream --db saureus > test.sssh.tsv
 ```
 
 ### Android mobile phones
