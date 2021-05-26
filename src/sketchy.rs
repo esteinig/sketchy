@@ -216,7 +216,7 @@ pub fn get_file(outdir: String, file_name: String) -> Result<(), Error>  {
         .output()
         .expect("Failed to run: WGET");
 
-    let args2 = vec!["xf", &target, "-C", db_path.to_str()];
+    let args2 = vec!["xf", &target, "-C", db_path.to_str()?];
 
     let _ = Command::new("tar") 
         .args(&args2)
