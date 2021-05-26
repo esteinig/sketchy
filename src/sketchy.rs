@@ -197,8 +197,8 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
 
     /*
      Download compressed default databases from GitHub repository (k = 15, s = 1000)
+    */
     
-     */
     let db_path = Path::new(&db);
 
     if !db_path.exists() {
@@ -213,21 +213,21 @@ pub fn get_databases(db: String) -> Result<(), Error>  {
     let _ = Command::new("wget") 
         .args(&args1)
         .output()
-        .expect("Failed to run WGET");
+        .expect("Failed to run: WGET");
 
     let args2 = vec!["xf", &target];
 
     let _ = Command::new("tar") 
         .args(&args2)
         .output()
-        .expect("Failed to run TAR");
+        .expect("Failed to run: TAR");
 
     let args3 = vec![&target];
 
     let _ = Command::new("rm") 
         .args(&args3)
         .output()
-        .expect("Failed to run RM");
+        .expect("Failed to run: RM");
 
     Ok(())
 
