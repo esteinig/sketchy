@@ -1041,7 +1041,7 @@ class SketchyDiagnostics(PoreLogger):
                             r.strip() if isinstance(r, str) else r for r in comparison['reference']
                         ]
 
-                        if db == 'saureus':
+                        if db == 'saureus' or db == 'saureus_large':
                             # Temporary replacement until sketches are fixed:
                             comparison['call'] = comparison['call'].replace('PVL*', 'PVL-')
                             comparison['reference'] = comparison['reference'].replace('PVL*', 'PVL-')
