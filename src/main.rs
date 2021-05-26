@@ -42,7 +42,7 @@ fn main() -> Result<(), Error> {
             .about("\nget default databases")
             .version("0.5.0")
             .arg(Arg::with_name("OUTDIR").short("o").long("outdir").takes_value(true).required(true).help("output directory to extract the databases to [required]"))
-            .arg(Arg::with_name("FNAME").short("f").long("file_name").takes_value(true).required(true).help("file name to pull from sketchy git repository data [default_sketches.tar.xz]"))
+            .arg(Arg::with_name("FNAME").short("f").long("file_name").takes_value(true).required(false).help("file name to pull from sketchy git repository data [default_sketches.tar.xz]"))
         )
         .subcommand(SubCommand::with_name("screen")
             .about("\nquery read set against database with mash screen")
