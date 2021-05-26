@@ -860,7 +860,7 @@ class SketchyDiagnostics(PoreLogger):
 
                             accuracy_scikit = accuracy_score(gdata['reference'], gdata['call'])
 
-                            if (db == 'saureus' and genotype in sa_multilabel) or \
+                            if ((db == 'saureus' or db == 'saureus_large') and genotype in sa_multilabel) or \
                                     (db == 'kpneumoniae' and genotype in kp_multilabel):
                                 average, pos_label = multi_average, 1
                             else:
