@@ -66,51 +66,29 @@ docker pull esteinig/sketchy:latest
 `Sketchy` is available on `BioConda` (thanks to [@mbhall88](https://github.com/mbhall88))
 
 ```
-conda install -c bioconda -c conda-forge sketchy=0.5.0
+conda install -c conda-forge -c bioconda sketchy=0.5.0
 ```
 
 You can also manually install the latest commits into an environment like this:
 
 ```sh
-conda install -c bioconda -c conda-forge \
-  mash=2.2.2 psutil pysam rust nanoq
+conda install -c bioconda -c conda-forge mash=2.2.2 psutil pysam rust nanoq
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
-sketchy pull
-sketchy list
+sketchy get --outdir ~/.sketchy
 ```
 
 ## Reference sketches
 
-If no container is used, pull default species sketches into local storage before first use:
+If no container is used, get default species sketches (k = 15, s = 1000) into local storage before first use:
 
 ```
-sketchy pull
+sketchy get --outdir ~/.sketchy
 ```
-
-You can set the path to which the sketches are downloaded e.g. to the default `--path ~/.sketchy`. 
-
-```
-sketchy pull --path ~/.sketchy
-```
-Local sketches and template names can be viewed with:
-
-```
-sketchy list
-```
-
-Set the environment variable `$SKETCHY_PATH` to a custom sketch directory for tasks to discover databases automatically.
-
 ## Sketchy usage
 
 See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. Please cite `Mash` (`sketchy cite`) as its core functionality is wrapped into the genomic neighbor typing with `Sketchy`. For a comparison between screening, streaming and distancing, please see the preprint.
-
-Setup environment variable to databases (or specify database paths in `--db` arguments)
-
-```bash
-SKETCHY_PATH=$HOME/.sketchy
-```
 
 ### Screening function
 
@@ -128,7 +106,7 @@ Because streaming is slower than screening for completed sequence runs, I tend t
 
 Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches (> 30,000 genomes) and tens of thousands of reads, total runtime can be excruciating. However, generally not that many reads are required to make predictions (see preprint). Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
-The `Rust` command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and  sum of ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
+The command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and sum of ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
 From stream:
 
@@ -156,15 +134,11 @@ cat sssh.tsv | sketchy predict -d saureus > predictions.tsv
 cat test.fq | sketchy stream -d saureus | sketchy predict -d saureus > predictions.tsv
 ```
 
-Diagnostic plots and evaluation summaries including are handled in the `sketchy-utils` Python client:
+Diagnostic plots and evaluation summaries including database inspection and reference creation are handled in the `sketchy-utils` Python client:
 
 ```
-sketchy-utils plot \
-    --sssh sssh.tsv \
-    --db saureus \
-    --palette YnGnBu \
-    --prefix test \
-    --format png
+sketchy-utils plot --help
+sketchy-utils database --help
 ```
 
 ### Distance function
@@ -177,10 +151,10 @@ sketchy dist -f test.fastq -d saureus -p
 
 ### Online streaming analysis
 
-In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client:
+In a live sequencing run, `Sketchy` can be set to observe a directory (e.g. `fastq_pass` from live basecalling) in order to stream reads into the Rust client. A watcher waits for the `fastq` file to be completed before piping the filename to `/dev/stdout` and into the streaming client. This has a slight advantage over the other methods especially at lower read numbers in the *S. aureus* reference sketch, but also takes an exceedingly long time for higher read numbers so it can be good to limit the prediction at e.g. 1000 reads (see preprint):
 
 ```
-sketchy-utils online watch -d /live/fastq | cat - | sketchy stream --db saureus > test.sssh.tsv
+head -400 test.fastq | sketchy stream --db saureus > test.sssh.tsv
 ```
 
 ### Android mobile phones
@@ -192,16 +166,17 @@ To set up the Rust client on Android mobile phones, the following can be done qu
 3. Run the following in the terminal
 
 ```bash
-sudo apt-get update && sudo apt-get install curl mash build-essential
-
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+sudo apt-get update && sudo apt-get install wget mash cargo build-essential
 cargo install sketchy-rs
+
+sketchy get --outdir ~/.sketchy
+sketchy get --ourdir ~/ --file fnq.tar.xz
 
 wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
   && tar -xvzf saureus.min.tar.gz
 wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
 
-cat mobile_test.fq | sketchy stream --db ./saureus.min
+cat ~/fnq.fq | sketchy stream --db ~/saureus
 ```
 
 ### Nextflow pipeline
