@@ -171,6 +171,8 @@ class SketchyDiagnostics(PoreLogger):
         else:
             pscores = None
 
+        print(pscores)
+
         md = pandas.read_csv(match_data, sep="\t", header=0)
 
         for file in nextflow_files:
@@ -1015,7 +1017,7 @@ class SketchyDiagnostics(PoreLogger):
                 raise KeyError(
                     "Are your reference genotype columns and database columns used for predictions the same?"
                 )
-            
+
             summary = []
             comparisons = []
             for db, db_data in data.groupby("db"):
