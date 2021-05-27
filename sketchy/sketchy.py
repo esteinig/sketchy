@@ -1008,6 +1008,9 @@ class SketchyDiagnostics(PoreLogger):
             )
 
             data = data[~data.index.isin(not_in_ref)]
+
+            print(data)
+            print(ref.columns.tolist())
             data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
 
             summary = []
