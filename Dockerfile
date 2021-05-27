@@ -15,15 +15,16 @@ ENV PATH=/opt/conda/bin:/rust/.cargo/bin:$PATH
 ENV CARGO_HOME=/rust/.cargo
 ENV RUSTUP_HOME=/rust/.rustup
 
-RUN conda install -c conda-forge -c bioconda -c esteinig --yes \
-    pysam mash=$MASH_VERSION psutil nanoq
+RUN conda install -c conda-forge -c bioconda -c esteinig --yes pysam mash=$MASH_VERSION
 
 RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-RUN cargo install sketchy-rs
 
-RUN wget https://github.com/esteinig/sketchy/archive/v${SKETCHY_VERSION}.tar.gz
-RUN tar -xzf v${SKETCHY_VERSION}.tar.gz && rm v${SKETCHY_VERSION}.tar.gz
-RUN pip install /sketchy-${SKETCHY_VERSION}
+# Latest Rust client and default sketches
+RUN cargo install sketchy-rs
+RUN mkdir /db && sketchy get --outdir /db
+
+# Latest Python utility client
+RUN pip install git+https://github.com/esteinig/sketchy
 
 
 
