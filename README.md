@@ -17,9 +17,7 @@ Precomputed species reference databases that have been validated using ONT seque
 * [*Staphylococcus aureus*](docs/saureus.md) (database: n = 38987, validation: n = 142)
 * [*Klebsiella pneumoniae*](docs/kpneumo.md) (database: n = 14372, validation: n = 120)
 
-Automated sketch updates will occur every quarter adding new genomes / genotypes from the European Nucleotide Archive
-
-Please see our preprint for guidance on the limitations of `Sketchy`.
+Please see our preprint for guidance on the limitations of `Sketchy` - keep in mind it's a heuristic approach to genotyping.
 
 - [Install](#install)
 - [Usage](#sketchy-usage)
@@ -34,20 +32,20 @@ Sketchy implements a Rust command-line interface (`sketchy`) for computation and
 
 **`Cargo`**
 
-Rust client only - this does not install the Python utilities! `Mash` needs to be in `$PATH`.
+Rust client only - this does not install the Python utilities. `Mash` needs to be in `$PATH` and `wget / tar` installed for pulling default sketches.
 
 ```bash
 cargo install sketchy-rs
 ```
-On Linux systems one should be able to install `Mash` conveniently e.g.
+On Linux systems one should be able to install `Mash` conveniently (this is `v2.0.0`)
 
 ```bash
-sudo apt-get install mash
+sudo apt-get install mash wget
 ```
 
 **`Singularity`**
 
-Singularity container is preloaded with default reference sketches at the root path `/sketchy`
+Singularity container is preloaded with default reference sketches at the root path `/sketches`
 
 ```sh
 singularity pull docker://esteinig/sketchy:latest
@@ -69,15 +67,19 @@ docker pull esteinig/sketchy:latest
 conda install -c conda-forge -c bioconda sketchy=0.5.0
 ```
 
-You can also manually install the latest commits into an environment like this:
+You can also manually install the latest commits into an environment:
 
 ```sh
-conda install -c bioconda -c conda-forge mash=2.2.2 psutil pysam rust nanoq
+conda install -c conda-forge -c bioconda mash=2.3 pysam rust nanoq
 cargo install sketchy-rs
 git clone https://github.com/esteinig/sketchy
 pip install ./sketchy
 sketchy get --outdir ~/.sketchy
 ```
+
+**`Binary`**
+
+A binary for Linux is also [available](https://github.com/esteinig/sketchy/releases/download/v0.5.0/linux_x86_64.tar.xz).
 
 ## Reference sketches
 
@@ -90,34 +92,26 @@ sketchy get --outdir ~/.sketchy
 
 See the `Tasks and Parameters` section for details on all tasks and settings available in `Sketchy`. Reads are expected to belong to the species of the selected reference sketch. Please cite `Mash` (`sketchy cite`) as its core functionality is wrapped into the genomic neighbor typing with `Sketchy`. For a comparison between screening, streaming and distancing, please see the preprint.
 
-### Screening function
-
-`Sketchy` can use the screening function of `Mash` to rapidly infer genotypes from a completed set of reads. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` simply links the matches with the genotype data provided in the reference database. 
-
-```
-sketchy screen -f test.fastq -d saureus -p
-```
-
 ### Streaming function
 
 Streaming genomic neighbor typing heuristic that implements `mash dist` and computes the sum of shared hashes against the reference sketch.
 
-Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where very few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful - for instance, we confirmed a re-infection of the same strain in a cystic fibrosis patient from less than ten reads and the diagnostic plots. It also appeared to have an edge at low read threshold predictions in the *S. aureus* default reference sketch.
+Because streaming is slower than screening for completed sequence runs, I tend to use this more in cases where very few reads are available or when streaming is actually required (not that often). In some edge cases the streaming utility can be quite useful. It also appeared to have an edge at low read threshold predictions in the *S. aureus* default reference sketch.
 
-Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches (> 30,000 genomes) and tens of thousands of reads, total runtime can be excruciating. However, generally not that many reads are required to make predictions (see preprint). Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
+Streaming is primarily bottlenecked by sketch queries of each read against the reference sketch, which means that prediction speeds are usually fast on smaller sketches (e.g. 10,000 genomes, ~ 100 reads/second) but for large sketches (> 30,000 genomes) and tens of thousands of reads, total runtime can be excruciating (< 10 reads / second). However, generally full sequence runs are not required to make predictions (see preprint). Smaller reference sketches created from lineages or local collections should be sufficiently fast for online prediction on MinION / Flongle / GridION.
 
 The command line interface implements two subtasks: `sketchy-rs stream` which computes sum of shared hashes and sum of ranked sums of shared hashes by genotypes, and `predict` which uses the output to predict the genotype profile. 
 
 From stream:
 
  ```bash
- head -400 test.fq | sketchy stream -d saureus > sssh.tsv
+ head -400 test.fq | sketchy stream -d saureus/ > sssh.tsv
  ```
  
  From `--fastx` stopping after 100 `--reads`:
  
   ```bash
-sketchy stream -f test.fq -r 100 -d saureus > sssh.tsv
+sketchy stream -f test.fq -r 100 -d saureus/ > sssh.tsv
  ```
  
 Note that using the `--fastx` option, all sequence reads are loaded into memory first. If memory is limited, the execution will fail with an `IndexError`. For this reason, the streaming input `-` is preferred.
@@ -125,13 +119,13 @@ Note that using the `--fastx` option, all sequence reads are loaded into memory 
 `Predict` then uses the ranked scores at each read to infer the genotype profiles:
 
 ```bash
-cat sssh.tsv | sketchy predict -d saureus > predictions.tsv
+cat sssh.tsv | sketchy predict -d saureus/ > predictions.tsv
 ```
 
 `Stream` and `predict` read from `/dev/stdin` so they can be piped:
 
 ```bash
-cat test.fq | sketchy stream -d saureus | sketchy predict -d saureus > predictions.tsv
+cat test.fq | sketchy stream -d saureus/ | sketchy predict -d saureus/ > predictions.tsv
 ```
 
 Diagnostic plots and evaluation summaries including database inspection and reference creation are handled in the `sketchy-utils` Python client:
@@ -141,12 +135,21 @@ sketchy-utils plot --help
 sketchy-utils database --help
 ```
 
+
+### Screening function
+
+`Sketchy` can use the screening function of `Mash` to rapidly infer genotypes from a completed set of reads. I tend to use this function for quick and easy genomic neighbor type screening on many isolates. Screening with `Mash` uses the winner-takes-all strategy and `Sketchy` simply links the matches with the genotype data provided in the reference database. 
+
+```
+sketchy screen -f test.fastq -d saureus -p
+```
+
 ### Distance function
 
 We also implement a non-streaming task to compute the `Mash` distance on a set of reads and rank the predictions based on the number of shared hashes, essentially calling `Mash` under the hood and translating the output into genotypes, similar to the screening function:
 
 ```
-sketchy dist -f test.fastq -d saureus -p
+sketchy dist -f test.fastq -d saureus/ -p
 ```
 
 ### Android mobile phones
@@ -162,13 +165,9 @@ sudo apt-get update && sudo apt-get install wget mash cargo build-essential
 cargo install sketchy-rs
 
 sketchy get --outdir ~/.sketchy
-sketchy get --ourdir ~/ --file fnq.tar.xz
+sketchy get --outdir ~/ --file fnq.tar.xz
 
-wget https://storage.googleapis.com/sketchy-sketch/saureus.min.tar.gz \
-  && tar -xvzf saureus.min.tar.gz
-wget https://storage.googleapis.com/sketchy-sketch/mobile_test.fq
-
-cat ~/fnq.fq | sketchy stream --db ~/saureus
+cat ~/fnq.fq | sketchy stream --db ~/.sketchy/saureus
 ```
 
 ### Nextflow pipeline
@@ -185,13 +184,15 @@ Custom sketches must include a:
 * reference sketch
 * numeric genotype index
 * genotype key file 
+* reference genotypes
 
 with the same file names and the following extensions, such that:
 
 ```bash
 ref.msh   # sketch
-ref.tsv   # index
+ref.idx   # index
 ref.json  # key 
+ref.tsv   # ref
 ```
 
 ### Genome assemblies and sketch construction
@@ -213,11 +214,7 @@ DRR128208.fasta
 mash sketch -s 1000 -k 15 -o ref *.fasta
 ```
 
-See the [`Nextflow`](#nextflow) section for parallel sketch building and the [`Benchmarks`](#benchmarks) section for guidance on selecting an appropriate sketch and k-mer size for `Sketchy`. 
-
-### Genotype features and index preparation
-
-Genotypes associated with each genome in the reference sketch should be in a tab-delimited table (`genotypes.tsv`) with appropriate headers. We will remove the `id` column in the next step when we translate columns into genotyping indices for `Sketchy`.
+Genotypes associated with each genome in the reference sketch should be in a tab-delimited table (`genotypes.tsv`) with appropriate headers. Columns not named `id` and to be ecluded can be specified on the command line. A reference table can look like this:
 
 ```
 id          st      sccmec  pvl 
@@ -229,13 +226,13 @@ DRR128207   st772   -       +
 DRR128208   st90    iv      +
 ```
 
-To generate the `Sketchy` reference genotypes in `sketchy genotypes create`:
+To generate the `Sketchy` reference genotypes in `sketchy database create`:
 
 ```
-sketchy-utils create -i genotypes.tsv -s ref.msh --outdir ref --drop id
+sketchy-utils database create --genotypes genotypes.tsv --sketch ref.msh --outdir ref
 ```
 
-This will create a directory with the following files
+This will create a directory `ref/` with the following files:
 
 ```
 ref.msh   # sketch
@@ -287,9 +284,13 @@ In this example, the same data from the Bengal Bay clone is run on the lower res
 
 ## Citations
 
+DOIs can be generated with:
+
+`sketchy cite`
 
 Please cite the following when using `sketchy`:
 
-* Ondov et al. (2019) - `Mash Screen`
+* Ondov et al. (2016) - `Mash`
+* Ondov et al. (2019) - `Mash Screen` (if using screening function)
 * Brinda et al. (2020) - `Genomic neighbor typing`
 * Steinig et al. (2021) - `Sketchy`
