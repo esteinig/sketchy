@@ -246,9 +246,6 @@ class SketchyDiagnostics(PoreLogger):
                         except IndexError:
                             pscores = pscores.sort_index()
 
-                    print(_predictions)
-                    print(pscores)
-
                     _values = []
                     _index_labels = []
                     _column_labels = None
@@ -258,8 +255,6 @@ class SketchyDiagnostics(PoreLogger):
                             (md['sample'] == sample) & (md['method'] == mode)
                         ]
 
-                        print(sample)
-                        print(ref_data)
                         _index_labels.append(sample)
                         _column_labels = ref_data['genotype'].tolist()
                         _values.append([int(b) for b in ref_data['match'].tolist()])
@@ -269,11 +264,6 @@ class SketchyDiagnostics(PoreLogger):
                     ])
 
                     _values = array(_values)
-
-                    print(_values)
-                    print(_predictions)
-                    print(_column_labels)
-                    print(_index_labels)
 
                     self.plot_comparative_heatmap(
                         values=_values, annot=True, cbar=False,
