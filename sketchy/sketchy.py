@@ -1009,11 +1009,13 @@ class SketchyDiagnostics(PoreLogger):
 
             data = data[~data.index.isin(not_in_ref)]
 
-            print(data)
-            print(ref.columns.tolist())
-
-            data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
-
+            try:
+                data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
+            except KeyError:
+                raise KeyError(
+                    "Are your reference genotype columns and database columns used for predictions the same?"
+                )
+            
             summary = []
             comparisons = []
             for db, db_data in data.groupby("db"):
