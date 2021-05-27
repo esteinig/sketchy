@@ -444,6 +444,8 @@ class SketchyDiagnostics(PoreLogger):
 
         if pscores is not None:
             pscores = pscores[column_labels]
+            print(labels)
+            labels = labels[column_labels]
 
             if pscores.index.tolist() != index_labels:
                 print(pscores.index.tolist())
@@ -466,8 +468,6 @@ class SketchyDiagnostics(PoreLogger):
         # color the zero values
         # values = where(values == 0, 0.1, values)
 
-        print(column_labels)
-        print(pscores)
 
         p1 = sns.heatmap(
             pandas.DataFrame(values, index=index_labels, columns=column_labels),
