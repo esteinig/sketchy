@@ -1007,10 +1007,10 @@ class SketchyDiagnostics(PoreLogger):
                 f" {', '.join(not_in_ref if not_in_ref else '-')}"
             )
 
-            print(unique_samples)
-            print(not_in_ref)
-
             data = data[~data.index.isin(not_in_ref)]
+
+            print(data)
+            print(ref.columns.tolist())
 
             data = data[ref.columns.tolist() + ["db", "read_limit", "replicate"]]
 
