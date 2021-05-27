@@ -251,6 +251,8 @@ class SketchyDiagnostics(PoreLogger):
                         except IndexError:
                             pscores = pscores.sort_index()
 
+                    print(_predictions, pscores)
+
                     _values = []
                     _index_labels = []
                     _column_labels = None
