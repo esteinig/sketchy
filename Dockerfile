@@ -21,10 +21,8 @@ RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | s
 
 # Latest Rust client and default sketches
 RUN cargo install sketchy-rs
-RUN mkdir /db && sketchy get --outdir /db
+RUN mkdir /sketches && sketchy get --outdir /sketches
 
 # Latest Python utility client
 RUN pip install git+https://github.com/esteinig/sketchy
-
-
 
