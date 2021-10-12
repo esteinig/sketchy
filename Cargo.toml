@@ -1,13 +1,13 @@
 [package]
 name = "sketchy-rs"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["esteinig <eike.steinig@unimelb.edu.au>"]
 description = "Rust command line client for Sketchy"
 documentation = "https://github.com/esteinig/sketchy"
 homepage = "https://github.com/esteinig/sketchy"
 repository = "https://github.com/esteinig/sketchy"
 readme = "README.md"
-keywords = ["sketchy", "nanopore", "gnt", "mash", "streaming" ]
+keywords = ["sketchy", "nanopore", "gnt", "mash", "streaming"]
 categories = ["science"]
 license = "MIT"
 edition = "2018"
@@ -18,12 +18,14 @@ include = [
 ]
 
 [dependencies]
-dirs = "1.0.5"
+anyhow = "1.0"
+structopt = "0.3"
 clap = "2.33.0"
-cute = "0.3.0"
-indicatif = "0.14.0"
-serde_json = "1.0"
-prettytable-rs = "0.8"
+finch = "0.4.1"
+rayon = "1.5.1"
+needletail = "0.4.1"
+thiserror = "1.0"
+csv = "1.1"
 
 [[bin]]
 name = "sketchy"

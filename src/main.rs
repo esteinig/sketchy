@@ -1,220 +1,41 @@
-extern crate dirs;
-extern crate cute;
-extern crate clap;
-extern crate indicatif;
-extern crate serde_json;
-extern crate prettytable;
+use anyhow::Result;
+use structopt::StructOpt;
+use crate::cli::Cli;
+use crate::cli::Commands::{Sketch, Predict, Info, Shared, Check};
+use crate::sketchy::Sketchy;
 
+mod cli;
 mod sketchy;
 
-use std::io::Error;
-use clap::{Arg, App, AppSettings, SubCommand};
+/// Sketchy application
+///
+/// Run the application from arguments provided
+/// by the command line interface
+///
+/// Hash seed by default is 0; for hashing to 
+/// replicate Mash, seed must be 42.
+fn main() -> Result<()> {    
 
-fn main() -> Result<(), Error> {
+    let args = Cli::from_args();
+    let sketchy = Sketchy::new();
 
-
-    let matches = App::new("sketchy")
-        .setting(AppSettings::SubcommandRequiredElseHelp)
-        .setting(AppSettings::DisableHelpSubcommand)
-        .version("0.5.0")
-        .about("\nGenomic neighbor typing using MinHash\n")
-        .subcommand(SubCommand::with_name("stream")
-            .about("\ncompute cumulative shared hashes score from fasta/q stream")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).help("Fasta/q path or STDIN [-]"))
-            .arg(Arg::with_name("READS").short("r").long("reads").takes_value(true).help("Limit reads to prediction [none]"))
-            .arg(Arg::with_name("RANKS").short("n").long("ranks").takes_value(true).help("Ranked sum of shared hashes [10]"))
-            .arg(Arg::with_name("STABILITY").short("s").long("stability").takes_value(true).help("Reads to stable breakpoint [100]"))
-            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
-            .arg(Arg::with_name("PROGRESS").short("p").long("progress").takes_value(false).help("Progress bar on [false]"))
-            .arg(Arg::with_name("RAW").short("w").long("raw").takes_value(false).help("Print raw sum of shared hashes [false]"))
-            .arg(Arg::with_name("CUMULATIVE").short("c").long("cumulative").takes_value(false).help("Enable cumulative score [false]"))
-        )
-        .subcommand(SubCommand::with_name("predict")
-            .about("\npredict genotypes from sum of shared hashes stream")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted rank genotypes per read [1]"))
-            .arg(Arg::with_name("GENOTYPE").short("g").long("genotype").takes_value(false).help("Print translated genotypes [false]"))
-        )
-        .subcommand(SubCommand::with_name("get")
-            .about("\nget default databases")
-            .version("0.5.0")
-            .arg(Arg::with_name("OUTDIR").short("o").long("outdir").takes_value(true).required(true).help("output directory to extract the databases to [required]"))
-            .arg(Arg::with_name("FNAME").short("f").long("file_name").takes_value(true).required(false).help("file name to pull from sketchy git repository data [default_sketches.tar.xz]"))
-        )
-        .subcommand(SubCommand::with_name("screen")
-            .about("\nquery read set against database with mash screen")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("Fasta/q input path [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
-            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
-            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
-            .arg(Arg::with_name("WINNER").short("w").long("winner").takes_value(false).help("Winner-take-all [false]"))
-        )
-        .subcommand(SubCommand::with_name("dist")
-            .about("\nquery read set against database with mash dist")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("FASTX").short("f").long("fastx").takes_value(true).required(true).help("Fasta/q input path [required]"))
-            .arg(Arg::with_name("LIMIT").short("l").long("limit").takes_value(true).help("Limit predicted genotype output [10]"))
-            .arg(Arg::with_name("THREADS").short("t").long("threads").takes_value(true).help("Maximum threads for Mash [4]"))
-            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
-        )
-        .subcommand(SubCommand::with_name("head")
-            .about("\ndisplay genotype database header")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-            .arg(Arg::with_name("PRETTY").short("p").long("pretty").takes_value(false).help("Pretty print on [false]"))
-        )
-        .subcommand(SubCommand::with_name("check")
-            .about("\ncheck genotype database format")
-            .version("0.5.0")
-            .arg(Arg::with_name("DB").short("d").long("db").takes_value(true).required(true).help("Genomic neighbor typing DB [required]"))
-        )
-        .subcommand(SubCommand::with_name("cite")
-            .about("\noutput citations for sketchy")
-            .version("0.5.0")
-        )
-        .get_matches();
-        
-    if let Some(stream) = matches.subcommand_matches("stream") {
-        
-        let db: String = stream.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        let fastx: String = stream.value_of("FASTX").unwrap_or("-").to_string();
-        let reads: u32 = stream.value_of("READS").unwrap_or("0").parse::<u32>().unwrap();
-        let ranks: usize = stream.value_of("RANKS").unwrap_or("10").parse::<usize>().unwrap();
-        let threads: i32 = stream.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
-        let stability: usize = stream.value_of("STABILITY").unwrap_or("100").parse::<usize>().unwrap();
-        let progress: bool = stream.is_present("PROGRESS");
-        let raw: bool = stream.is_present("RAW");
-        let cumulative: bool = stream.is_present("CUMULATIVE");
-
-        let (sketch_msh, _, genotype_index, _) = sketchy::get_sketch_files(db);
-        let (sketch_size, sketch_index): (usize, usize) = sketchy::get_sketch_info(&sketch_msh);
-
-        sketchy::stream(fastx, sketch_msh, genotype_index, threads, reads, ranks, stability, progress, raw, sketch_index, sketch_size, cumulative).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-        
-    }
-
-    if let Some(screen) = matches.subcommand_matches("screen") {
-        
-        let db: String = screen.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-        
-        let fastx: String = screen.value_of("FASTX").unwrap_or_else(||
-            clap::Error::with_description("Could not find input read file", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        let threads: i32 = screen.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
-        let limit: usize = screen.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
-        let pretty: bool = screen.is_present("PRETTY");
-        let winner: bool = screen.is_present("WINNER");
-
-        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
-
-        sketchy::screen(fastx, sketch_msh, genotypes, threads, limit, pretty, winner).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-
-    }
-    
-    if let Some(dist) = matches.subcommand_matches("dist") {
-        
-        let db: String = dist.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-        
-        let fastx: String = dist.value_of("FASTX").unwrap_or_else(||
-            clap::Error::with_description("Could not find input read file", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        let threads: i32 = dist.value_of("THREADS").unwrap_or("4").parse::<i32>().unwrap();
-        let limit: usize = dist.value_of("LIMIT").unwrap_or("10").parse::<usize>().unwrap();
-        let pretty: bool = dist.is_present("PRETTY");
-
-        let (sketch_msh, genotypes, _, _) = sketchy::get_sketch_files(db);
-
-        sketchy::dist(fastx, sketch_msh, genotypes, threads, limit, pretty).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-
-    }
-
-    if let Some(predict) = matches.subcommand_matches("predict") {
-
-        let db: String = predict.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        let limit: usize = predict.value_of("LIMIT").unwrap_or("1").parse::<usize>().unwrap();
-        let genotype: bool = predict.is_present("GENOTYPE");
-
-        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
-
-        sketchy::predict(genotype_key, limit, !genotype).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-
-    }
-
-    if let Some(get) = matches.subcommand_matches("get") {
-
-        let outdir: String = get.value_of("OUTDIR").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-        
-        let file_name: String = get.value_of("FNAME").unwrap_or("default_sketches.tar.xz").to_string();
-
-        sketchy::get_file(outdir, file_name).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-
-    }
-
-    if let Some(head) = matches.subcommand_matches("head") {
-
-        let db: String = head.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        let pretty: bool = head.is_present("PRETTY");
-
-        let (_, _, _, genotype_key) = sketchy::get_sketch_files(db);
-
-        sketchy::display_header(genotype_key, pretty).map_err(
-            |err| println!("{:?}", err)
-        ).ok();
-
-    }
-
-    if let Some(check) = matches.subcommand_matches("check") {
-
-        let db: String = check.value_of("DB").unwrap_or_else(||
-            clap::Error::with_description("Please input a reference sketch database", clap::ErrorKind::InvalidValue).exit()
-        ).to_string();
-
-        sketchy::get_sketch_files(db);
-        println!("Ok");
-    }
-
-    if let Some(_cite) = matches.subcommand_matches("cite") {
-                
-        println!("\nPlease cite the following authors when using the sketchy client:\n");
-        println!("Ondov   et al. (2016)  : https://doi.org/10.1186/s13059-016-0997-x [stream, dist, screen]");
-        println!("Ondov   et al. (2019)  : https://doi.org/10.1186/s13059-019-1841-x [screen]");
-        println!("Brinda  et al. (2020)  : https://doi.org/10.1038/s41564-019-0656-6 [stream, dist, screen]");
-        println!("Steinig et al. (2021)  : https://doi.org/10.1038/s41564-019-0656-6 [stream, dist, screen]\n");
+    match args.commands {
+        Sketch { input, output, sketch_size, kmer_size, scale, seed } => {
+            sketchy.sketch(input, output, sketch_size, kmer_size, seed, scale)?;
+        },
+        Info { input, build} => {
+            sketchy.info(input, build)?;
+        },
+        Shared { reference, query} => {
+            sketchy.shared(reference, query)?;
+        },
+        Predict { fastx, reference, genotypes, top, limit, online} => {
+            sketchy.predict(fastx, reference, genotypes, top, limit, online)?;
+        }
+        Check { input, genotypes } => {
+            sketchy.check(input, genotypes)?;
+        }
     }
 
     Ok(())
-
 }

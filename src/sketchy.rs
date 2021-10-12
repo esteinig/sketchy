@@ -1,959 +1,467 @@
-/*
 
-@date: November 2019
-@authors: Eike Steinig, Michael Hall
-
-Sketchy computes the sum of shared hashes from STDOUT of MASH
-
-*/
-
-use std::fs;
-use cute::c;
+use std::path::PathBuf;
+use finch::statistics::cardinality;
+use finch::sketch_schemes::{
+    KmerCount, 
+    SketchParams
+};
+use finch::serialization::{
+    Sketch,
+    write_finch_file,
+    read_finch_file,
+    write_mash_file,
+    read_mash_file,
+};
+use needletail::{
+    FastxReader, 
+    parse_fastx_file, 
+    parse_fastx_stdin
+};
+use anyhow::Result;
+use rayon::prelude::*;
+use std::io::BufReader;
 use std::fs::File;
-use std::path::Path;
-use std::cmp::Reverse;
-use std::time::Instant;
-use indicatif::ProgressBar;
-use std::iter::FromIterator;
+use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::io::prelude::*;
+use thiserror::Error;
 
-use serde_json::{Value};
-use prettytable::{Attr, color};
-use std::process::{Command, Stdio};
-use prettytable::{Table, Row, Cell};
-use prettytable::format::{FormatBuilder};
-use std::io::{BufRead, BufReader, Error, ErrorKind};
+#[derive(Error, Debug)]
+pub enum SketchyError {
+    #[error("Reference sketch identifier {0} does not match genotype identifier {1} at line {2}")]
+    InvalidIdentifier(String, String, String),
+    #[error("Reference sketch and genotype table must have the same length")]
+    InvalidSize,
+    #[error("Reference sketch file must have Mash (.msh) or Finch (.fsh) extension")]
+    InvalidExtension,
+    #[error("Reference ({0}) {1} ({2}) does not match query ({3}) {1} ({4})")]
+    InvalidSketchMatch(String, String, String, String, String),
+    #[error("Failed to open file")]
+    IOError(#[from] std::io::Error),
+    #[error("Failed to open file with Finch")]
+    FinchError(#[from] finch::errors::FinchError),
+    #[error("Failed to open genotype file or record with CSV")]
+    GenotypeTableError(#[from] csv::Error),
+    #[error("Failed to open Fastx file or record with Needletail")]
+    FastxError(#[from] needletail::errors::ParseError)
+}
 
-pub fn stream(fastx: String, sketch: String, genotype_index: String, threads: i32, reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, index_size: usize, sketch_size: usize, _static: bool) -> Result<(), Error> {
-    
-    /* Sketchy core compute function for sum of shared hashes from MASH
+/// A `Struct` used for building the formatted
+/// Sketchy reference sketch
+#[derive(Debug, PartialEq)]
+pub struct Sketchy {
+}
 
-    Arguments
-    =========
+impl Sketchy {
+    /// Create a new reference sketch instance
+    pub fn new() -> Self {
+        Sketchy { }
+    }
 
-    sketch:
-        path to input sketch database file in Sketchy created with MASH
-
-    reads:
-        stream (-) of fasta/q reads for input to MASH
-
-    ranks: 
-        extract the <ranks> highest ranking sum of shared hashes of each read to STDOUT
-
-    index_size: 
-        size of sketch index, required for continuous parsing of reads from MASH
-    
-    sketch_size: 
-        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
-
-    */
-
-
-    if fastx != "-" {
-        if !Path::new(&fastx).exists(){
-            clap::Error::with_description("Could not detect FASTX", clap::ErrorKind::InvalidValue).exit();
+    /// Prediction method for Sketchy
+    /// 
+    /// Implement documentation.
+    pub fn predict(&self, fastx: Option<PathBuf>, reference: PathBuf, genotypes: PathBuf, top_results: usize, read_limit: usize, online: bool) -> Result<(), SketchyError> {
+        let reference_sketches = self._read_sketch(reference)?;
+        let reference_params = &reference_sketches[0].sketch_params;
+        
+        let mut min_scale = 0.;
+        if let Some(ref_scale) = reference_params.hash_info().3 {
+            min_scale = ref_scale;
+        } 
+        
+        let fastx_reader = match fastx {
+            Some(file) => parse_fastx_file(file)?,
+            None => parse_fastx_stdin()?
         };
-    };
 
-    let mash_args = [
-        "dist", "-p", &*format!("{}", threads), "-i", &*format!("{}", sketch), &*format!("{}", fastx)
-    ];
+        let geno = self._read_genotypes(&genotypes)?;
+        let geno_map = self._genotype_hashmap(geno)?;
 
-    let mash_dist_stream = Command::new("mash") // system call to MASH   
-        .args(&mash_args)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from MASH."))?;
-
-    // SKETCHY - SUM OF SHARED HASHES
-
-    let mash_reader = BufReader::new(mash_dist_stream);
-    let tail_index: usize = sketch_size.to_string().len(); // <tail_index> to reach shared hashes
-    
-    let data_file = File::open(&genotype_index)?;
-    let data_reader = BufReader::new(data_file);
-
-    sum_of_shared_hashes(mash_reader, data_reader, tail_index, index_size, reads, ranks, stability, progress, raw, _static).map_err(
-        |err| println!("{:?}", err)
-    ).ok();
-
-    Ok(())
-}
-
-pub fn screen(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool, winner: bool) -> Result<(), Error> {
-    
-    /* Sketchy screening of species-wide reference sketches using `mash screen` and genomic neighbor inference
-
-    Arguments
-    =========
-
-    fastx:
-        fasta/q reads input path for mash screen
-
-    sketch:
-        path to input sketch database file in Sketchy created with MASH
-    
-    features:
-        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
-
-    index_size: 
-        size of sketch index, required for continuous parsing of reads from MASH
-    
-    sketch_size: 
-        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
-
-    */
-
-    let _threads = &*format!("{}", threads);
-    let _fastx = &*format!("{}", fastx);
-    let _sketch = &*format!("{}", sketch);
-
-    let mut mash_args = vec![
-        "screen", "-p", _threads, _sketch, _fastx 
-    ];
-
-    if winner {
-        mash_args.push("-w")
-    };
-
-    let screen_out = Command::new("mash") // system call to MASH   
-        .args(&mash_args)
-        .stderr(Stdio::null())
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(
-            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
-        )?;
-    
-    let screen_sorted = Command::new("sort")
-        .arg("-gr")
-        .stdin(screen_out)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from SORT"))?;
-
-
-    let reader = BufReader::new(screen_sorted);
-    
-    let mut table = Table::new();
-    
-    if !pretty {
-        let raw = FormatBuilder::new().column_separator('\t').build();
-        table.set_format(raw);
-    }
-
-    for (_i, line) in reader.lines().enumerate() {
-
-        if _i >= limit {
-             break   
-        }
-
-        let line = line?;
-        let values: Vec<&str> = line.split_whitespace().collect();   
-                
-        let _identity: &str = values[0];
-        let _shared_hashes: &str = values[1];
-
-        let _sketch_id: &str = values[4];
-
-        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
-        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
-
-        let _id_values: Vec<&str> = _name.split(".").collect();
-        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
-        
-        let contents = std::fs::read_to_string(&genotypes)?;
-
-        let _grep_results = grep(&_id, &contents); 
-        let _genotype_str = _grep_results[0]; // there is only ever one unique id
-
-        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
-
-        let _screen_rank: &str = &(_i+1).to_string();
-
-        let mut screen_row = Row::new(vec![
-            Cell::new(_screen_rank),
-            Cell::new(_identity),
-            Cell::new(_shared_hashes)
-        ]);
-
-        for x in _genotype_values.iter() {
-            screen_row.add_cell(Cell::new(x).with_style(Attr::ForegroundColor(if x == &"R" { color::RED } else { color::WHITE } )));
-        }; 
-        
-        table.add_row(screen_row);
-            
-    };
-
-    table.printstd();
-
-    Ok(())
-}
-
-pub fn get_file(outdir: String, file_name: String) -> Result<(), Error>  {
-
-    /*
-     Download compressed default databases from GitHub repository (k = 15, s = 1000)
-    */
-    
-    let db_path = Path::new(&outdir);
-
-    if !db_path.exists() {
-        fs::create_dir_all(db_path)?;
-    }
-    
-    let url = "https://raw.githubusercontent.com/esteinig/sketchy/v0.5.0/data/".to_owned() + &file_name;
-    let target = db_path.join(&file_name).as_path().display().to_string();
-
-
-    let args1 = vec!["-O", &target, &url, " && tar xf", &target];
-
-    let _ = Command::new("wget") 
-        .args(&args1)
-        .output()
-        .expect("Failed to run: WGET");
-
-    let args2 = vec!["xf", &target, "-C", db_path.to_str().unwrap()];
-
-    let _ = Command::new("tar") 
-        .args(&args2)
-        .output()
-        .expect("Failed to run: TAR");
-
-    let args3 = vec![&target];
-
-    let _ = Command::new("rm") 
-        .args(&args3)
-        .output()
-        .expect("Failed to run: RM");
-
-    Ok(())
-
-}
-
-
-
-pub fn dist(fastx: String, sketch: String, genotypes: String, threads: i32, limit: usize, pretty: bool) -> Result<(), Error> {
-    
-    /* Sketchy screening of species-wide reference sketches using `mash dist` and genomic neighbor inference
-
-    Arguments
-    =========
-
-    fastx:
-        fasta/q reads input path for mash screen
-
-    sketch:
-        path to input sketch database file in Sketchy created with MASH
-    
-    features:
-        prepared feature index for evaluation, numeric categorical feature columns, row order as sketch
-
-    index_size: 
-        size of sketch index, required for continuous parsing of reads from MASH
-    
-    sketch_size: 
-        sketch size used to construct sketch in MASH, required for fast clipping tail of line output
-
-    */
-
-
-    let mash_args = [
-        "dist", "-p", &*format!("{}", threads), "-r", &*format!("{}", sketch), &*format!("{}", fastx)
-    ];
-
-    let dist_out = Command::new("mash") // system call to MASH   
-        .args(&mash_args)
-        .stderr(Stdio::null())
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(
-            || Error::new(ErrorKind::Other, "Could not capture standard output from MASH SCREEN")
-        )?;
-    
-    let dist_sorted = Command::new("sort")
-        .arg("-k5nr")
-        .stdin(dist_out)
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other, "Could not capture standard output from SORT"))?;
-
-
-    let reader = BufReader::new(dist_sorted);
-    
-    let mut table = Table::new();
-    
-    if !pretty {
-        let raw = FormatBuilder::new().column_separator('\t').build();
-        table.set_format(raw);
-    }
-
-    for (_i, line) in reader.lines().enumerate() {
-
-        if _i >= limit {
-             break   
-        }
-
-        let line = line?;
-        let values: Vec<&str> = line.split_whitespace().collect();   
-
-                
-        let _sketch_id: &str = values[0];
-        
-        let _dist: &str = values[2];
-        let _shared_hashes: &str = values[4];
-
-        let _name_values: Vec<&str> = _sketch_id.split("/").collect();
-        let _name: &str = _name_values.last().expect("Failed to get name from sketch reference identifier");
-
-        let _id_values: Vec<&str> = _name.split(".").collect();
-        let _id: &str = _id_values.first().expect("Failed to get unique identifier from sketch reference file name");
-        
-        let contents = std::fs::read_to_string(&genotypes)?;
-
-        let _grep_results = grep(&_id, &contents); 
-        let _genotype_str = _grep_results[0]; // there is only ever one unique id
-
-        let _genotype_values: Vec<&str> = _genotype_str.split("\t").collect();
-
-        let _screen_rank: &str = &(_i+1).to_string();
-
-        let mut screen_row = Row::new(vec![
-            Cell::new(_screen_rank),
-            Cell::new(_dist),
-            Cell::new(_shared_hashes)
-        ]);
-
-        for x in _genotype_values.iter() {
-            screen_row.add_cell(Cell::new(x).with_style(Attr::ForegroundColor(if x == &"R" { color::RED } else { color::WHITE } )));
-        }; 
-        
-        table.add_row(screen_row);
-            
-    };
-
-    table.printstd();
-
-    Ok(())
-}
-
-pub fn predict(genotype_key: String, limit: usize, raw: bool) -> Result<(), Error>{
-
-    /* Predict the genotype using either top running total match (mode = total) or last highest ranked match (mode = last)  */
-
-    let key_file = File::open(genotype_key)?;
-    let reader = BufReader::new(key_file);
-
-    let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
-    
-    let mut _read_tracker: Vec<String> = vec!["0".to_string()]; // read change tracker
-    let mut read_prediction: HashMap<usize, Vec<String>> = HashMap::new();
-
-    let stdin = std::io::stdin();
-    let stdin_reader = BufReader::new(stdin);
-
-    for (_i, line) in stdin_reader.lines().enumerate() {
-        
-        let line = line?;
-        let content: Vec<String> = line.trim().split("\t").map(
-            |x| x.parse::<String>().unwrap()
-        ).collect();
-
-        let read = &content[0];
-
-        if !raw && !_read_tracker.contains(read) {
-
-            // At the start of a new read:
-
-            _read_tracker[0] = read.to_string(); // reset read tracker vec
-            
-            // prepare the variables for genotype reconstruction
-            let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
-            let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
-            let _max_genotype_ranks: &usize = _lengths.iter().max().unwrap();
-            let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
-            let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
-            
-            // iterate over genotype ranks ...
-            for rank in 0..=*_max_genotype_ranks {
-
-                let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
-                for i in 0..=*_max_genotype_categories {  // ... iterate over genotype categories ...
-                    let category = &read_prediction[&i];
-                    let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
-                        Some(value) => value,
-                        None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
-                    };
-                    genotype.push(prediction.to_string()); // ... add prediction to genotype
-                }
-                let genotype_str = genotype.join("\t");
-
-                println!("{}\t{}", &read, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
-                
-                if rank+1 >= limit {
-                    break
-                }
-            }
-            
-            read_prediction.clear();
-
-        }
-
-        let feature_value: usize = content[2].parse::<usize>().unwrap();
-        let feature_key: usize = content[1].parse::<usize>().unwrap();
-
-        let feature_data = &feature_translation[&feature_key];
-        let feature_name: String = feature_data["name"].as_str().unwrap().to_string();
-        let feature_prediction: &String = &feature_data["values"][feature_value].as_str().unwrap().trim().to_string();
-        
-        // read, feature, feat_value, feat_rank, sssh_score, stable, preference_score
-        if raw {
-            println!("{}\t{}\t{}\t{}\t{}\t{}\t{}", read, feature_name, feature_prediction, &content[3], &content[4], &content[5], &content[6]);
+        if online {
+            self._sum_of_shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit)?;
         } else {
-            // Add this to enable genotype reconstruction for each read
-            read_prediction.entry(feature_key)
-            .or_insert(vec![])
-            .push(feature_prediction.to_string());
+            self._shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit)?;
         }
 
+        Ok(())
+
+    }
+    /// Sketch building method for Sketchy
+    /// 
+    /// Implement documentation.
+    pub fn sketch(&self, input: Option<Vec<PathBuf>>, output: PathBuf, sketch_size: usize, kmer_size: u8, seed: u64, scale: f64) -> Result<(), SketchyError>{
+        
+        let files = match input {
+            None => {
+                let stdin = std::io::stdin();
+                let files = stdin.lock().lines().map(
+                    |x| PathBuf::from(x.unwrap())
+                ).collect();
+                files
+            },
+            Some(f) => f
+        };
+        
+        let sketch_params = self._get_sketch_params_from_extension(
+            &output, sketch_size, kmer_size, scale, seed
+        )?;
+
+        let mut writer = File::create(&output)?;
+        let sketches = self._sketch_files(&sketch_params, files)?;
+
+        match &sketch_params {
+            SketchParams::Mash { .. } => {
+                write_mash_file(&mut writer, &sketches)?;
+            },
+            SketchParams::Scaled { .. } => {
+                write_finch_file(&mut writer, &sketches)?;
+            },
+            SketchParams::AllCounts { .. } => unreachable!()  // no AllCounts from Sketchy::new()
+        }
+
+        Ok(())
+
+    }
+    /// Information method for Sketchy
+    /// 
+    /// Given a sketch input, list the sketch identifiers, the size of the sequence the
+    /// sketch was build from (bp) and the estimated  uniqueness of the sequence (bp)
+    pub fn info(&self, input: PathBuf, build: bool) -> Result<(), SketchyError> {
+        
+        let sketches = self._read_sketch(input)?;
+
+        if build {
+            let rep_sketch = &sketches[0];  // assumes all sketch params same 
+            let rep_params = &rep_sketch.sketch_params;
+
+            match rep_params {
+                SketchParams::Scaled { kmers_to_sketch, kmer_length, scale, hash_seed} => {
+                    println!{"type=scaled sketch_size={:} kmer_size={:} scale={:} seed={:}", kmers_to_sketch, kmer_length, scale, hash_seed}
+                },
+                SketchParams::Mash { kmers_to_sketch, final_size: _, kmer_length, no_strict: _, hash_seed} => {
+                    println!{"type=mash sketch_size={:} kmer_size={:} seed={:}", kmers_to_sketch, kmer_length, hash_seed}
+                },
+                SketchParams::AllCounts { .. }  => unimplemented!()
+            };
+        } else {
+            for sketch in &sketches {
+                let kmers = &sketch.hashes;
+                if let Ok(c) = cardinality(kmers) {
+                    println!("{} {} {}", &sketch.name, &sketch.seq_length, c);
+                }
+            }
+        }
+        Ok(())
+    }
+    /// Checks that sketches in the input refernce sketch and identifiers in
+    /// the genotype table are in the same order and that the reference sketch
+    /// colelction and genotype table are of the same size
+    pub fn check(&self, input: PathBuf, genotypes: PathBuf) -> Result<(), SketchyError> {
+        
+        let sketches = self._read_sketch(input)?;
+        let genotype_data = self._read_genotypes(&genotypes).expect("Could not read genotype file");
+        
+        // Check for same order of identifiers in sketch and genotype table
+        for (i, (sketch, genotype)) in sketches.iter().zip(&genotype_data).enumerate() {
+            match sketch.name == genotype[0] {
+                true => continue,
+                false => SketchyError::InvalidIdentifier(sketch.name.to_owned(), genotype[0].to_owned(), i.to_string())
+            };
+        }
+        // Check for same size of sketch collection and genotype table
+        if &sketches.len() != &genotype_data.len(){
+            Err(SketchyError::InvalidSize)
+        } else {
+            Ok(())
+        }
+    }
+    /// Compute and print shared hashes between reference and query sketches
+    pub fn shared(&self, reference: PathBuf, query: PathBuf) -> Result<(), SketchyError> {
+
+        // TODO: check compatibility of sketch parameters
+        let reference_sketches = self._read_sketch(reference)?;
+        let query_sketches = self._read_sketch(query)?;
+        
+        // Scale of sketches is inferred from first sketch in file --> might need to implement
+        // an empty file check which is not implmented in the finch::readers
+        let mut min_scale = 0.;
+        if let Some(scale1) = &query_sketches[0].sketch_params.hash_info().3 { // assumes all sketch params same 
+            if let Some(scale2) = &reference_sketches[0].sketch_params.hash_info().3 { // assumes all sketch params same 
+                min_scale = f64::min(*scale1, *scale2);
+            }
+        }
+        // Pairwise shared hashes computation
+        for ref_sketch in &reference_sketches {
+            for query_sketch in &query_sketches {
+                let compatible = ref_sketch.sketch_params.check_compatibility(&query_sketch.sketch_params);
+                let common = match compatible {
+                    None => {
+                        Ok(self._common_hashes(&ref_sketch.hashes, &query_sketch.hashes, min_scale))
+                    },
+                    Some(incomp) => Err(SketchyError::InvalidSketchMatch(
+                        ref_sketch.name.to_owned(), incomp.0.to_string(), incomp.1, query_sketch.name.to_owned(), incomp.2
+                    ))
+                };
+                println!("{:} {:} {:}", ref_sketch.name, query_sketch.name, common.unwrap());  // unwrap should be safe here
+            }
+        };
+        Ok(())
     }
 
-    // Output last genotype in stream
-    if !raw {
-        
-        let read: i32 = _read_tracker[0].parse::<i32>().unwrap();
+    fn _shared_hashes(
+        &self, 
+        mut fastx_reader: Box<dyn FastxReader>, 
+        reference_params: &SketchParams, 
+        reference_sketches: &Vec<Sketch>, 
+        geno_map: HashMap<String, String>, 
+        min_scale: f64, 
+        top_results: usize,
+        read_limit: usize
+    ) -> Result<(), SketchyError>  {
 
-        // prepare the variables for genotype reconstruction
-        let _values: Vec<Vec<String>> = read_prediction.values().cloned().collect();
-        let _lengths: Vec<usize> = _values.iter().map(|x| x.len()).collect();
-        let _max_genotype_ranks: &usize = _lengths.iter().max().unwrap();
-        let _keys: Vec<usize> = read_prediction.keys().cloned().collect();
-        let _max_genotype_categories: &usize = _keys.iter().max().unwrap();
-
-        // iterate over genotype ranks ...
-        for rank in 0..=*_max_genotype_ranks {
-
-            let mut genotype: Vec<String> = vec![]; // ... start a new genotype at this rank ...
-            for i in 0..=*_max_genotype_categories {  // ... iterate over genotype categories ...
-                let category = &read_prediction[&i];
-                let prediction = match category.get(rank) {  // ... get prediction for this category and rank ...
-                    Some(value) => value,
-                    None => category.last().unwrap()  // ... fill with higher ranked genotypes if no other predicted at this rank...
-                };
-                genotype.push(prediction.to_string()); // ... add prediction to genotype
-            }
-            let genotype_str = genotype.join("\t");
-
-            println!("{}\t{}", read+1, &genotype_str); // here the previous genotype is labeled with new read (first read index: 1 instead of 0) 
-            
-            if rank+1 >= limit {
+        // Sketcher is created for all reads
+        let mut sketcher = reference_params.create_sketcher();
+        // Kmers are extracted for all reads
+        let mut read = 0;
+        while let Some(record) = fastx_reader.next() {
+            sketcher.process(record?);
+            read += 1;
+            if read == read_limit {
                 break
             }
         }
-    }
-    
-
-    Ok(())
-
-}
-
-pub fn display_header(genotype_key: String, pretty: bool) -> Result<(), Error> {
-
-    let mut table = Table::new();
-    
-    if !pretty {
-        let raw = FormatBuilder::new().column_separator('\t').build();
-        table.set_format(raw);
-    }
-
-    let header_row = get_header_row(genotype_key).unwrap();
-
-    table.add_row(header_row);
-
-    table.printstd();
-
-    Ok(())
-}
-
-fn get_header_row(genotype_key: String) -> Result<Row, Error> {
-
-    let key_file = File::open(genotype_key)?;
-    let reader = BufReader::new(key_file);
-    
-    let feature_translation: HashMap<usize, Value> = serde_json::from_reader(reader)?;
-    let mut keys: Vec<usize> = feature_translation.keys().cloned().collect();
-
-    keys.sort();
-    
-    let mut header_row = Row::new(vec![]);
-    for key in keys.iter() {
-        header_row.add_cell(
-            Cell::new(feature_translation[&key]["name"].as_str().unwrap())
-        );
-    }
-
-    Ok(header_row)
-}
-
-fn sum_of_shared_hashes<R: BufRead>(
-    reader: R, data_reader: BufReader<File>, tail_index: usize, index_size: usize, 
-    reads: u32, ranks: usize, stability: usize, progress: bool, raw: bool, cumulative: bool
-) -> Result<(), Error> {
-    
-    /* Sum of shared hashes core function */ 
-
-    let bar = if progress {
-        ProgressBar::new_spinner()
-    } else {
-        ProgressBar::hidden()
-    };
-
-    let start = Instant::now();
-    
-    // Ranked sums of sum of shared hashes (by feature) for evaluation
-
-    let mut feature_data = vec![];
-    for (_i, line) in data_reader.lines().enumerate() {
-        let line = line?;
-        let vec: Vec<i32> = line.trim()
-            .split("\t").map(
-                |x| x.parse::<i32>().unwrap()  // catch error here: non i32 value in genotype index (i32 for -1 missing data)
-            )
-            .collect(); 
-        feature_data.push(vec);
-    }
-    
-    // Init the feature map
-
-    let number_features = feature_data[0].len();
-    let mut sssh: HashMap<usize, HashMap<usize, usize>> = c!{
-        fidx => HashMap::new(), for fidx in 0..number_features
-        };
-
-    let mut top_predictions: HashMap<usize, Vec<usize>> = c!{
-        fidx => vec![], for fidx in 0..number_features
-        };
-     
-    
-    let mut idx: usize = 0;
-    let mut read: u32 = 0; // max 4b reads in stream
-    let mut sum_shared_hashes: Vec<u32> = vec![0; index_size]; // max 4b ssh score in stream
-  
-    for line in reader.lines(){
-
-        let line = line?;
+        // Hashed kmers and counts are extracted across all reads
+        let read_hashes = sketcher.to_vec();
         
-        let shared_hashes = get_shared_hashes(&line, tail_index).parse::<u32>().unwrap();
-
-        sum_shared_hashes[idx] += shared_hashes; // update sum of shared hashes
-
-        // at sketch index end: output ranked ssh + reset for next read
-        if idx == index_size-1 {
-            
-            bar.tick();
-
-            if reads > 0 && read >= reads {
-                break;  // break at read limit if defined, otherwise read limit = 0
-            }
-
-            // collect the index of the current sum of shared hashes
-            let mut ssh_index: Vec<(usize, &u32)> = sum_shared_hashes.iter().enumerate().collect();
-            // sort indexed and updated ssh scores  
-            ssh_index.sort_by_key(|k| k.1);
-            // collect the highest ranked ssh scores and their indices
-            let ranked_ssh: Vec<(usize, &u32)> = ssh_index.drain(index_size-ranks..).collect();
-            
-            // write ranked ssh block for this read
-            for (rank, (ix, ssh)) in ranked_ssh.iter().rev().enumerate() {                    
-                
-                if raw {
-                    println!("{}\t{}\t{}\t{}", ix, ssh, rank, read); // ssh scores
-                    continue;
-                } 
-                
-                let ssh: usize = **ssh as usize;
-
-                // feature evaluation block
-                if rank == 0 {
-
-                    /* Start of new read in `sketchy compute` output block after <rank> rows
-                    Since we report the sum at the start of each new read (at rank == 0)
-                    we need to skip the first (non-summed) read, and report again when the
-                    last read block is completed and no rank == 0 can be encountered ...  */
-        
-                    if read > 0 {
-        
-                        for (feature, fm) in sssh.iter(){
-        
-                            // Get a sorted feature map as vector
-                            let sorted_feature_map = get_sorted_feature_map(&fm);
-                            // Compute Brinda et al. (2019) preference score on SSSH
-                            let preference_score = compute_preference_score_sssh(&sorted_feature_map);
-        
-                            // Add top feature value to feature vector map:
-                            top_predictions.entry(*feature)
-                                            .or_insert_with(Vec::new)  // prevented by init of vecmap above
-                                            .push(*sorted_feature_map[0].0);
-                            
-                            let stable = evaluate_stability(&top_predictions[feature], stability);
-        
-                            for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
-                                println!(
-                                    "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}",
-                                    read-1, feature, feat_value, feat_rank, sssh_score, stable, preference_score
-                                )
-                            }
-                        }
-                        // Clear the feature sssh scores for next read (read-by-read sssh, otherwise total cumulative sssh)
-                        if !cumulative {
-                            for (_, feature_map) in sssh.iter_mut(){
-                                feature_map.clear()    
-                            }
-                        }
-                    }
-                }
-
-                // This needs to be after, so that at each rank = 0 the purged feature map can be properly populated
-                let feature_row = &feature_data[*ix];
-
-                // Iterate mutable over feature keys
-                for (key, feature_map) in sssh.iter_mut() {
-                    let feature_value = feature_row[*key];
-                    // Add ssh score to feature value in feature map, or init with 0
-                    let feature_value_sssh = feature_map.entry(feature_value as usize).or_insert(0);
-                    *feature_value_sssh += ssh;
-                }
-
-            }
-            // sketch index end for this read
-            idx = 0; read += 1;
-        
-        } else { idx += 1; } // in sketch index
-
-    };
-
-    // Last read in stream if not limited 
-    // raw output (without sssh mapping)
-    if !raw {
-        // repeat the sorted feature output block  
-        for (feature, fm) in sssh.iter(){
-            // Get a sorted feature map as vector
-            let sorted_feature_map = get_sorted_feature_map(&fm);
-            // Compute Brinda et al. (2019) preference score on SSSH
-            let preference_score = compute_preference_score_sssh(&sorted_feature_map);
-            // Add top feature value to feature vector map:
-            top_predictions.entry(*feature)
-                            .or_insert_with(Vec::new)  // prevented by init of vecmap above
-                            .push(*sorted_feature_map[0].0);
-            let stable = evaluate_stability(&top_predictions[feature], stability);
-
-            for (feat_rank, (feat_value, sssh_score)) in sorted_feature_map.iter().enumerate() {
-                println!(
-                    "{}\t{}\t{}\t{}\t{}\t{}\t{:.8}", 
-                    read-1, feature, feat_value, feat_rank, sssh_score, stable, preference_score
-                )
-            }
+        let mut result_vec = vec!();
+        for ref_sketch in reference_sketches {
+            // Shared hashes are computed for each ref sketch
+            let shared_hashes = self._common_hashes(
+                &ref_sketch.hashes, &read_hashes, min_scale
+            );
+            result_vec.push((&ref_sketch.name, shared_hashes, &geno_map[&ref_sketch.name]));
         }
-    }
-    
+        result_vec.sort_by(|a, b| b.1.cmp(&a.1));
 
-    let duration = start.elapsed();
-    let msg = read.to_string() + " reads / " + &(duration.as_millis()/1000).to_string() + " seconds";
-
-    bar.finish_with_message(&msg);
-    
-    Ok(())
-}
-
-
-#[test]
-fn test_mash_dist() {
-    
-    /* Test dependency MASH DIST in $PATH */
-
-    let _stdout = Command::new("mash")  
-        .args(&["dist", "-h"])
-        .output()
-        .expect("Failed to run MASH DIST");
-
-}
-
-
-#[test]
-fn test_grep_one_result() {
-    let query = "duct";
-    let contents = "\
-        Rust:
-        safe, fast, productive.
-        Pick three.";
-    assert_eq!(vec!["safe, fast, productive."], grep(query, contents));
-}
-
-
-pub fn grep<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-
-    results
-}
-
-pub fn get_sketch_files(db: String)  -> (String, String, String, String) {
-    
-    /* Get sketch files from database path and perform checks */
-
-    
-    let db_path = Path::new(&db);
-    let _db_name = db_path.file_name().unwrap().to_str().unwrap();
-
-    if !db_path.exists() {
-        clap::Error::with_description("Database sketch directory is not available", clap::ErrorKind::InvalidValue).exit();
-    };
-
-    let db_sketch = db_path.join(
-        format!("{}.msh", _db_name)
-    );
-    let db_genotypes = db_path.join(
-        format!("{}.tsv", _db_name)
-    );
-    let db_index = db_path.join(
-        format!("{}.idx", _db_name)
-    );
-    let db_key = db_path.join(
-        format!("{}.key", _db_name)
-    );
-
-    if !db_sketch.exists(){
-        clap::Error::with_description("Database sketch is missing sketch file (.msh)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_genotypes.exists(){
-        clap::Error::with_description("Database sketch is missing genotype file (.tsv)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_index.exists(){
-        clap::Error::with_description("Database sketch is missing index file (.idx)", clap::ErrorKind::InvalidValue).exit();
-    };
-    if !db_key.exists(){
-        clap::Error::with_description("Database sketch is missing key file (.key)", clap::ErrorKind::InvalidValue).exit();
-    };
-
-    (
-        db_sketch.to_str().unwrap().to_string(),
-        db_genotypes.to_str().unwrap().to_string(),
-        db_index.to_str().unwrap().to_string(),
-        db_key.to_str().unwrap().to_string()
-    )
-    
-}
-
-
-pub fn get_sketch_info(sketch: &String) -> (usize, usize) {
-    
-    /* Get sketch size and number of sketches from sketch file */
-
-    let info = Command::new("mash")
-        .args(&["info", "-H", &*format!("{}", sketch)])
-        .output()
-        .expect("Failed to run MASH INFO");
-
-    let info_lines = std::str::from_utf8(&info.stdout).unwrap().lines();
-
-    let mut return_values = vec![];    
-    for (i, line) in info_lines.enumerate() {
-        if i == 4 || i == 5 {
-            let values: Vec<&str> = line.split_whitespace().collect();            
-            let value: usize = values.last().unwrap().parse().unwrap();
-            return_values.push(value);
-        }
-    }
-
-    (return_values[0], return_values[1])
-}
-
-#[test]
-fn test_mash_info() {
-    
-    /* Test dependency MASH INFO in $PATH */
-
-    let _info = Command::new("mash")
-        .args(&["info", "-h"])
-        .output()
-        .expect("Failed to run MASH INFO");
-
-}
-
-#[test]
-fn test_get_sketch_info() {
-    
-    /* Test obtaining sketch size and number of sketches from sketch file */
-
-    let sketch_file: String = String::from("src/data/test_mash.msh");
-    let expected_values: (usize, usize) = (1000, 2);
-
-    let return_values = get_sketch_info(&sketch_file);
-
-    assert_eq!(return_values, expected_values);
-
-}
-
-fn get_shared_hashes(input: &str, tail_index: usize) -> String {
-
-    /* Parse shared hashes from input line string
-
-    Arguments
-    =========
-
-    input: 
-        line str to extract sum of shared hashes from
-
-    tail_index: 
-        shared hashes char collection starts at tail_index+1 of reverse line
-    
-
-    Description
-    ===========
-
-    This function is critical for speed as splitting the line string appears slow, and the 
-    reverse line string pattern much faster. It iterates over the reversed line to extract 
-    the shared hashes defined as numerics after <tail_index> breaking on first non-numeric.
-
-    Shared hashes start after (not including) <tail_index> = len(sketch_size as str) ("/") in 
-    reversed line; insert to front of an empty string reconstructs the correct number of 
-    shared hashes as string to return.
-
-    */
-
-    let mut output = String::new();
-    for (i, c) in input.chars().rev().enumerate() {
-        if i > tail_index  {
-            if c.is_numeric()  {
-                output.insert(0, c)
+        for (i, (name, shared_hashes, genotype)) in result_vec.iter().enumerate() {
+            if top_results > 0 && i+1 > top_results {
+                break
             } else {
-                break;
+                println!("{:}\t{:}\t{:}", name, shared_hashes, genotype);
             }
         }
-
-    }
-    output
-}
-
-
-#[test]
-fn test_get_shared_hashes() {
-
-    /* Test the get_shared_hashes function to extract shared hashes from line string */
-
-    let sketch_size: usize = 1000;
-    let default_tail_index: usize = sketch_size.to_string().len();
-
-    let line_default = "ThisIs\tATestLine\t3/1000";
-    assert_eq!(get_shared_hashes(line_default, default_tail_index), "3");
-
-    let line_multiple_numeric_shared_hashes = "ThisIs\tATestLine\t42/1000";
-    assert_eq!(get_shared_hashes(line_multiple_numeric_shared_hashes, default_tail_index), "42"); 
-
-    let line_numeric_before_sep = "ThisIs\tATestLine0\t3/1000";
-    assert_eq!(get_shared_hashes(line_numeric_before_sep, default_tail_index), "3");
-    
-    let line_without_preceding_sep = "ThisIs\tATestLine3/1000";
-    assert_eq!(get_shared_hashes(line_without_preceding_sep, default_tail_index), "3");
-    
-    let line_with_newline = "ThisIs\tATestLine\t3/1000\n";
-    assert_ne!(get_shared_hashes(line_with_newline, default_tail_index), "3"); 
-
-    // wrong <tail_index> terminates at "/"
-    assert_eq!(get_shared_hashes(line_default, 0), "100");
-
-}
-
-fn compute_preference_score_sssh(feature_map: &Vec<(&usize, &usize)>) -> f64 {
-    if feature_map.len() < 2 {
-        1.0
-    } else {
-        let primary = *feature_map[0].1 as f64;
-        let secondary = *feature_map[1].1 as f64;
-
-        if secondary == 0.0 {
-            0.0
-        } else {
-            let numerator = 2.0 * primary;
-            let denominator = primary + secondary;
-
-            (numerator / denominator) - 1.0
-        }
-    }
-
-}
-
-fn evaluate_stability(top_vec: &Vec<usize>, breakpoint: usize) -> usize {
-
-    let len = top_vec.len();
-
-    if len < breakpoint {
-        0
-    } else {
-
-        let mut last_predictions: Vec<&usize> = top_vec.iter().rev().take(breakpoint).collect();
-        last_predictions.dedup();
-        let uniques = last_predictions.len();
-
-        if uniques == 1 {
-            1
-        } else {
-            0
-        }
+        Ok(())
 
     }
 
-}
-
-fn get_sorted_feature_map(fm: &HashMap<usize, usize>) -> Vec<(&usize, &usize)> {
+    fn _sum_of_shared_hashes(
+        &self, 
+        mut fastx_reader: Box<dyn FastxReader>, 
+        reference_params: &SketchParams, 
+        reference_sketches: &Vec<Sketch>, 
+        geno_map: HashMap<String, String>, 
+        min_scale: f64,
+        top_results: usize,
+        read_limit: usize
+    ) -> Result<(), SketchyError> {
         
-    let mut feature_map = Vec::from_iter(fm);
-    feature_map.sort_by_key(|k| Reverse(k.1));
+        let mut sum_of_shared_hashes = vec![0; reference_sketches.len()];
+        let mut read = 0;
+        while let Some(record) = fastx_reader.next() {
+            let mut result_vec = vec!();
+            // At each read we create a new sketcher based on the reference sketch
+            let mut sketcher = reference_params.create_sketcher();
+            // Kmers are then extracted for the record and hashed
+            sketcher.process(record?);
+            // Hashed kmers and counts are extracted for this read
+            let read_hashes = sketcher.to_vec();
+            // With each read, we compute the shared hashes with the reference sketch
+            for (i, ref_sketch) in reference_sketches.iter().enumerate() {
+                let shared_hashes = self._common_hashes(
+                    &ref_sketch.hashes, &read_hashes, min_scale
+                );
+                // Finally the sum of shared hashes are updated
+                sum_of_shared_hashes[i] += shared_hashes;
+                result_vec.push((&ref_sketch.name, sum_of_shared_hashes[i], &geno_map[&ref_sketch.name]));
+            }
+            result_vec.sort_by(|a, b| b.1.cmp(&a.1));
+            for (i, (name, shared_hashes, genotype)) in result_vec.iter().enumerate() {
+                if top_results > 0 && i+1 > top_results {
+                    break
+                } else {
+                    println!("{:}\t{:}\t{:}\t{:}", read+1, name, shared_hashes, genotype);
+                }
+            }
+            read += 1;
+            if read == read_limit {
+                break
+            }
+        }
+        Ok(())
+    }
 
-    return feature_map
+    /// Analogue of `finch::distance::raw_distance` reduced to extracting common hashes
+    ///
+    /// Assumes hashes are sorted - not sure if need to implement the check here, in particular
+    /// because we implement a read-by-read shared hashes computation in the prediction method
+    /// and this may increase cost in the end. Need to test.
+    fn _common_hashes(&self, ref_hashes: &[KmerCount], query_hashes: &[KmerCount], min_scale: f64) -> u64 {
+
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+        let mut common: u64 = 0;
+        while let (Some(query), Some(refer)) = (query_hashes.get(i), ref_hashes.get(j)) {
+            match query.hash.cmp(&refer.hash) {
+                Ordering::Less => i += 1,
+                Ordering::Greater => j += 1,
+                Ordering::Equal => {
+                    common += 1;
+                    i += 1;
+                    j += 1;
+                }
+            }
+        }
+        // at this point we've exhausted one of the two sketches, but we may have
+        // more counts in the other to compare if these were scaled sketches
+        if min_scale > 0. {
+            let max_hash = u64::max_value() / min_scale.recip() as u64;
+            while query_hashes
+                .get(i)
+                .map(|kmer_count| kmer_count.hash < max_hash)
+                .unwrap_or(false)
+            {
+                i += 1;
+            }
+            while ref_hashes
+                .get(j)
+                .map(|kmer_count| kmer_count.hash < max_hash)
+                .unwrap_or(false)
+            {
+                j += 1;
+            }
+        }
+        common 
+    }
+    
+    /// Analogous method to `finch::sketch_files` excluding filtering options
+    ///
+    /// Filtering excluded, as we are not interested in sketching read files
+    /// but assembled reference genome sequences for the genotype database.
+    fn _sketch_files(&self, sketch_params: &SketchParams, sequence_files: Vec<PathBuf>) -> Result<Vec<Sketch>, SketchyError> {
+
+        sequence_files.par_iter().map(|file|{
+
+            let mut sketcher = sketch_params.create_sketcher();
+            let mut fastx_reader = parse_fastx_file(file)?;
+
+            while let Some(record) = fastx_reader.next() {
+                sketcher.process(record?);
+            }
+
+            let sketch_hashes = sketcher.to_vec();
+            let (seq_length, num_valid_kmers) = sketcher.total_bases_and_kmers();
+            
+
+            Ok(Sketch{
+                name: file.file_name().unwrap().to_str().unwrap().to_string(),
+                seq_length,
+                num_valid_kmers,
+                comment: "".to_string(),
+                hashes: sketch_hashes,
+                filter_params: finch::filtering::FilterParams::default(),  // no filter params
+                sketch_params: sketch_params.clone(),
+            })
+
+        }).collect()
+    }
+
+    /// Read a sketch file into a vector of sketches based on the extension of the file
+    fn _read_sketch(&self, sketch_file: PathBuf) -> Result<Vec<Sketch>, SketchyError> {
+
+        let sketch_ext = match sketch_file.extension() {
+            None => Err(SketchyError::InvalidExtension),
+            Some(os_str) => {
+                match os_str.to_str() {
+                    Some("msh") => Ok("msh"),
+                    Some("fsh") => Ok("fsh"),
+                    _ => Err(SketchyError::InvalidExtension)
+                }
+            }
+        };
+
+        let mut reader = BufReader::new(File::open(&sketch_file)?);
+
+        match sketch_ext {
+            Ok("msh") => {
+                let sketches = read_mash_file(&mut reader)?;
+                // Fixing the sketch param object, as the parameters is not written to file for some reason [MASH]
+                let sketches_with_params = sketches.iter().map(|sketch| {
+                    // Rethink if really necessary, currently used only to instantiate a sketcher in the main
+                    // straming function and to output a summary statistic - so technically, we only need to add
+                    // the sketch size to SketchParams::Mash in the first sketch after reading into these methods
+                    // rather than fixing all of them, which may slow down with very large sketch collections
+                    let mut new_sketch = sketch.clone();
+                    new_sketch.sketch_params = SketchParams::Mash {
+                        kmers_to_sketch: sketch.hashes.len(), final_size: sketch.hashes.len(), 
+                        kmer_length: sketch.sketch_params.k(), no_strict: false, 
+                        hash_seed: sketch.sketch_params.hash_info().2 
+                    };
+                    new_sketch
+                }).collect();
+                Ok(sketches_with_params)
+            },
+            Ok("fsh") => Ok(read_finch_file(&mut reader)?),
+            _ => Err(SketchyError::InvalidExtension)
+        }
+
+    }
+
+    fn _read_genotypes(&self, genotype_file: &PathBuf) -> Result<Vec<Vec<String>>, SketchyError> {
+        let mut reader = csv::ReaderBuilder::new()
+            .delimiter(b'\t')
+            .from_path(genotype_file)?;
+        let mut genotypes: Vec<Vec<String>> = vec!();
+        for result in reader.records() {
+            let record = result?;
+            let str_vec: Vec<String> = record.iter().map(|field| field.to_string()).collect();
+            genotypes.push(str_vec);
+        }
+        Ok(genotypes)
+    }
+
+    fn _genotype_hashmap(&self, genotypes: Vec<Vec<String>>) -> Result<HashMap<String, String>, SketchyError>{
+        
+        let genotype_map: HashMap<String, String> = genotypes.iter().map(|gvec| {
+            (gvec[0].to_owned(), gvec[1..].join("\t"))
+        }).collect();
+
+        Ok(genotype_map)
+    }
+
+    fn _get_sketch_params_from_extension(&self, output: &PathBuf, sketch_size: usize, kmer_size: u8, scale: f64, seed: u64) -> Result<SketchParams, SketchyError> {
+        match output.extension() {
+            None => Err(SketchyError::InvalidExtension),
+            Some(os_str) => {
+                match os_str.to_str(){
+                    Some("msh") => Ok(SketchParams::Mash {
+                        kmers_to_sketch: sketch_size,
+                        final_size: sketch_size,
+                        no_strict: false,
+                        kmer_length: kmer_size,
+                        hash_seed: seed,
+                    }),
+                    Some("fsh") => Ok(SketchParams::Scaled { 
+                        kmers_to_sketch: sketch_size,
+                        kmer_length: kmer_size,
+                        scale: scale,
+                        hash_seed: seed,  
+                    }),
+                    _ => Err(SketchyError::InvalidExtension)
+                }
+            }
+        }
+    }
+
 }
 
-// #[test]
-// fn test_ranked_sum_of_shared_hashes() {
-    
-//     /* Test general functionality of the compute sum of shared hashes function */
-
-//     // https://www.reddit.com/r/rust/comments/40cte1/using_a_byte_vector_as_a_stdiobufread/
-
-//     let sketch_size: usize = 1000;
-//     let default_tail_index: usize = sketch_size.to_string().len();
-    
-//     let test_data_bytes = include_bytes!("data/test_mash.out");
-//     let test_data_sliced: &[u8] = &test_data_bytes[..];
-
-//     let reader = BufReader::new(test_data_sliced); // 2 reads
-    
-//     let ssh: Vec<u32> = ranked_sum_of_shared_hashes(reader, default_tail_index, 2, 1); // index_size = 2, ranks = 1
-
-//     assert_eq!(ssh, vec![7, 77]);
-
-// }
-
-
-// fn compute_preference_score(primary: f64, secondary: f64) -> f64 {
-    
-//     if secondary == 0.0 {
-//         0.0
-//     } else {
-//         let numerator = 2.0 * primary;
-//         let denominator = primary + secondary;
-
-//         (numerator / denominator) - 1.0
-//     }
-
-// }
