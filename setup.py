@@ -14,26 +14,16 @@ setup(
     sketchy-utils=sketchy.terminal.client:terminal_client
     """,
     install_requires=[
-        'tqdm',
-        'colorama',
-        'pandas',
-        'click',
-        'pytest',
-        'seaborn',
-        'python-dateutil',
-        'numpy',
-        'pysam',
-        'deprecation',
-        'watchdog',
-        'psutil',
-        'pyfastx',
-        'braceexpand',
-        'networkx',
-        'watchdog',
-        'psutil',
-        'dendropy'
+        'typer-cli',
+        'pyyaml',
+        'mkdocs-markdownextradata-plugin',
+        'mkdocs',
+        'mkdocs-material',
+        'mkdocs-material-extensions',
+        'markdown-include'
+
     ],
-    description="Real-time lineage calling and genotyping of bacterial"
+    description="Lineage calling and genotyping of bacterial"
                 "pathogens from uncorrected nanopore reads using "
                 "genomic neighbor typing and MinHash",
 )
