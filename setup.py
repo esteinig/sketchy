@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="sketchy",
+    name="sketchy-utils",
     url="https://github.com/esteinig/sketchy",
     author="Eike J. Steinig",
     author_email="eikejoachim.steinig@my.jcu.edu.au",
@@ -11,7 +11,7 @@ setup(
     license="MIT",
     entry_points="""
     [console_scripts]
-    sketchy-utils=sketchy.terminal.client:terminal_client
+    sketchy-utils=sketchy_utils.terminal.client:terminal_client
     """,
     install_requires=[
         'typer-cli',

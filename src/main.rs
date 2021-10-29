@@ -23,14 +23,14 @@ fn main() -> Result<()> {
         Sketch { input, output, sketch_size, kmer_size, scale, seed } => {
             sketchy.sketch(input, output, sketch_size, kmer_size, seed, scale)?;
         },
-        Info { input, build} => {
-            sketchy.info(input, build)?;
+        Info { input, params } => {
+            sketchy.info(input, params)?;
         },
         Shared { reference, query} => {
             sketchy.shared(reference, query)?;
         },
-        Predict { fastx, reference, genotypes, top, limit, online} => {
-            sketchy.predict(fastx, reference, genotypes, top, limit, online)?;
+        Predict { input, reference, genotypes, top, limit, stream } => {
+            sketchy.predict(input, reference, genotypes, top, limit, stream)?;
         }
         Check { input, genotypes } => {
             sketchy.check(input, genotypes)?;

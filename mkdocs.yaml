@@ -9,7 +9,9 @@ repo_name: esteinig/sketchy
 repo_url: https://github.com/esteinig/sketchy
 nav:
 - Home: index.md
-  
+- Species: species.md
+- Releases: releases.md
+- About: about.md
 markdown_extensions:
 - toc:
     permalink: true

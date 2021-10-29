@@ -173,21 +173,21 @@ impl Sketchy {
         if &sketches.len() != &genotype_data.len(){
             Err(SketchyError::InvalidSize)
         } else {
+            println!("ok");
             Ok(())
         }
     }
     /// Compute and print shared hashes between reference and query sketches
     pub fn shared(&self, reference: PathBuf, query: PathBuf) -> Result<(), SketchyError> {
 
-        // TODO: check compatibility of sketch parameters
         let reference_sketches = self._read_sketch(reference)?;
         let query_sketches = self._read_sketch(query)?;
         
         // Scale of sketches is inferred from first sketch in file --> might need to implement
-        // an empty file check which is not implmented in the finch::readers
+        // an empty file check which is not implemented in the finch::readers
         let mut min_scale = 0.;
-        if let Some(scale1) = &query_sketches[0].sketch_params.hash_info().3 { // assumes all sketch params same 
-            if let Some(scale2) = &reference_sketches[0].sketch_params.hash_info().3 { // assumes all sketch params same 
+        if let Some(scale1) = &query_sketches[0].sketch_params.hash_info().3 {
+            if let Some(scale2) = &reference_sketches[0].sketch_params.hash_info().3 {
                 min_scale = f64::min(*scale1, *scale2);
             }
         }
@@ -322,7 +322,7 @@ impl Sketchy {
                 }
             }
         }
-        // at this point we've exhausted one of the two sketches, but we may have
+        // At this point we've exhausted one of the two sketches, but we may have
         // more counts in the other to compare if these were scaled sketches
         if min_scale > 0. {
             let max_hash = u64::max_value() / min_scale.recip() as u64;
@@ -420,6 +420,7 @@ impl Sketchy {
     fn _read_genotypes(&self, genotype_file: &PathBuf) -> Result<Vec<Vec<String>>, SketchyError> {
         let mut reader = csv::ReaderBuilder::new()
             .delimiter(b'\t')
+            .has_headers(true)
             .from_path(genotype_file)?;
         let mut genotypes: Vec<Vec<String>> = vec!();
         for result in reader.records() {

@@ -11,7 +11,7 @@ pub enum CliError {
     InvalidScaleFloat,
 }
 
-/// Predict genotypes based on cumulative shared hashes
+/// Bacterial genomic neighbor typing using MinHash
 #[derive(Debug, StructOpt)]
 #[structopt(name = "sketchy")]
 pub struct Cli {
@@ -22,7 +22,7 @@ pub struct Cli {
 
 #[derive(Debug, StructOpt)]
 pub enum Commands {
-    
+    /// Create a sketch from input sequences
     Sketch {
         /// Fast{a,q}.{gz,xz,bz}, stdin if not present
         #[structopt(
@@ -32,7 +32,7 @@ pub enum Commands {
             multiple = true
         )]
         input: Option<Vec<PathBuf>>,
-        /// Output sketch filepath
+        /// Output sketch file path.
         #[structopt(
             short, 
             long, 
@@ -40,21 +40,21 @@ pub enum Commands {
             required = true,
         )]
         output: PathBuf,
-        /// Size of sketch .
+        /// Sketch size.
         #[structopt(
             short, 
             long,
             default_value = "1000"
         )]
         sketch_size: usize,
-        /// K-mer size
+        /// K-mer size.
         #[structopt(
             short = "k", 
             long,
-            default_value = "15"
+            default_value = "16"
         )]
         kmer_size: u8,
-        /// Hash scaler for 'scaled' format.
+        /// Hash scaler for finch format.
         #[structopt(
             short = "c", 
             long, 
@@ -62,7 +62,7 @@ pub enum Commands {
             default_value = "0.001"
         )]
         scale: f64,
-        /// Seed value for hashing, 42 replicates Mash.
+        /// Seed for hashing k-mers.
         #[structopt(
             short = "e", 
             long, 
@@ -70,8 +70,9 @@ pub enum Commands {
         )]
         seed: u64,
     },
+    /// List sketch genome order, sketch build parameters
     Info {
-        /// Sketch file, Mash (.msh) or Finch (.fsh)
+        /// Sketch file, format: Mash (.msh) or Finch (.fsh)
         #[structopt(
             short, 
             long, 
@@ -80,10 +81,12 @@ pub enum Commands {
         input: PathBuf,
         /// Display the sketch build parameters.
         #[structopt(short, long)]
-        build: bool,
+        params: bool,
     },
+
+    /// Check match between sketch and genotype file
     Check {
-        /// Sketch file, Mash (.msh) or Finch (.fsh)
+        /// Sketch file, format: Mash (.msh) or Finch (.fsh)
         #[structopt(
             short, 
             long, 
@@ -98,21 +101,23 @@ pub enum Commands {
         )]
         genotypes: PathBuf,
     },
+    /// Compute shared hashes between two sketches
     Shared {
-        /// Sketch file, Mash (.msh) or Finch (.fsh)
+        /// Sketch file, format: Mash (.msh) or Finch (.fsh)
         #[structopt(
             short, 
             long, 
             parse(try_from_os_str = check_file_exists)
         )]
         reference: PathBuf,
-        /// Sketch file,  Mash (.msh) or Finch (.fsh)
+        /// Sketch file, matching format: Mash (.msh) or Finch (.fsh)
         #[structopt(
             short, 
             long
         )]
         query: PathBuf,
     },
+    /// Predict genotypes from reads or read streams 
     Predict {
         /// Fast{a,q}.{gz,xz,bz}, stdin if not present.
         #[structopt(
@@ -120,7 +125,7 @@ pub enum Commands {
             long, 
             parse(try_from_os_str = check_file_exists)
         )]
-        fastx: Option<PathBuf>,
+        input: Option<PathBuf>,
         /// Reference sketch, Mash (.msh) or Finch (.fsh)
         #[structopt(
             short, 
@@ -142,7 +147,7 @@ pub enum Commands {
             default_value = "1"
         )]
         top: usize,
-        /// Number of reads to process, all reads by default/
+        /// Number of reads to process, all reads default
         #[structopt(
             short, 
             long,
@@ -154,7 +159,7 @@ pub enum Commands {
             short, 
             long
         )]
-        online: bool,
+        stream: bool,
     }
 }
 

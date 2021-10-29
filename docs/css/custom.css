@@ -103,3 +103,7 @@ a.external-link::after {
   .twitter {
     color: #00acee;
   }
+
+  img[src*="images/logo.png"] {
+    width:25em;
+  }
