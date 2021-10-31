@@ -1,0 +1,881 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.4">
+    
+    
+      
+        <title>Sketchy</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.db9e7362.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="css/termynal.css">
+    
+      <link rel="stylesheet" href="css/custom.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="black" data-md-color-accent="white">
+  
+    
+    <script>function __prefix(e){return new URL(".",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Sketchy" class="md-header__button md-logo" aria-label="Sketchy" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sketchy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/esteinig/sketchy/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    esteinig/sketchy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Sketchy" class="md-nav__button md-logo" aria-label="Sketchy" data-md-component="logo">
+      
+  <img src="images/logo.png" alt="logo">
+
+    </a>
+    Sketchy
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/esteinig/sketchy/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    esteinig/sketchy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        Home
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    Install
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#subcommands" class="md-nav__link">
+    Subcommands
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictions" class="md-nav__link">
+    Predictions
+  </a>
+  
+    <nav class="md-nav" aria-label="Predictions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-sets" class="md-nav__link">
+    Read sets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming" class="md-nav__link">
+    Streaming
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sketches" class="md-nav__link">
+    Sketches
+  </a>
+  
+    <nav class="md-nav" aria-label="Sketches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#species-sketches" class="md-nav__link">
+    Species sketches
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-sketches" class="md-nav__link">
+    Local sketches
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#genotype-files" class="md-nav__link">
+    Genotype files
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sketch-validation" class="md-nav__link">
+    Sketch validation
+  </a>
+  
+    <nav class="md-nav" aria-label="Sketch validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulations" class="md-nav__link">
+    Simulations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-validation" class="md-nav__link">
+    Cross-validation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#species-validations" class="md-nav__link">
+    Species validations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other" class="md-nav__link">
+    Other
+  </a>
+  
+    <nav class="md-nav" aria-label="Other">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ena-genomes" class="md-nav__link">
+    ENA genomes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-hashes" class="md-nav__link">
+    Shared hashes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="species.md" class="md-nav__link">
+        Species
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="releases/" class="md-nav__link">
+        Releases
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="about.md" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    Install
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#subcommands" class="md-nav__link">
+    Subcommands
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictions" class="md-nav__link">
+    Predictions
+  </a>
+  
+    <nav class="md-nav" aria-label="Predictions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#read-sets" class="md-nav__link">
+    Read sets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming" class="md-nav__link">
+    Streaming
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sketches" class="md-nav__link">
+    Sketches
+  </a>
+  
+    <nav class="md-nav" aria-label="Sketches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#species-sketches" class="md-nav__link">
+    Species sketches
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-sketches" class="md-nav__link">
+    Local sketches
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#genotype-files" class="md-nav__link">
+    Genotype files
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sketch-validation" class="md-nav__link">
+    Sketch validation
+  </a>
+  
+    <nav class="md-nav" aria-label="Sketch validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#simulations" class="md-nav__link">
+    Simulations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-validation" class="md-nav__link">
+    Cross-validation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#species-validations" class="md-nav__link">
+    Species validations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other" class="md-nav__link">
+    Other
+  </a>
+  
+    <nav class="md-nav" aria-label="Other">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ena-genomes" class="md-nav__link">
+    ENA genomes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared-hashes" class="md-nav__link">
+    Shared hashes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/esteinig/sketchy/edit/master/docs/index.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  <h1>Home</h1>
+                
+                <p><img alt="sketchy logo" src="images/logo.png" /></p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p><code>Sketchy</code> is a nanopore lineage calling and genotyping tool based on the heuristic principle of <a href="https://www.biorxiv.org/content/10.1101/403204v2">genomic neighbor typing (Břinda et al. 2020)</a>. <code>Sketchy</code>  queries species-wide (hypothesis-agnostic) reference sketches using MinHash methods to infer genotypes based on the closest reference match. Reference databases and genotypes, such has multi-locus sequence types, susceptibility profiles, or virulence factors, are configurable by users.</p>
+<h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
+<p>Rust client.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cargo install sketchy
+<span class="go">---&gt; 100%</span>
+</code></pre></div>
+
+</div>
+
+<p>Rust client and Python utility client.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>conda install -c bioconda sketchy
+<span class="go">---&gt; 100%</span>
+</code></pre></div>
+
+</div>
+
+<p><a href="binaries.md">Release binaries</a> for Linux and MacOS are available.</p>
+<h2 id="subcommands">Subcommands<a class="headerlink" href="#subcommands" title="Permanent link">&para;</a></h2>
+<p>Show subcommands available in the Rust client.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy --help
+</code></pre></div>
+
+</div>
+
+<p>Show subcommands available in the Python client.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy-utils --help
+</code></pre></div>
+
+</div>
+
+<h2 id="predictions">Predictions<a class="headerlink" href="#predictions" title="Permanent link">&para;</a></h2>
+<p><code>Sketchy</code> predicts the genotype of the genome with the highest shared <a href="">hashes</a> in the reference sketch. Two modes are available:</p>
+<ol>
+<li><strong>Offline (read sets)</strong>: k-mers are hashed and shared hashes computed from a set of reads. Output are the <code>--top</code> genome matches and their genotypes. </li>
+<li><strong>Online  (streaming)</strong>: k-mers are hashed for each incoming read, the sum of shared hashes for each genome in the reference sketch is updated and the <code>--top</code> genome matches and their genotypes based on the sorted sum of shared hashes at the current read are printed.</li>
+</ol>
+<p>Sum of shared hashes based on streaming are slightly less informative than shared hashes based on read sets. Streaming requires less memory, but can be slow for large read sets, especially when deploying large reference sketches.</p>
+<p>Predictions require the input sequences (<code>-i</code>), a reference sketch (<code>-r</code>) and a matching genotype file (<code>-g</code>) as described below (<a href="#genotype-files">Genotype files</a>).</p>
+<h3 id="read-sets">Read sets<a class="headerlink" href="#read-sets" title="Permanent link">&para;</a></h3>
+<p>Output the best 5 matches against the reference sketch.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy predict -i seq.fq -r saureus.msh -g saureus.tsv -t <span class="m">5</span>
+</code></pre></div>
+
+</div>
+
+<h3 id="streaming">Streaming<a class="headerlink" href="#streaming" title="Permanent link">&para;</a></h3>
+<p>Output the updated best match against the reference sketch from a stream of reads.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cat seq.fq <span class="p">|</span> sketchy predict -r saureus.msh -g saureus.tsv -o
+</code></pre></div>
+
+</div>
+
+<h2 id="sketches">Sketches<a class="headerlink" href="#sketches" title="Permanent link">&para;</a></h2>
+<h3 id="species-sketches">Species sketches<a class="headerlink" href="#species-sketches" title="Permanent link">&para;</a></h3>
+<p><code>Sketchy</code> comes with an index of 77 species with more than 100 genome assemblies in the 2018 ENA reference assembly index by <a href="https://www.biorxiv.org/content/10.1101/2021.03.02.433662v1">Blackwell et al. (2021)</a>. </p>
+<p>List available species indices and genotype tables.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy list <span class="p">|</span> head -2
+<span class="go">1b3e45r7    Staphylococcus aureus   43,541  mlst,amr    16  1000    msh       </span>
+<span class="go">223e4t67    Klebsiella pneumoniae   10,441  mlst,amr    16  1000    msh  </span>
+</code></pre></div>
+
+</div>
+
+<p>Download the species index (<code>.msh</code>) and associated genotype data (<code>.tsv</code>).</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy get 1b3e45r7 -o saureus_16_1000
+<span class="go">---&gt; 100%</span>
+<span class="gp">$ </span>ls saureus_16_1000/
+<span class="go">saureus_16_1000.msh</span>
+<span class="go">saureus_16_1000.tsv</span>
+</code></pre></div>
+
+</div>
+
+<h3 id="local-sketches">Local sketches<a class="headerlink" href="#local-sketches" title="Permanent link">&para;</a></h3>
+<p>Reference sketches can be built from any collection of assembled genomes for which associated genotype or phenotype data are available. </p>
+<p>Build a high-resolution (<code>s = 10,000</code>) reference database from any collection of <code>fasta</code> files.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>ls *.fa <span class="p">|</span> head -2
+<span class="go">ERR129347.fa</span>
+<span class="go">ERR121347.fa</span>
+<span class="gp">$ </span>sketchy sketch -i *.fa -k <span class="m">16</span> -s <span class="m">10000</span> -o ref.msh
+<span class="go">---&gt; 100%</span>
+</code></pre></div>
+
+</div>
+
+<p>List sketch parameters.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code>$ sketchy info -p -i ref.msh
+type=mash sketch_size=10000 kmer_size=16 seed=0
+</code></pre></div>
+
+</div>
+
+<h3 id="genotype-files">Genotype files<a class="headerlink" href="#genotype-files" title="Permanent link">&para;</a></h3>
+<p>Prediction requires a <strong>tab-delimited</strong> genotype index <strong>in the same order and of the same length</strong> as the reference sketch. Names in the genotype index (first column) are the file name of the input files in the sketch</p>
+<div class="highlight"><pre><span></span><code>name    mlst    tetracyline penicillin methicilin
+ERR129347.fa    ST82    R   R   S
+ERR121347.fa    ST93    S   S   S
+</code></pre></div>
+<p>List the order of genomes in the sketch, their length (bp) and an estimate of cardinality (bp)</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy info -i ref.msh <span class="p">|</span> head -2
+<span class="go">ERR129347.fa 2832710 2648350</span>
+<span class="go">ERR121347.fa 2753543 2600709</span>
+</code></pre></div>
+
+</div>
+
+<p>Check if the genotype file contains the correct number and order of genomes as the sketch.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>sketchy check -r ref.msh -g ref.tsv
+<span class="go">ok</span>
+</code></pre></div>
+
+</div>
+
+<h2 id="sketch-validation">Sketch validation<a class="headerlink" href="#sketch-validation" title="Permanent link">&para;</a></h2>
+<h3 id="simulations">Simulations<a class="headerlink" href="#simulations" title="Permanent link">&para;</a></h3>
+<h3 id="cross-validation">Cross-validation<a class="headerlink" href="#cross-validation" title="Permanent link">&para;</a></h3>
+<h3 id="species-validations">Species validations<a class="headerlink" href="#species-validations" title="Permanent link">&para;</a></h3>
+<h2 id="other">Other<a class="headerlink" href="#other" title="Permanent link">&para;</a></h2>
+<h3 id="ena-genomes">ENA genomes<a class="headerlink" href="#ena-genomes" title="Permanent link">&para;</a></h3>
+<p>Download the raw assembly data for <em>S. aureus</em> from the ENA EMBL server:</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code>$ sketchy-utils ena list | head -2
+1b3e45r7    Staphylococcus aureus   43,541  mlst,amr    93G  
+223e4t67    Klebsiella pneumoniae   10,441  mlst,amr    18G   
+$ sketchy-utils ena get 1b3e45r7 -o ena_saureus
+---&gt; 100%
+</code></pre></div>
+
+</div>
+
+<h3 id="shared-hashes">Shared hashes<a class="headerlink" href="#shared-hashes" title="Permanent link">&para;</a></h3>
+<p>Given two assembled genome sequences, create a sketch at default k-mer size of <code>k = 16</code> and sketch size of <code>s = 1000</code>. <code>Mash</code> configuration can be replicated by setting <code>--seed 42</code>.</p>
+<p>Sketch two genome assemblies with identical settings.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code>$ sketchy sketch -i genome1.fa -o genome1.msh
+$ sketchy sketch -i genome2.fa -o genome2.msh 
+</code></pre></div>
+
+</div>
+
+<p>Compute shared hashes between the reference and query genomes.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code>$ sketchy shared -r genome1.msh -q genome2.msh
+genome1.fa genome2.fa 360
+</code></pre></div>
+
+</div>
+
+<p>If multiple sketches are available compute pairwise shared hashes.</p>
+<div class="termy">
+
+<div class="highlight"><pre><span></span><code>$ sketchy sketch -i genome1.fa genome2.fa -o multi.msh
+$ sketchy shared -r multi.msh -q genome2.msh
+genome1.fa genome2.fa 360
+genome2.fa genome2.fa 1000
+</code></pre></div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+      
+        
+        <a href="releases/" class="md-footer__link md-footer__link--next" aria-label="Next: Releases" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Releases
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.8397ff9e.min.js", "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.1e84347e.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@8.4.6/dist/mermaid.min.js"></script>
+      
+        <script src="js/termynal.js"></script>
+      
+        <script src="js/custom.js"></script>
+      
+    
+  </body>
+</html>
