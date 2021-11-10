@@ -12,7 +12,7 @@ Genomic neighbour typing for lineage and genotype inference of bacterial pathoge
 
 `Sketchy` is a lineage calling and genotyping tool based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). It queries species-wide ('hypothesis-agnostic') reference sketches using MinHash and infers associated genotypes based on the closest match, including multi-locus sequence types, susceptibility profiles, virulence factors or other genome-associated features provided by the user. Unlike the original implementation, `Sketchy` does not use phylogenetic trees (which has some downsides) and is easier to modify for users, for example to construct reference sketches for local genome collections, or species not implemented in the current release.
 
-See the [latest docs](https://sketchy.github.io/docs) for install, usage and database building.
+See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and database building.
 
 
 ## Preprints
