@@ -1,4 +1,4 @@
-# sketchy <a href='https://github.com/esteinig'><img src='docs/imalogo.png' align="right" height="250" /></a>
+# sketchy <a href='https://github.com/esteinig'><img src='docs/images/logo.png' align="right" height="250" /></a>
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
 ![](https://img.shields.io/badge/version-0.6.0-purple.svg)
