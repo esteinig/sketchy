@@ -10,18 +10,30 @@ Genomic neighbour typing for lineage and genotype inference of bacterial pathoge
 
 **`v0.6.0`**
 
-`Sketchy` is a lineage calling and genotyping tool based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). It queries species-wide ('hypothesis-agnostic') reference sketches using MinHash and infers associated genotypes based on the closest match, including multi-locus sequence types, susceptibility profiles, virulence factors or other genome-associated features provided by the user. Unlike the original implementation, `Sketchy` does not use phylogenetic trees (which has some downsides) and is easier to modify for users, for example to construct reference sketches for local genome collections, or species not implemented in the current release.
+`Sketchy` is a lineage calling and genotyping tool based on the heuristic principle of genomic neighbor typing developed by [Karel Břinda and colleagues (2020)](https://www.biorxiv.org/content/10.1101/403204v2). It queries species-wide ('hypothesis-agnostic') reference sketches using MinHash and infers associated genotypes based on the closest match, including multi-locus sequence types, susceptibility profiles, virulence factors or other genome-associated features provided by the user. Unlike the original implementation in [`RASE`](https://github.com/c2-d2/rase-pipeline), `Sketchy` does not use phylogenetic trees which has some downsides, e.g. for sublineage genotype predictions (see below). 
 
 See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and database building.
 
+## Caveats
+
+Please see the preprint for detailed limitations of `Sketchy`. 
+
+Good things:
+
+* `Sketchy` performs best on lineage predictions and lineage-wide genotypes using species-wide reference sketches
+* Reference sketch construction and genotype indices can be constructed easily from large genome collections
+
+However:
+
+* Because of the approximate matching approach using MinHash, sub-lineage genotype resolution is not as good as `RASE`, which uses phylogenetic trees (and may be preferred for inference of clade-specific traits)
+* `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination (see also the original genomic neighbor typing discussion) - it is advised to run simulations and validations for species we have not provided reference sketches
 
 ## Preprints
 
-Preprint assessing `Sketchy` for bacterial genotype predictions from low read numbers, using simulated data and novel nanopore data from an *S. aureus* outbreak in remote communities of Far North Queensland and Papua New Guinea. Metagenomic application in a cystic fibrosis patient undergoing antimicrobial therapy uses data from Tania Duarte et al. (2022) metagenomic surveillance study.
+Preprint assessing `Sketchy` for bacterial genotype predictions from low read numbers, using simulated data and novel nanopore data from an *S. aureus* outbreak in remote communities of Far North Queensland and Papua New Guinea. 
 
 * Sketchy preprint:
-* FNQ and PNG bioproject:
-* Cystic fibrosis preprint:
+* FNQ and PNG preprints:
 
 
 ## Citation
