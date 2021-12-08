@@ -14,19 +14,19 @@ Genomic neighbour typing for lineage and genotype inference of bacterial pathoge
 
 See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and database building.
 
-## Caveats
+## Strengths and limitations
 
 Please see the preprint for detailed limitations of `Sketchy`. 
 
 Good things:
 
-* `Sketchy` performs best on lineage predictions and lineage-wide genotypes using species-wide reference sketches
+* `Sketchy` performs best on lineage predictions and lineage-distributed genotypes from species-wide reference sketches
 * Reference sketch construction and genotype indices can be constructed easily from large genome collections
 
 However:
 
 * Because of the approximate matching approach using MinHash, sub-lineage genotype resolution is not as good as `RASE`, which uses phylogenetic trees (and may be preferred for inference of clade-specific traits)
-* `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination (see also the original genomic neighbor typing discussion) - it is advised to run simulations and validations for species we have not provided reference sketches
+* `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches
 
 ## Preprints
 
