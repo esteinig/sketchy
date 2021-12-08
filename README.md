@@ -18,10 +18,8 @@ See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and
 
 Please see the preprint for detailed limitations of `Sketchy`. 
 
-Good things:
-
-* `Sketchy` performs best on lineage predictions and lineage-distributed genotypes from species-wide reference sketches
-* Reference sketch construction and genotype indices can be constructed easily from large genome collections
+* `Sketchy` performs best on lineage predictions and lineage-distributed genotypes from few reads
+* Reference sketches and genotype indices can be constructed easily from large genome collections
 
 However:
 
