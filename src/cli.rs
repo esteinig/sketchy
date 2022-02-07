@@ -92,7 +92,7 @@ pub enum Commands {
             long, 
             parse(try_from_os_str = check_file_exists)
         )]
-        input: PathBuf,
+        reference: PathBuf,
         /// Genotype file to validate with sketch file
         #[structopt(
             short, 
@@ -160,10 +160,14 @@ pub enum Commands {
             long
         )]
         stream: bool,
+        /// Consensus prediction over top feature values
+        #[structopt(
+            short, 
+            long
+        )]
+        consensus: bool,
     }
 }
-
-
 
 
 fn check_scale_limits(scale: &str) -> Result<f64, CliError> {

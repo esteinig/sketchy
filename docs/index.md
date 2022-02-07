@@ -29,7 +29,7 @@ $ conda install -c bioconda sketchy
 </div>
 
 
-[Release binaries](binaries.md) for Linux and MacOS are available.
+[Release binaries](releases.md) for Linux and MacOS are available.
 
 
 ## Subcommands
@@ -64,7 +64,7 @@ $ sketchy-utils --help
 
 Sum of shared hashes based on streaming are slightly less informative than shared hashes based on read sets. Streaming requires less memory, but can be slow for large read sets, especially when deploying large reference sketches.
 
-Predictions require the input sequences (`-i`), a reference sketch (`-r`) and a matching genotype file (`-g`) as described below ([Genotype files](#genotype-files)).
+Predictions require the input sequences (`-i`), a reference sketch (`-r`) and a matching genotype file (`-g`) as described below ([genotype files](#genotype-files)).
 
 ### Read sets
 
@@ -95,34 +95,7 @@ $ cat seq.fq | sketchy predict -r saureus.msh -g saureus.tsv -o
 
 ### Species sketches
 
-`Sketchy` comes with an index of 77 species with more than 100 genome assemblies in the 2018 ENA reference assembly index by [Blackwell et al. (2021)](https://www.biorxiv.org/content/10.1101/2021.03.02.433662v1). 
- 
-
-List available species indices and genotype tables.
-
-<div class="termy">
-
-```console
-$ sketchy list | head -2
-1b3e45r7    Staphylococcus aureus   43,541  mlst,amr    16  1000    msh       
-223e4t67    Klebsiella pneumoniae   10,441  mlst,amr    16  1000    msh  
-```
-
-</div>
-
-Download the species index (`.msh`) and associated genotype data (`.tsv`).
-
-<div class="termy">
-
-```console
-$ sketchy get 1b3e45r7 -o saureus_16_1000
----> 100%
-$ ls saureus_16_1000/
-saureus_16_1000.msh
-saureus_16_1000.tsv
-```
-
-</div>
+TBD
 
 ### Local sketches
 
@@ -183,7 +156,7 @@ Check if the genotype file contains the correct number and order of genomes as t
 <div class="termy">
 
 ```console
-$ sketchy check -i ref.msh -g ref.tsv
+$ sketchy check -r ref.msh -g ref.tsv
 ok
 ```
 
@@ -191,11 +164,15 @@ ok
 
 ## Sketch validation
 
-### Simulations
+We conducted simulations of the following species:
 
-### Cross-validation
+* *Neisseria spp.*
+* *Streptococcus pneumoniae*
+* *Klebsiella pneumoniae*
+* *Staphylococcus aureus*
+* *Pseudomonas aeruginosa*
 
-### Species validations
+TBD
 
 ## Other
 
@@ -204,17 +181,7 @@ ok
 
 Download the raw assembly data for *S. aureus* from the ENA EMBL server:
 
-<div class="termy">
-
-```
-$ sketchy-utils ena list | head -2
-1b3e45r7    Staphylococcus aureus   43,541  mlst,amr    93G  
-223e4t67    Klebsiella pneumoniae   10,441  mlst,amr    18G   
-$ sketchy-utils ena get 1b3e45r7 -o ena_saureus
----> 100%
-```
-
-</div>
+TBD
 
 ### Shared hashes
 

@@ -19,6 +19,8 @@ fn main() -> Result<()> {
     let args = Cli::from_args();
     let sketchy = Sketchy::new();
 
+    // Conduct a consensus check when using 
+
     match args.commands {
         Sketch { input, output, sketch_size, kmer_size, scale, seed } => {
             sketchy.sketch(input, output, sketch_size, kmer_size, seed, scale)?;
@@ -29,11 +31,11 @@ fn main() -> Result<()> {
         Shared { reference, query} => {
             sketchy.shared(reference, query)?;
         },
-        Predict { input, reference, genotypes, top, limit, stream } => {
-            sketchy.predict(input, reference, genotypes, top, limit, stream)?;
+        Predict { input, reference, genotypes, top, limit, stream, consensus } => {
+            sketchy.predict(input, reference, genotypes, top, limit, stream, consensus)?;
         }
-        Check { input, genotypes } => {
-            sketchy.check(input, genotypes)?;
+        Check { reference, genotypes } => {
+            sketchy.check(reference, genotypes)?;
         }
     }
 

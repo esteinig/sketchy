@@ -6,18 +6,6 @@ params.outdir = "sketch_builds"
 include { Sketchy } from './modules/sketchy'
 
 
-workflow build_sketch {
-
-    fasta = channel.fromPath(params.fasta) | map { file -> tuple(file.baseName, file) }
-
-}
-
-workflow build_sketch {
-
-    fasta = channel.fromPath(params.fasta) | map { file -> tuple(file.baseName, file) }
-
-}
-
 workflow cross_validation {
     // For each reference sketch, sample ten assemblies from the reference assemblies at random
     // then for each of those assemblies simulate nanopore reads, and build reference sketches
@@ -28,5 +16,5 @@ workflow cross_validation {
     // In the next step, predict selected traits across the simulated assembly samples, with and 
     // without them included in the reference sketch for evaluation of database representation
 
-    
+
 }

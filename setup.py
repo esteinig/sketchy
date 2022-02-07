@@ -16,6 +16,8 @@ setup(
     install_requires=[
         'typer-cli',
         'pyyaml',
+        'pandas',
+        'ijson',
         'mkdocs-markdownextradata-plugin',
         'mkdocs',
         'mkdocs-material',

@@ -137,3 +137,4 @@ def clean_metadata(meta_file: Path, assembly_paths: Path):
 
         species_paths = pandas.concat(spec_paths)
         species_paths.to_csv(f"species_ftp.tsv", sep='\t', index=False, header=False)
+

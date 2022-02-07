@@ -28,21 +28,25 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum SketchyError {
-    #[error("Reference sketch identifier {0} does not match genotype identifier {1} at line {2}")]
+    #[error("reference sketch identifier {0} does not match genotype identifier {1} at line {2}")]
     InvalidIdentifier(String, String, String),
-    #[error("Reference sketch and genotype table must have the same length")]
+    #[error("reference sketch and genotype table must have the same length")]
     InvalidSize,
-    #[error("Reference sketch file must have Mash (.msh) or Finch (.fsh) extension")]
+    #[error("reference sketch file must have Mash (.msh) or Finch (.fsh) extension")]
     InvalidExtension,
-    #[error("Reference ({0}) {1} ({2}) does not match query ({3}) {1} ({4})")]
+    #[error("reference ({0}) {1} ({2}) does not match query ({3}) {1} ({4})")]
     InvalidSketchMatch(String, String, String, String, String),
-    #[error("Failed to open file")]
+    #[error("consensus genotype could not be computed")]
+    InvalidConsensusGenotype,
+    #[error("--top must be an odd number when using --consensus")]
+    InvalidConsensusTop,
+    #[error("failed to open file")]
     IOError(#[from] std::io::Error),
-    #[error("Failed to open file with Finch")]
+    #[error("failed to open file with Finch")]
     FinchError(#[from] finch::errors::FinchError),
-    #[error("Failed to open genotype file or record with CSV")]
+    #[error("failed to open genotype file or record with CSV")]
     GenotypeTableError(#[from] csv::Error),
-    #[error("Failed to open Fastx file or record with Needletail")]
+    #[error("failed to open Fastx file or record with Needletail")]
     FastxError(#[from] needletail::errors::ParseError)
 }
 
@@ -61,7 +65,19 @@ impl Sketchy {
     /// Prediction method for Sketchy
     /// 
     /// Implement documentation.
-    pub fn predict(&self, fastx: Option<PathBuf>, reference: PathBuf, genotypes: PathBuf, top_results: usize, read_limit: usize, online: bool) -> Result<(), SketchyError> {
+    pub fn predict(&self, fastx: Option<PathBuf>, reference: PathBuf, genotypes: PathBuf, top_results: usize, read_limit: usize, online: bool, consensus: bool) -> Result<(), SketchyError> {
+        
+        // First check that top_results is odd when consensus is true
+        if consensus {
+            let is_odd = match top_results%2 {
+                1 => {true},
+                _ => {false}
+            };
+            if !is_odd{
+                return Err(SketchyError::InvalidConsensusTop);
+            }
+        }
+        
         let reference_sketches = self._read_sketch(reference)?;
         let reference_params = &reference_sketches[0].sketch_params;
         
@@ -79,9 +95,9 @@ impl Sketchy {
         let geno_map = self._genotype_hashmap(geno)?;
 
         if online {
-            self._sum_of_shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit)?;
+            self._sum_of_shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit, consensus)?;
         } else {
-            self._shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit)?;
+            self._shared_hashes(fastx_reader, reference_params, &reference_sketches, geno_map, min_scale, top_results, read_limit, consensus)?;
         }
 
         Ok(())
@@ -102,7 +118,7 @@ impl Sketchy {
             },
             Some(f) => f
         };
-        
+        println!("{:?}", files);
         let sketch_params = self._get_sketch_params_from_extension(
             &output, sketch_size, kmer_size, scale, seed
         )?;
@@ -214,10 +230,11 @@ impl Sketchy {
         mut fastx_reader: Box<dyn FastxReader>, 
         reference_params: &SketchParams, 
         reference_sketches: &Vec<Sketch>, 
-        geno_map: HashMap<String, String>, 
+        geno_map: HashMap<String, Vec<String>>, 
         min_scale: f64, 
         top_results: usize,
-        read_limit: usize
+        read_limit: usize,
+        consensus: bool
     ) -> Result<(), SketchyError>  {
 
         // Sketcher is created for all reads
@@ -227,7 +244,7 @@ impl Sketchy {
         while let Some(record) = fastx_reader.next() {
             sketcher.process(record?);
             read += 1;
-            if read == read_limit {
+            if read == read_limit-1 {
                 break
             }
         }
@@ -243,14 +260,9 @@ impl Sketchy {
             result_vec.push((&ref_sketch.name, shared_hashes, &geno_map[&ref_sketch.name]));
         }
         result_vec.sort_by(|a, b| b.1.cmp(&a.1));
-
-        for (i, (name, shared_hashes, genotype)) in result_vec.iter().enumerate() {
-            if top_results > 0 && i+1 > top_results {
-                break
-            } else {
-                println!("{:}\t{:}\t{:}", name, shared_hashes, genotype);
-            }
-        }
+        
+        self._print_results(result_vec, read, top_results, consensus)?;
+        
         Ok(())
 
     }
@@ -260,10 +272,11 @@ impl Sketchy {
         mut fastx_reader: Box<dyn FastxReader>, 
         reference_params: &SketchParams, 
         reference_sketches: &Vec<Sketch>, 
-        geno_map: HashMap<String, String>, 
+        geno_map: HashMap<String, Vec<String>>, 
         min_scale: f64,
         top_results: usize,
-        read_limit: usize
+        read_limit: usize,
+        consensus: bool
     ) -> Result<(), SketchyError> {
         
         let mut sum_of_shared_hashes = vec![0; reference_sketches.len()];
@@ -286,13 +299,7 @@ impl Sketchy {
                 result_vec.push((&ref_sketch.name, sum_of_shared_hashes[i], &geno_map[&ref_sketch.name]));
             }
             result_vec.sort_by(|a, b| b.1.cmp(&a.1));
-            for (i, (name, shared_hashes, genotype)) in result_vec.iter().enumerate() {
-                if top_results > 0 && i+1 > top_results {
-                    break
-                } else {
-                    println!("{:}\t{:}\t{:}\t{:}", read+1, name, shared_hashes, genotype);
-                }
-            }
+            self._print_results(result_vec, read, top_results, consensus)?;
             read += 1;
             if read == read_limit {
                 break
@@ -301,6 +308,50 @@ impl Sketchy {
         Ok(())
     }
 
+    fn _print_results(&self, result_vec: Vec<(&String, u64, &Vec<String>)>, read: usize, top_results: usize, consensus: bool) -> Result<(), SketchyError>{
+
+        if consensus {
+            // For consensus calling, ignore reference genome names and shared hashes
+            // and for each genotype feature, gather the calls in a new vector 
+            let ngenotypes = result_vec[0].2.len();
+            let mut genotype_features: Vec<Vec<&String>> = vec![Vec::new(); ngenotypes];
+
+            for (_, _, genotypes) in result_vec[..top_results].iter() {
+                for (j, genotype) in genotypes.iter().enumerate(){
+                    genotype_features[j].push(genotype)
+                }
+            }
+            // For each feature consensus vector, call the most frequent value
+            // as the consensus. CLI implements a strict rule for only using 
+            // odd --top values when using consensus calling
+            let mut consensus_genotype: Vec<String> = Vec::new();
+            for consensus_feature in genotype_features.iter(){
+                let mut counts = HashMap::new();
+                for genotype in consensus_feature {
+                    *counts.entry(genotype).or_insert(0) += 1;
+                }
+                let consensus_value = self._get_consensus_value(counts)?;
+                consensus_genotype.push(consensus_value)
+            }
+            println!("{:}\t-\t-\t{:}", read+1, consensus_genotype.join("\t"));
+        } else {
+            // If not computing consensus simply iterate over top results and print to console
+            for (name, shared_hashes, genotype) in result_vec[..top_results].iter() {
+                println!("{:}\t{:}\t{:}\t{:}", read+1, name, shared_hashes, genotype.join("\t"));
+            }
+        }
+        Ok(())
+    }
+
+    fn _get_consensus_value(&self, counts: HashMap<&&String, usize>) -> Result<String, SketchyError> {
+
+        let consensus_value = counts.iter().max_by(|a, b| a.1.cmp(&b.1)).map(|(k, _v)| k);
+        match consensus_value {
+            Some(value) => {Ok(value.to_string())},
+            None => {Err(SketchyError::InvalidConsensusGenotype)}
+        }
+                
+    }
     /// Analogue of `finch::distance::raw_distance` reduced to extracting common hashes
     ///
     /// Assumes hashes are sorted - not sure if need to implement the check here, in particular
@@ -431,10 +482,10 @@ impl Sketchy {
         Ok(genotypes)
     }
 
-    fn _genotype_hashmap(&self, genotypes: Vec<Vec<String>>) -> Result<HashMap<String, String>, SketchyError>{
+    fn _genotype_hashmap(&self, genotypes: Vec<Vec<String>>) -> Result<HashMap<String, Vec<String>>, SketchyError>{
         
-        let genotype_map: HashMap<String, String> = genotypes.iter().map(|gvec| {
-            (gvec[0].to_owned(), gvec[1..].join("\t"))
+        let genotype_map: HashMap<String, Vec<String>> = genotypes.iter().map(|gvec| {
+            (gvec[0].to_owned(), gvec[1..].to_owned())
         }).collect();
 
         Ok(genotype_map)
@@ -463,6 +514,5 @@ impl Sketchy {
             }
         }
     }
-
 }
 
