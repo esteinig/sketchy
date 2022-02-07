@@ -4,7 +4,7 @@
 ![](https://img.shields.io/badge/version-0.6.0-purple.svg)
 ![](https://img.shields.io/badge/biorxiv-1.0-blue.svg)
 
-Genomic neighbour typing for lineage and genotype inference of bacterial pathogens
+Genomic neighbor typing for lineage and genotype inference
 
 ## Overview
 
