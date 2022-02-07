@@ -26,18 +26,16 @@ However:
 * Because of the approximate matching approach using MinHash, sub-lineage genotype resolution is not as good as `RASE`, which uses phylogenetic trees (and may be preferred for inference of clade-specific traits)
 * `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches
 
-## Preprints
+## Release v0.6.0 
 
-Preprint assessing `Sketchy` for bacterial genotype predictions from low read numbers, using simulated data and novel nanopore data from an *S. aureus* outbreak in remote communities of Far North Queensland and Papua New Guinea. 
+Target: 14 February 2022
 
-* Sketchy preprint:
-* FNQ and PNG preprints:
+* upload of species reference sketches we have constructed for users
+* utility tools to build sketches from the ENA data by [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
+* default k-mer sizes for the databases are currently very small (k = 16), needs optimisation
 
-
-## Citation
+## Preprint
 
 If you use `Sketchy` for research and other applications, please cite:
 
-```
-
-```
+>  Steinig et al. (2022) - Genomic neighbor typing for bacterial outbreak surveillance - bioRxiv 2022.02.05.479210; doi: https://doi.org/10.1101/2022.02.05.479210 
