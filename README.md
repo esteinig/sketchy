@@ -18,12 +18,12 @@ See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and
 
 Please see the preprint for detailed limitations of `Sketchy`. 
 
-* `Sketchy` performs best on lineage predictions and lineage-distributed genotypes from few reads
-* Reference sketches and genotype indices can be constructed easily from large genome collections
+* `Sketchy` performs best on lineage predictions and lineage-wide genotypes from few reads (you can try with < 1000 reads)
+* reference sketches and genotype indices can be constructed easily from large genome collections (e.g. species sketches)
 
 However:
 
-* Because of the approximate matching approach using MinHash, sub-lineage genotype resolution is not as good as `RASE`, which uses phylogenetic trees (and may be preferred for inference of clade-specific traits)
+* clade-specific genotype resolution is not as good as when using phylogenetic guide trees (e.g. with `RASE`) - for sublineage genotyping i.e. when the number of genomes in the reference sketch is smaller, sketch size (`s`) can be increased to compensate for some of the approximate matching (~ 10k - 100k)
 * `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches for
 
 ## Release v0.6.0 
