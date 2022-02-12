@@ -30,8 +30,9 @@ However:
 
 Target: 14 February 2022
 
-* upload of species reference sketches we have constructed for users
-* utility tools to build sketches from the ENA data by [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
+* Bioconda recipe update
+* upload of species reference sketches
+* utility tools to build sketches with data from [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
 * default k-mer sizes for the databases are currently very small (k = 16), needs optimisation
 
 ## Preprint
