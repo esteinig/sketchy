@@ -28,7 +28,7 @@ However:
 
 ## Release v0.6.0 
 
-Target: 14 February 2022
+Target: 21 February 2022
 
 * Bioconda recipe update
 * upload of species reference sketches
