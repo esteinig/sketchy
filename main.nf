@@ -7,7 +7,7 @@ params.exec = null
 
 params.prefix = "test"
 params.kmer_min = 16
-params.kmer_max = 21
+params.kmer_max = 31
 params.sketch_sizes = "1000,10000"
 params.sketch_genomes = "*.fasta"
 params.sketch_genomes_glob = "*.fasta"  // for large numbers of genomes, uses find pipe
