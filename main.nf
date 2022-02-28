@@ -1,20 +1,23 @@
 nextflow.enable.dsl=2
 
-params.fasta = "ref_sketch/*.fa"
-params.outdir = "sketch_builds"
+params.outdir = "sketchy_pipelines"
 
-include { Sketchy } from './modules/sketchy'
+// Sketch building
 
+params.prefix = "test"
+params.kmer_range = 16..31
+params.sketch_sizes = [1000, 10000]
+params.sketch_genomes = "*.fasta"
+params.sketch_genotypes = "genotypes.tsv"
 
-workflow cross_validation {
-    // For each reference sketch, sample ten assemblies from the reference assemblies at random
-    // then for each of those assemblies simulate nanopore reads, and build reference sketches
-    // for each subsample with the samples removed from the reference sketch
-    fasta = channel.fromPath(params.fasta) | map { file -> tuple(file.baseName, file) }
+// GNT predictions
 
+params.test_reads = "*.fq"
 
-    // In the next step, predict selected traits across the simulated assembly samples, with and 
-    // without them included in the reference sketch for evaluation of database representation
+include { Sketch } from './modules/sketchy'
 
-
+workflow sketch {
+    fasta_files = channel.fromPath(params.sketch_genomes).collect()
+    sketch_inputs = tuple(params.prefix, params.sketch_genomes, fasta_files)
+    Sketch(sketch_inputs, params.kmer_range, params.sketch_sizes)
 }
