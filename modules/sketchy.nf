@@ -34,7 +34,7 @@ process Sketch {
 
 process PredictBatch {
 
-    tag { "reads=$reads sketch=$sketch" }
+    tag { "reads=$reads sketch=$sketch_name" }
     label "predict"
 
     memory { params.predict_mem * task.attempt }
