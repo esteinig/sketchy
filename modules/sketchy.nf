@@ -34,7 +34,7 @@ process Sketch {
 
 process PredictBatch {
 
-    tag { "reads=$reads sketch=$sketch_name" }
+    tag { "reads=$read_limit sketch=$sketch_name" }
     label "predict"
 
     memory { params.predict_mem * task.attempt }
@@ -58,8 +58,12 @@ process PredictBatch {
     sketchy = params.exec ?: "sketchy"
     consensus = params.batch_consensus ?: ""
     sketch_name = sketch.baseName
-
+    first_file = read_files[0]
+    
     """
+    header=$($sketchy predict -g $genotype_file -i $first_file -l 1 -r $sketch -t 0 -H) 
+    echo -e "name\t\${header}" > ${sketch_name}.txt
+
     for file in $read_files; do
         name=\$(basename "\$file" | cut -d. -f1)
         prediction=\$($sketchy predict -g $genotype_file -i \$file -l $read_limit -r $sketch $consensus)

@@ -126,6 +126,9 @@ pub enum Commands {
         /// Consensus prediction over top feature values
         #[structopt(short, long)]
         consensus: bool,
+        /// Header added to output based on genotype file
+        #[structopt(short = "H", long)]
+        header: bool,
     },
 }
 
