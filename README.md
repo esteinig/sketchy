@@ -31,7 +31,7 @@ However:
 
 ## Release v0.6.0 
 
-Version used in preprint available from `master` branch:
+Version used in preprint available from `master` branch or release `0.5.9` (implements all functions of `0.6.0` necessary for preprint):
 
 ```
 git clone https://github.com/esteinig/sketchy
