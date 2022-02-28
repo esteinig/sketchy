@@ -13,7 +13,7 @@ process Sketch {
     input:
     tuple val(prefix), val(fasta_glob) 
     file(genotype_file)
-    file(fasta_files)  // collected reference genomes, with glob to list into stdin
+    fasta_files  // collected reference genomes, with glob to list into stdin
     each kmer_size
     each sketch_size
 
