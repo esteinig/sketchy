@@ -36,6 +36,10 @@ workflow sketch {
 }
 
 workflow batch_predict {
+    println(params.batch_read_limit, params.batch_genotypes)
+    channel.fromPath(params.batch_read_files) | collect | view
+    channel.fromPath(params.batch_sketch_files) | collect | view
+
     PredictBatch(
         params.batch_read_limit, 
         file(params.batch_genotypes), 

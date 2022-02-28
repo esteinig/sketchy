@@ -51,7 +51,7 @@ process PredictBatch {
     each sketch
 
     output:
-    tuple file("${sketch_name}.txt")
+    file("${sketch_name}.txt")
 
     script:
 
