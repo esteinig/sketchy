@@ -114,7 +114,7 @@ pub enum Commands {
             parse(try_from_os_str = check_file_exists)
         )]
         genotypes: PathBuf,
-        /// Number of top ranked prediction to output/
+        /// Number of top ranked prediction to output
         #[structopt(short, long, default_value = "1")]
         top: usize,
         /// Number of reads to process, all reads default
