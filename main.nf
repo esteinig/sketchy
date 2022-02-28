@@ -17,7 +17,7 @@ params.test_reads = "*.fq"
 include { Sketch } from './modules/sketchy'
 
 workflow sketch {
-    fasta_files = channel.fromPath(params.sketch_genomes).collect()
+    fasta_files = channel.fromPath(params.sketch_genomes) | collect
     sketch_inputs = tuple(params.prefix, params.sketch_genomes, fasta_files)
     Sketch(sketch_inputs, params.kmer_range, params.sketch_sizes)
 }
