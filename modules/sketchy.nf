@@ -45,7 +45,7 @@ process PredictBatch {
     publishDir "${params.outdir}/batch_predict", mode: "symlink", pattern: "*.txt"
 
     input:
-    val(reads)
+    val(read_limit)
     file(genotype_file)
     file(read_files)
     each sketch
@@ -61,8 +61,8 @@ process PredictBatch {
 
     """
     for file in $read_files; do
-        name=\$(basename "$file" | cut -d. -f1)
-        prediction=\$($sketchy predict -g $genotype_file -i $file -l $reads -r $sketch $consensus)
+        name=\$(basename "\$file" | cut -d. -f1)
+        prediction=\$($sketchy predict -g $genotype_file -i \$file -l $read_limit -r $sketch $consensus)
         echo -e "\${name}\t\${prediction}" >> ${sketch_name}.txt
     done
     """ 
