@@ -17,7 +17,8 @@ include { Sketch } from './modules/sketchy'
 
 workflow sketch {
     Sketch(
-        tuple(params.prefix, params.sketch_genomes_glob), 
+        params.prefix, 
+        params.sketch_genomes_glob, 
         file(params.sketch_genotypes), 
         channel.fromPath(params.sketch_genomes) | collect, 
         params.kmer_min..params.kmer_max, 
