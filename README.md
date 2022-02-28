@@ -24,6 +24,9 @@ Please see the preprint for detailed limitations of `Sketchy`.
 However:
 
 * clade-specific genotype resolution is not as good as when using phylogenetic guide trees (e.g. with `RASE`) - for sublineage genotyping i.e. when the number of genomes in the reference sketch is smaller, sketch size (`s`) can be increased to compensate for some of the approximate matching (~ 10k - 100k)
+
+> ⚠️ this may be resolved with k-mer size optimisation, stay tuned
+
 * `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches for
 
 ## Release v0.6.0 
