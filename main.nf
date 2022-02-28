@@ -25,12 +25,13 @@ def get_sketch_size_array(sketch_sizes){
 include { Sketch } from './modules/sketchy'
 
 workflow sketch {
+    sketch_sizes = get_sketch_size_array(params.sketch_sizes)
     Sketch(
         params.prefix, 
         params.sketch_genomes_glob, 
         file(params.sketch_genotypes), 
         channel.fromPath(params.sketch_genomes) | collect, 
         params.kmer_min..params.kmer_max, 
-        get_sketch_size_array(params.sketch_sizes)
+        sketch_sizes
     )
 }
