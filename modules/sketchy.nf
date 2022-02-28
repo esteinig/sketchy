@@ -8,7 +8,7 @@ process Sketch {
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
     maxRetries 3
     
-    publishDir "${params.outdir}/sketches", mode: "symlink", pattern: "*.msh"
+    publishDir "${params.outdir}/sketches", mode: "copy", pattern: "*.msh"
 
     input:
     val(prefix)
@@ -42,7 +42,7 @@ process PredictBatch {
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
     maxRetries 3
     
-    publishDir "${params.outdir}/batch_predict", mode: "symlink", pattern: "*.txt"
+    publishDir "${params.outdir}/batch_predict", mode: "copy", pattern: "*.txt"
 
     input:
     val(read_limit)
