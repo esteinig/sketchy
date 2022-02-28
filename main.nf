@@ -16,7 +16,6 @@ params.sketch_genotypes = "genotypes.tsv"
 include { Sketch } from './modules/sketchy'
 
 workflow sketch {
-    sketch_sizes = get_sketch_size_array(params.sketch_sizes)
     Sketch(
         params.prefix, 
         params.sketch_genomes_glob, 
