@@ -16,7 +16,7 @@ params.sketch_genotypes = "genotypes.tsv"
 include { Sketch } from './modules/sketchy'
 
 workflow sketch {
-    fasta_files = channel.fromPath(params.sketch_genomes) | collect
+    fasta_files = channel.fromPath(params.sketch_genomes) | collect | view
     sketch_inputs = tuple(params.prefix, params.sketch_genomes_glob, params.sketch_genotypes, fasta_files)
     println(sketch_inputs) 
     Sketch(sketch_inputs, params.kmer_min..params.kmer_max, params.sketch_sizes)
