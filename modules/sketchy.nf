@@ -34,15 +34,15 @@ process Sketch {
 
 process PredictBatch {
 
-    tag { "preads=$reads " }
-    label "sketch"
+    tag { "reads=$reads sketch=$sketch" }
+    label "predict"
 
-    memory { params.sketch_mem * task.attempt }
+    memory { params.predict_mem * task.attempt }
 
     errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
     maxRetries 3
     
-    publishDir "${params.outdir}/sketches", mode: "symlink", pattern: "*.msh"
+    publishDir "${params.outdir}/batch_predict", mode: "symlink", pattern: "*.txt"
 
     input:
     val(reads)
@@ -51,7 +51,7 @@ process PredictBatch {
     each sketch
 
     output:
-    tuple val(id), file("${id}.txt")
+    tuple file("${sketch_name}.txt")
 
     script:
 

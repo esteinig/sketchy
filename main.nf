@@ -15,7 +15,7 @@ params.sketch_genotypes = "genotypes.tsv"
 
 // Batch predicing
 
-params.batch_consensus = "-t 5 -c"
+params.batch_consensus = "-t 5 -c" // null to disable
 params.batch_read_limit = 1000
 params.batch_sketch_files = "*.msh"
 params.batch_genotypes = "genotypes.tsv"
