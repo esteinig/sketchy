@@ -59,9 +59,9 @@ process PredictBatch {
     consensus = params.batch_consensus ?: ""
     sketch_name = sketch.baseName
     first_file = read_files[0]
-    
+
     """
-    header=$($sketchy predict -g $genotype_file -i $first_file -l 1 -r $sketch -t 0 -H) 
+    header=\$($sketchy predict -g $genotype_file -i $first_file -l 1 -r $sketch -t 0 -H) 
     echo -e "name\t\${header}" > ${sketch_name}.txt
 
     for file in $read_files; do
