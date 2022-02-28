@@ -25,18 +25,26 @@ However:
 
 * clade-specific genotype resolution is not as good as when using phylogenetic guide trees (e.g. with `RASE`) - for sublineage genotyping i.e. when the number of genomes in the reference sketch is smaller, sketch size (`s`) can be increased to compensate for some of the approximate matching (~ 10k - 100k)
 
-> ⚠️ this may be resolved with k-mer size optimisation, stay tuned
+> ⚠️ We are currently working on resolving this with reference sketch k-mer size optimisation
 
 * `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches for
 
 ## Release v0.6.0 
 
-Target: 21 February 2022
+Version used in preprint available from `master` branch:
+
+```
+git clone https://github.com/esteinig/sketchy
+cd sketchy && cargo build --release
+```
+
+Target: 7 March
 
 * Bioconda recipe update
-* upload of species reference sketches
-* utility tools to build sketches with data from [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
-* default k-mer sizes for the databases are currently very small (k = 16), needs optimisation
+* Nextflow pipelines for optimisation and validation
+* Upload of species reference sketches
+* Utility tools to build sketches with data from [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
+* Default k-mer sizes for the databases are currently very small (k = 16) - optimised databases will be available
 
 ## Preprint
 
