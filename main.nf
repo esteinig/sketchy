@@ -18,6 +18,6 @@ include { Sketch } from './modules/sketchy'
 workflow sketch {
     fasta_files = channel.fromPath(params.sketch_genomes) | collect
     sketch_inputs = tuple(params.prefix, params.sketch_genomes_glob, params.sketch_genotypes, fasta_files)
-    sketch_inputs | view  
+    println(sketch_inputs) 
     Sketch(sketch_inputs, params.kmer_min..params.kmer_max, params.sketch_sizes)
 }
