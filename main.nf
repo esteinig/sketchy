@@ -17,8 +17,8 @@ params.sketch_genomes_glob = "*.fasta"  // for large numbers of genomes, uses fi
 params.batch_consensus = "-t 5 -c" // null to disable
 params.batch_read_limit = 1000
 params.batch_sketch_files = "*.msh"
-params.batch_genotypes = "genotypes.tsv"
 params.batch_read_files = "*.fastq"
+params.batch_genotype_file = "genotypes.tsv"
 
 include { Sketch } from './modules/sketchy'
 include { PredictBatch } from './modules/sketchy'
@@ -36,7 +36,7 @@ workflow sketch {
 workflow batch_predict {
     PredictBatch(
         params.batch_read_limit, 
-        file(params.batch_genotypes), 
+        file(params.batch_genotype_file), 
         channel.fromPath(params.batch_read_files) | collect,
         channel.fromPath(params.batch_sketch_files) | collect
     )
