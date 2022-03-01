@@ -3,20 +3,21 @@ from setuptools import setup, find_packages
 setup(
     name="sketchy-utils",
     url="https://github.com/esteinig/sketchy",
-    author="Eike J. Steinig",
-    author_email="eikejoachim.steinig@my.jcu.edu.au",
+    author="Eike Steinig",
+    author_email="eike.steinig@unimelb.edu.au",
     packages=find_packages(),
     include_package_data=True,
-    version="0.5.0",
+    version="0.6.0",
     license="MIT",
     entry_points="""
     [console_scripts]
-    sketchy-utils=sketchy_utils.terminal.client:terminal_client
+    sketchy-utils=sketchy_utils.terminal:app
     """,
     install_requires=[
         'typer-cli',
         'pyyaml',
         'pandas',
+        'scikit-learn',
         'ijson',
         'mkdocs-markdownextradata-plugin',
         'mkdocs',

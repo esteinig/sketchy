@@ -40,11 +40,13 @@ pub enum SketchyError {
 
 /// A `Struct` used for configuring some
 /// params of the predict methods
+#[derive(Debug, PartialEq)]
 pub struct PredictConfig {
-    pub top_results: usize,
-    pub read_limit: usize,
-    pub online: bool,
+    pub top: usize,
+    pub limit: usize,
+    pub stream: bool,
     pub consensus: bool,
+    pub header: bool,
 }
 
 /// A `Struct` used for building the formatted
@@ -70,7 +72,7 @@ impl Sketchy {
     ) -> Result<(), SketchyError> {
         // First check that top_results is odd when consensus is true
         if config.consensus {
-            let is_odd = matches!(config.top_results % 2, 1);
+            let is_odd = matches!(config.top % 2, 1);
             if !is_odd {
                 return Err(SketchyError::InvalidConsensusTop);
             }
@@ -89,10 +91,16 @@ impl Sketchy {
             None => parse_fastx_stdin()?,
         };
 
-        let geno = self._read_genotypes(&genotypes)?;
+        let (geno, header) = self._read_genotypes(&genotypes)?;
         let geno_map = self._genotype_hashmap(geno)?;
 
-        if config.online {
+        // Header is printed already here, regardless of streaming or direct prediction mode
+
+        if config.header {
+            println!("reads\tsketch_id\tshared_hashes\t{}", header);
+        }
+
+        if config.stream {
             self._sum_of_shared_hashes(
                 fastx_reader,
                 reference_params,
@@ -138,7 +146,7 @@ impl Sketchy {
             }
             Some(f) => f,
         };
-        println!("{:?}", files);
+
         let sketch_params =
             self._get_sketch_params_from_extension(&output, sketch_size, kmer_size, scale, seed)?;
 
@@ -200,10 +208,10 @@ impl Sketchy {
     }
     /// Checks that sketches in the input refernce sketch and identifiers in
     /// the genotype table are in the same order and that the reference sketch
-    /// colelction and genotype table are of the same size
+    /// collection and genotype table are of the same size
     pub fn check(&self, input: PathBuf, genotypes: PathBuf) -> Result<(), SketchyError> {
         let sketches = self._read_sketch(input)?;
-        let genotype_data = self
+        let (genotype_data, _) = self
             ._read_genotypes(&genotypes)
             .expect("Could not read genotype file");
 
@@ -286,7 +294,7 @@ impl Sketchy {
         while let Some(record) = fastx_reader.next() {
             sketcher.process(record?);
             read += 1;
-            if read == config.read_limit - 1 {
+            if read == config.limit {
                 break;
             }
         }
@@ -301,7 +309,7 @@ impl Sketchy {
         }
         result_vec.sort_by(|a, b| b.1.cmp(&a.1));
 
-        self._print_results(result_vec, read, config.top_results, config.consensus)?;
+        self._print_results(result_vec, read, config.top, config.consensus)?;
 
         Ok(())
     }
@@ -316,7 +324,7 @@ impl Sketchy {
         config: PredictConfig,
     ) -> Result<(), SketchyError> {
         let mut sum_of_shared_hashes = vec![0; reference_sketches.len()];
-        let mut read = 0;
+        let mut read = 1;
         while let Some(record) = fastx_reader.next() {
             let mut result_vec = vec![];
             // At each read we create a new sketcher based on the reference sketch
@@ -338,9 +346,9 @@ impl Sketchy {
                 ));
             }
             result_vec.sort_by(|a, b| b.1.cmp(&a.1));
-            self._print_results(result_vec, read, config.top_results, config.consensus)?;
+            self._print_results(result_vec, read, config.top, config.consensus)?;
             read += 1;
-            if read == config.read_limit {
+            if read == config.limit + 1 {
                 break;
             }
         }
@@ -377,13 +385,13 @@ impl Sketchy {
                 let consensus_value = self._get_consensus_value(counts)?;
                 consensus_genotype.push(consensus_value)
             }
-            println!("{:}\t-\t-\t{:}", read + 1, consensus_genotype.join("\t"));
+            println!("{:}\t-\t-\t{:}", read, consensus_genotype.join("\t"));
         } else {
             // If not computing consensus simply iterate over top results and print to console
             for (name, shared_hashes, genotype) in result_vec[..top_results].iter() {
                 println!(
                     "{:}\t{:}\t{:}\t{:}",
-                    read + 1,
+                    read,
                     name,
                     shared_hashes,
                     genotype.join("\t")
@@ -527,7 +535,10 @@ impl Sketchy {
         }
     }
 
-    fn _read_genotypes(&self, genotype_file: &Path) -> Result<Vec<Vec<String>>, SketchyError> {
+    fn _read_genotypes(
+        &self,
+        genotype_file: &Path,
+    ) -> Result<(Vec<Vec<String>>, String), SketchyError> {
         let mut reader = csv::ReaderBuilder::new()
             .delimiter(b'\t')
             .has_headers(true)
@@ -538,7 +549,13 @@ impl Sketchy {
             let str_vec: Vec<String> = record.iter().map(|field| field.to_string()).collect();
             genotypes.push(str_vec);
         }
-        Ok(genotypes)
+        let header: Vec<String> = reader
+            .headers()?
+            .into_iter()
+            .map(|field| field.to_string())
+            .collect();
+        let header_str = header[1..].join("\t"); // exclude first column identifier
+        Ok((genotypes, header_str))
     }
 
     fn _genotype_hashmap(

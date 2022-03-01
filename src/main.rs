@@ -45,12 +45,14 @@ fn main() -> Result<()> {
             limit,
             stream,
             consensus,
+            header,
         } => {
             let config = PredictConfig {
-                top_results: top,
-                read_limit: limit,
-                online: stream,
+                top,
+                limit,
+                stream,
                 consensus,
+                header,
             };
             sketchy.predict(input, reference, genotypes, config)?;
         }
