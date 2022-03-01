@@ -25,7 +25,7 @@ process Sketch {
     sketchy = params.exec ?: "sketchy"
 
     """
-    find ${fasta_dir.baseName} -name "$fasta_glob" | $sketchy sketch -k $kmer_size -s $sketch_size -o ${prefix}_k${kmer_size}_s${sketch_size}.msh
+    find ${fasta_dir.baseName}/ -name "$fasta_glob" | $sketchy sketch -k $kmer_size -s $sketch_size -o ${prefix}_k${kmer_size}_s${sketch_size}.msh
     """ 
 
 }
