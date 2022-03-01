@@ -1,9 +1,12 @@
 nextflow.enable.dsl=2
 
+// General 
+
+params.help = false
 params.outdir = "sketchy_pipelines"
 params.exec = null
 
-// Sketch building
+// Sketch construction
 
 params.prefix = "test"
 params.kmer_min = 16
@@ -12,16 +15,28 @@ params.sketch_sizes = [1000]
 params.sketch_genomes_dir = "test/"
 params.sketch_genomes_glob = "*.fasta"  // for large numbers of genomes, uses find pipe
 
-// Batch predicing
+// Batch prediction
 
-params.batch_consensus = "-t 5 -c" // null to disable
+params.batch_consensus = null
 params.batch_read_limit = 1000
 params.batch_sketch_files = "*.msh"
 params.batch_read_files = "*.fastq"
 params.batch_genotype_file = "genotypes.tsv"
 
+// Module imports
+
+include { help_message } from './modules/help'
 include { Sketch } from './modules/sketchy'
 include { PredictBatch } from './modules/sketchy'
+
+// Help message
+
+if (help) {
+    help_message()
+    System.exit(0)
+}
+
+// Workflow entry points
 
 workflow sketch {
     Sketch(
