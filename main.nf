@@ -25,7 +25,7 @@ params.batch_genotype_file = "genotypes.tsv"
 
 // Module imports
 
-include { help_message } from './modules/help'
+include './modules/help'
 include { Sketch } from './modules/sketchy'
 include { PredictBatch } from './modules/sketchy'
 
