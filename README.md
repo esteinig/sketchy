@@ -1,7 +1,7 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/images/logo.png' align="right" height="250" /></a>
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
-![](https://img.shields.io/badge/version-0.6.0-black.svg)
+![](https://img.shields.io/badge/version-0.6.0-yellow.svg)
 ![](https://img.shields.io/badge/biorxiv-0.11.2-green.svg)
 
 Genomic neighbor typing for lineage and genotype inference
