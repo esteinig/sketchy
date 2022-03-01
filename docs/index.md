@@ -1,6 +1,4 @@
-![sketchy logo](images/logo.png)
-
-## Overview
+## Overview <a href='https://github.com/esteinig'><img src='images/logo.png' align="right" height="250" /></a>
 
 `Sketchy` is a nanopore lineage calling and genotyping tool based on the heuristic principle of [genomic neighbor typing (Břinda et al. 2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy`  queries species-wide (hypothesis-agnostic) reference sketches using MinHash methods to infer genotypes based on the closest reference match. Reference databases and genotypes, such has multi-locus sequence types, susceptibility profiles, or virulence factors, are configurable by users.
 
@@ -68,12 +66,12 @@ Predictions require the input sequences (`-i`), a reference sketch (`-r`) and a 
 
 ### Read sets
 
-Output the best 5 matches against the reference sketch.
+Output the best 5 matches against the reference sketch with header.
 
 <div class="termy">
 
 ```console
-$ sketchy predict -i seq.fq -r saureus.msh -g saureus.tsv -t 5
+$ sketchy predict -i seq.fq -r saureus.msh -g saureus.tsv -t 5 -H
 ```
 
 </div>
@@ -86,7 +84,7 @@ Output the updated best match against the reference sketch from a stream of read
 <div class="termy">
 
 ```console
-$ cat seq.fq | sketchy predict -r saureus.msh -g saureus.tsv -o
+$ cat seq.fq | sketchy predict -r saureus.msh -g saureus.tsv -s
 ```
 
 </div>
@@ -103,30 +101,26 @@ Reference sketches can be built from any collection of assembled genomes for whi
 
 Build a high-resolution (`s = 10,000`) reference database from any collection of `fasta` files.
 
-<div class="termy">
-
-```console
+```
 $ ls *.fa | head -2
-ERR129347.fa
-ERR121347.fa
-$ sketchy sketch -i *.fa -k 16 -s 10000 -o ref.msh
----> 100%
+> ERR129347.fa
+> ERR121347.fa
+$ sketchy sketch -i *.fa -k 16 -s 1000 -o ref.msh
 ```
 
-</div>
+You can pipe assemblies using `find` into the sketch construction, as wildcard expansion and `ls` are limited to ~30,000 files:
+
+```
+$ find assemblies/ -name "*.fa" | sketchy sketch -k 16 -s 1000 -o ref.msh
+```
 
 
 List sketch parameters.
 
-
-<div class="termy">
-
 ```
 $ sketchy info -p -i ref.msh
-type=mash sketch_size=10000 kmer_size=16 seed=0
+> type=mash sketch_size=1000 kmer_size=16 seed=0
 ```
-
-</div>
 
 
 ### Genotype files
@@ -141,26 +135,18 @@ ERR121347.fa    ST93    S   S   S
 
 List the order of genomes in the sketch, their length (bp) and an estimate of cardinality (bp)
 
-<div class="termy">
-
-```console
-$ sketchy info -i ref.msh | head -2
-ERR129347.fa 2832710 2648350
-ERR121347.fa 2753543 2600709
 ```
-
-</div>
+$ sketchy info -i ref.msh | head -2
+> ERR129347.fa 2832710 2648350
+> ERR121347.fa 2753543 2600709
+```
 
 Check if the genotype file contains the correct number and order of genomes as the sketch.
 
-<div class="termy">
-
-```console
-$ sketchy check -r ref.msh -g ref.tsv
-ok
 ```
-
-</div>
+$ sketchy check -r ref.msh -g ref.tsv
+> ok
+```
 
 ## Sketch validation
 
@@ -172,7 +158,12 @@ We conducted simulations of the following species:
 * *Staphylococcus aureus*
 * *Pseudomonas aeruginosa*
 
-TBD
+### _S. aureus_ validation dataset
+
+This section outlines the diversity of the independent _S. aureus_ validation dataset, consisting of two community-associated outbreaks in northern Australia and Papua New Guinea. Both are dominated by sequence type ST93 (n = 120) with multiple other sequence types present (n  = 40). In the manuscript, we use the whole dataset for validation of generalised genomic neighbor typing for _S. aureus_ (with a bias towards ST93) and for sublineage genotyping of the ST93 lineage:
+
+ST TABLE
+
 
 ## Other
 
@@ -189,36 +180,24 @@ Given two assembled genome sequences, create a sketch at default k-mer size of `
 
 Sketch two genome assemblies with identical settings.
 
-<div class="termy">
-
 ```
 $ sketchy sketch -i genome1.fa -o genome1.msh
 $ sketchy sketch -i genome2.fa -o genome2.msh 
 ```
 
-</div>
-
 Compute shared hashes between the reference and query genomes.
-
-<div class="termy">
 
 ```
 $ sketchy shared -r genome1.msh -q genome2.msh
-genome1.fa genome2.fa 360
+> genome1.fa genome2.fa 360
 ```
-
-</div>
 
 
 If multiple sketches are available compute pairwise shared hashes.
 
-<div class="termy">
-
 ```
 $ sketchy sketch -i genome1.fa genome2.fa -o multi.msh
 $ sketchy shared -r multi.msh -q genome2.msh
-genome1.fa genome2.fa 360
-genome2.fa genome2.fa 1000
+> genome1.fa genome2.fa 360
+> genome2.fa genome2.fa 1000
 ```
-
-</div>
