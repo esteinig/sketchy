@@ -18,8 +18,8 @@ def parse_metadata(json_file: Path):
     * file address: https://figshare.com/ndownloader/files/26578377
     * data citation: 
         Blackwell, Grace; Hunt, Martin; Malone, Kerri; Lima, Leandro; Horesh, Gal; T. F. Alako, Blaise; et al. (2021): 
-        Additional material for "Exploring bacterial diversity via a curated and searchable snapshot of archived DNA sequences". 
-        figshare. Dataset. https://doi.org/10.6084/m9.figshare.14061752.v1
+        "Exploring bacterial diversity via a curated and searchable snapshot of archived DNA sequences".
+        Dataset. https://doi.org/10.6084/m9.figshare.14061752.v1
     """
 
     data = []
@@ -58,7 +58,14 @@ def parse_metadata(json_file: Path):
                 if event == 'end_map' and "." not in prefix:
                     if keep:
                         data.append([
-                            current_genome, bracken[0], bracken[1], float(completeness), float(contamination), float(heterogeneity), mlst, mlst_species
+                            current_genome,
+                            bracken[0],
+                            bracken[1],
+                            float(completeness),
+                            float(contamination),
+                            float(heterogeneity),
+                            mlst,
+                            mlst_species
                         ])
                         n += 1
                     # Reset variables to make sure none are
@@ -75,7 +82,16 @@ def parse_metadata(json_file: Path):
                 i += 1
 
     df = pandas.DataFrame(
-        data, columns=["accession", "bracken_species", "bracken_abundance", "completeness", "contamination", "heterogeneity", "mlst", "mlst_species"]
+        data, columns=[
+            "accession",
+            "bracken_species",
+            "bracken_abundance",
+            "completeness",
+            "contamination",
+            "heterogeneity",
+            "mlst",
+            "mlst_species"
+        ]
     )
     df.to_csv("meta.tsv", sep="\t", index=False)
 
@@ -94,7 +110,7 @@ def clean_metadata(meta_file: Path, assembly_paths: Path):
 
     with meta_file.open() as meta_file:
         df = pandas.read_csv(meta_file, header=0, sep='\t')
-        contaminated = df[df['contamination'] > 1.]
+        contaminated = df[df['contamination'] > 0.1]
         fragmented = df[df['completeness'] < 99.]
         heterogenous = df[df['heterogeneity'] > 0.1]
 

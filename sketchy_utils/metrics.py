@@ -1,4 +1,5 @@
 import pandas
+import warnings
 import json
 from numpy import nan
 from typing import List
@@ -7,6 +8,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import confusion_matrix
+
+# in multi label metrics with many labels (e.g. sccmec type)
+# warnings can be raised because of rare labels that are
+# never predicted; these are ignored
+warnings.filterwarnings('ignore')
 
 SKIP_COLUMNS = ["name", "reads", "sketch_id", "shared_hashes"]
 
@@ -146,35 +152,37 @@ def read_label_config(file: Path, default_binary: list) -> dict:
     with file.open() as json_file:
         label_config = json.load(json_file)
 
-    config = {}
+    conf = {}
     for column, config in label_config.items():
         if "binary" not in config.keys():
             raise ValueError(f"Could not find `binary` key in config for column: {column}")
-        if "labels" not in config.keys():
-            raise ValueError(f"Could not find `labels` key in config for column: {column}")
 
         binary: bool = config["binary"]
-
         if not isinstance(binary, bool):
             raise ValueError(f"Binary value ({column}) is not a boolean")
 
-        config[column] = {"binary": binary}
+        conf[column] = {
+            "binary": binary, "labels": list()
+        }
 
         if binary:
-            labels: list = config["labels"]
-            if labels is not None or not isinstance(labels, list):
-                raise ValueError(f"Label value ({column}) is not a list or None")
+            if "labels" not in config.keys():
+                raise ValueError(f"Could not find `labels` key in config for column: {column}")
 
-            if labels is None:
+            labels: list = config["labels"]
+            if not isinstance(labels, list):
+                raise ValueError(f"Label value ({column}) is not one of: List or None")
+
+            if not labels:
                 print(f"Setting default binary labels ({column}): {default_binary}")
                 labels = default_binary.copy()
             else:
                 if len(labels) != 2:
                     raise ValueError(f"Binary labels requires precisely two values ({column})")
 
-            config[column]["labels"] = labels
+            conf[column]["labels"] = labels
 
-    return config
+    return conf
 
 
 def get_metrics(
@@ -212,7 +220,7 @@ def get_metrics(
 
                 tp, fp, tn, fn, acc, tpr, tnr, ppv, npv = compute_binary_metrics(ref_vec, pred_vec, labels)
             else:
-                tp, fp, tn, fn, tnr = nan, nan, nan, nan, nan
+                tp, fp, tn, fn, tnr = -1, -1, -1, -1, nan
                 acc = accuracy_score(ref_vec, pred_vec)
                 tpr = recall_score(ref_vec, pred_vec, average='weighted')
                 ppv = precision_score(ref_vec, pred_vec, average='weighted')

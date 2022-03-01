@@ -16,8 +16,9 @@ def metrics(
     label_config: Path = typer.Option(
         None, help="Label configuration file (JSON) to specify whether a prediction feature (column) is binary"
                    "or multi-label, and to specify whether non standard binary labels should be used. "
-                   "Prediction column names as keys, and dictionaries as values: `binary`: bool and "
-                   "`labels`: list (2, binary) or null. Labels only need to be specified for binary columns."
+                   "Prediction column names as keys, and dictionaries as values: `binary`: bool, "
+                   "`labels`: list (empty or binary labels). Labels only need to be specified for binary columns"
+                   "and an empty list will use the default binary option as replacement."
     ),
     default_binary: str = typer.Option(
         "R,S", help="Default binary labels, in a comma-separated string [e.g. 'R,S'] used for all binary features"
