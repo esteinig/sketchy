@@ -20,9 +20,9 @@ def helpMessage(){
                 General Command Line Arguments                   
     ======================================================
 
-    --outdir               output directory for workflow results             [$params.outdir]
-    --exec                 sketchy executable path, default env "sketchy"    [$params.exec]
-    --help                 show this help message and exit                   [$params.help]
+    --outdir    output directory for workflow results             [$params.outdir]
+    --exec      sketchy executable path, default env "sketchy"    [$params.exec]
+    --help      show this help message and exit                   [$params.help]
 
 
     ======================================================
@@ -37,12 +37,12 @@ def helpMessage(){
 
     Command line options:
 
-    --prefix                  prefix for output files                    [$params.prefix]
-    --kmer_min                minimum k-mer size for range               [$params.kmer_min]
-    --kmer_max                maximum k-mer size for range               [$params.kmer_min]
-    --sketch_sizes            string of sketch sizes to parse            [$params.sketch_sizes]
-    --sketch_genomes_dir      path to directory containing assemblies    [$params.sketch_genomes_dir]
-    --sketch_genomes_glob     glob to grab assemblies from directory     [$params.sketch_genomes_dir]
+    --prefix                 prefix for output files                    [$params.prefix]
+    --kmer_min               minimum k-mer size for range               [$params.kmer_min]
+    --kmer_max               maximum k-mer size for range               [$params.kmer_min]
+    --sketch_sizes           string of sketch sizes to parse            [$params.sketch_sizes]
+    --sketch_genomes_dir     path to directory containing assemblies    [$params.sketch_genomes_dir]
+    --sketch_genomes_glob    glob to grab assemblies from directory     [$params.sketch_genomes_dir]
 
     Example:
 
@@ -74,11 +74,11 @@ def helpMessage(){
 
     Command line options:
 
-    --batch_consensus       use consensus calling options     [$params.batch_consensus]
-    --batch_read_limit      read limit for predictions        [$params.batch_read_limit]
-    --batch_sketch_files    reference sketch file glob        [$params.batch_sketch_files]
-    --batch_read_files      reads file glob for prediction    [$params.batch_read_files]
-    --batch_genotype_file   genotype file matching sketches   [$params.batch_genotype_file]
+    --batch_consensus        use consensus calling options      [$params.batch_consensus]
+    --batch_read_limit       read limit for predictions         [$params.batch_read_limit]
+    --batch_sketch_files     reference sketch file glob         [$params.batch_sketch_files]
+    --batch_read_files       reads file glob for prediction     [$params.batch_read_files]
+    --batch_genotype_file    genotype file matching sketches    [$params.batch_genotype_file]
 
     Example:
 
