@@ -27,7 +27,6 @@ process Sketch {
 
     """
     find . -name "$fasta_glob" | $sketchy sketch -k $kmer_size -s $sketch_size -o ${prefix}_k${kmer_size}_s${sketch_size}.msh
-    $sketchy check -g $genotype_file -r ${prefix}_k${kmer_size}_s${sketch_size}.msh
     """ 
 
 }
