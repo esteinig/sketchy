@@ -11,7 +11,7 @@ params.exec = null
 params.prefix = "test"
 params.kmer_min = 16
 params.kmer_max = 31
-params.sketch_sizes = "1000,10000"
+params.sketch_size = 1000
 params.sketch_genomes_dir = "test/"
 params.sketch_genomes_glob = "*.fasta"  // for large numbers of genomes, uses find pipe
 
@@ -33,11 +33,9 @@ include { PredictBatch } from './modules/sketchy'
 
 if (params.help) {
     helpMessage()
+    System.exit(0)
 }
 
-sketch_sizes = params.sketch_sizes.tokenize(",")
-println!(sketch_sizes)
-System.exit(0)
 
 // Workflow entry points
 
@@ -47,7 +45,7 @@ workflow sketch {
         params.sketch_genomes_glob, 
         file(params.sketch_genomes_dir), 
         params.kmer_min..params.kmer_max, 
-        sketch_sizes
+        params.sketch_size
     )
 }
 

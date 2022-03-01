@@ -32,15 +32,14 @@ def helpMessage(){
     -entry sketch
 
     Construct reference sketches from arbitrarily large genome
-    assembly collections across a range of k-mer (k) and sketch
-    sizes (s).
+    assembly collections across a range of k-mer sizes (k).
 
     Command line options:
 
     --prefix                 prefix for output files                    [$params.prefix]
     --kmer_min               minimum k-mer size for range               [$params.kmer_min]
     --kmer_max               maximum k-mer size for range               [$params.kmer_min]
-    --sketch_sizes           string of sketch sizes to parse            [$params.sketch_sizes]
+    --sketch_size            sketch size to construct sketch            [$params.sketch_size]
     --sketch_genomes_dir     path to directory containing assemblies    [$params.sketch_genomes_dir]
     --sketch_genomes_glob    glob to grab assemblies from directory     [$params.sketch_genomes_dir]
 
