@@ -35,8 +35,7 @@ if (params.help) {
     helpMessage()
 }
 
-sketch_sizes = parseSizeString(params.sketch_sizes)
-println!(sketch_sizes)
+sketch_sizes = param.sketch_sizes.tokenize(",")
 
 System.exit(0)
 
