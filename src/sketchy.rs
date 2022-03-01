@@ -93,7 +93,7 @@ impl Sketchy {
 
         let (geno, header) = self._read_genotypes(&genotypes)?;
         let geno_map = self._genotype_hashmap(geno)?;
-        
+
         // Header is printed already here, regardless of streaming or direct prediction mode
 
         if config.header {
@@ -308,7 +308,7 @@ impl Sketchy {
             result_vec.push((&ref_sketch.name, shared_hashes, &geno_map[&ref_sketch.name]));
         }
         result_vec.sort_by(|a, b| b.1.cmp(&a.1));
-        
+
         self._print_results(result_vec, read, config.top, config.consensus)?;
 
         Ok(())
@@ -535,7 +535,10 @@ impl Sketchy {
         }
     }
 
-    fn _read_genotypes(&self, genotype_file: &Path) -> Result<(Vec<Vec<String>>, String), SketchyError> {
+    fn _read_genotypes(
+        &self,
+        genotype_file: &Path,
+    ) -> Result<(Vec<Vec<String>>, String), SketchyError> {
         let mut reader = csv::ReaderBuilder::new()
             .delimiter(b'\t')
             .has_headers(true)
@@ -546,8 +549,12 @@ impl Sketchy {
             let str_vec: Vec<String> = record.iter().map(|field| field.to_string()).collect();
             genotypes.push(str_vec);
         }
-        let header: Vec<String> = reader.headers()?.into_iter().map(|field| field.to_string()).collect();
-        let header_str = header[1..].join("\t");  // exclude first column identifier
+        let header: Vec<String> = reader
+            .headers()?
+            .into_iter()
+            .map(|field| field.to_string())
+            .collect();
+        let header_str = header[1..].join("\t"); // exclude first column identifier
         Ok((genotypes, header_str))
     }
 
