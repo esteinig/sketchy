@@ -29,7 +29,7 @@ workflow sketch {
         params.prefix, 
         params.sketch_genomes_glob, 
         file(params.sketch_genotypes), 
-        channel.fromPath(params.sketch_genomes_dir), 
+        file(params.sketch_genomes_dir), 
         params.kmer_min..params.kmer_max, 
         params.sketch_sizes
     )
