@@ -103,3 +103,13 @@ def helpMessage(){
 
     """
 }
+
+def parseSizeString(str){
+
+    str_array = str.split(",").collect { it as int }
+    if (str_array.isEmpty()) {
+        str_array = [1000]
+    }
+    return str_array
+
+}
