@@ -11,7 +11,6 @@ params.kmer_max = 31
 params.sketch_sizes = [1000]
 params.sketch_genomes_dir = "test/"
 params.sketch_genomes_glob = "*.fasta"  // for large numbers of genomes, uses find pipe
-params.sketch_genotypes = "genotypes.tsv"
 
 // Batch predicing
 
@@ -28,7 +27,6 @@ workflow sketch {
     Sketch(
         params.prefix, 
         params.sketch_genomes_glob, 
-        file(params.sketch_genotypes), 
         file(params.sketch_genomes_dir), 
         params.kmer_min..params.kmer_max, 
         params.sketch_sizes
