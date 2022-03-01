@@ -31,7 +31,7 @@ include { PredictBatch } from './modules/sketchy'
 
 // Help message
 
-if (help) {
+if (params.help) {
     helpMessage()
     System.exit(0)
 }
