@@ -14,7 +14,7 @@ process Sketch {
     val(prefix)
     val(fasta_glob) 
     file(genotype_file)
-    file(fasta_files)  // collected reference genomes, with glob to list into stdin
+    file(fasta_dir)  // fasta directory symlink
     each kmer_size
     each sketch_size
 
@@ -26,7 +26,7 @@ process Sketch {
     sketchy = params.exec ?: "sketchy"
 
     """
-    find . -name "$fasta_glob" | $sketchy sketch -k $kmer_size -s $sketch_size -o ${prefix}_k${kmer_size}_s${sketch_size}.msh
+    find . -name "${fasta_dir.baseName}/$fasta_glob" | $sketchy sketch -k $kmer_size -s $sketch_size -o ${prefix}_k${kmer_size}_s${sketch_size}.msh
     """ 
 
 }
