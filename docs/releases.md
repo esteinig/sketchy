@@ -8,7 +8,7 @@ Binary executables for releases of the Rust client are available for Linux and M
 Configure environmental variables.
 
 ```console
-VERSION=0.5.0
+VERSION=0.5.9
 GITHUB=https://github.com/esteinig/sketchy/releases/download
 ```
 
