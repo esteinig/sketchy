@@ -46,11 +46,11 @@ def helpMessage(){
 
     Example:
 
-        nextflow run esteinig/sketchy -profile local -entry sketch --prefix test \
-            --kmer_min 16 \
-            --kmer_max 31 \
-            --sketch_sizes 1000,10000 \
-            --sketch_genomes_dir reference/assemblies \
+        nextflow run esteinig/sketchy -profile local -entry sketch --prefix test \\
+            --kmer_min 16 \\
+            --kmer_max 31 \\
+            --sketch_sizes 1000,10000 \\
+            --sketch_genomes_dir reference/assemblies \\
             --sketch-genomes_glob "*.fasta"
 
     Notes:
@@ -82,11 +82,11 @@ def helpMessage(){
 
     Example:
 
-        nextflow run esteinig/sketchy -profile local -entry batch_predict --prefix test \
-            --batch_consensus "-t 5 -c" \
-            --batch_read_limit 1000 \
-            --batch_sketch_files "*.msh" \
-            --batch_read_files "*.fastq" \
+        nextflow run esteinig/sketchy -profile local -entry batch_predict --prefix test \\
+            --batch_consensus "-t 5 -c" \\
+            --batch_read_limit 1000 \\
+            --batch_sketch_files "*.msh" \\
+            --batch_read_files "*.fastq" \\
             --batch_genotype_file "genotypes.tsv"
 
     Notes:
