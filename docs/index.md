@@ -1,4 +1,4 @@
-## Overview <a href='https://github.com/esteinig'><img src='images/logo.png' align="right" height="250" /></a>
+## Overview
 
 `Sketchy` is a nanopore lineage calling and genotyping tool based on the heuristic principle of [genomic neighbor typing (Břinda et al. 2020)](https://www.biorxiv.org/content/10.1101/403204v2). `Sketchy`  queries species-wide (hypothesis-agnostic) reference sketches using MinHash methods to infer genotypes based on the closest reference match. Reference databases and genotypes, such has multi-locus sequence types, susceptibility profiles, or virulence factors, are configurable by users.
 
@@ -6,26 +6,16 @@
 
 Rust client.
 
-<div class="termy">
-
-```console
-$ cargo install sketchy
----> 100%
 ```
-
-</div>
+$ cargo install sketchy
+```
 
 Rust client and Python utility client.
 
-<div class="termy">
 
-```console
-$ conda install -c bioconda sketchy
----> 100%
 ```
-
-</div>
-
+$ conda install -c bioconda sketchy
+```
 
 [Release binaries](releases.md) for Linux and MacOS are available.
 
@@ -34,24 +24,15 @@ $ conda install -c bioconda sketchy
 
 Show subcommands available in the Rust client.
 
-<div class="termy">
-
-```console
+```
 $ sketchy --help
 ```
 
-</div>
-
 Show subcommands available in the Python client.
 
-
-<div class="termy">
-
-```console
+```
 $ sketchy-utils --help
 ```
-
-</div>
 
 ## Predictions
 
@@ -68,26 +49,18 @@ Predictions require the input sequences (`-i`), a reference sketch (`-r`) and a 
 
 Output the best 5 matches against the reference sketch with header.
 
-<div class="termy">
-
 ```console
 $ sketchy predict -i seq.fq -r saureus.msh -g saureus.tsv -t 5 -H
 ```
-
-</div>
 
 
 ### Streaming
 
 Output the updated best match against the reference sketch from a stream of reads.
 
-<div class="termy">
-
 ```console
 $ cat seq.fq | sketchy predict -r saureus.msh -g saureus.tsv -s
 ```
-
-</div>
 
 ## Sketches
 
@@ -99,27 +72,22 @@ TBD
 
 Reference sketches can be built from any collection of assembled genomes for which associated genotype or phenotype data are available. 
 
-Build a high-resolution (`s = 10,000`) reference database from any collection of `fasta` files.
+Build a default-resolution (`s = 1000`) reference database from any collection of `fasta`.
 
 ```
-$ ls *.fa | head -2
-> ERR129347.fa
-> ERR121347.fa
 $ sketchy sketch -i *.fa -k 16 -s 1000 -o ref.msh
 ```
 
-You can pipe assemblies using `find` into the sketch construction, as wildcard expansion and `ls` are limited to ~30,000 files:
+You can pipe assemblies using `find` into the sketch construction, as wildcard expansions are limited to ~30,000 files.
 
 ```
 $ find assemblies/ -name "*.fa" | sketchy sketch -k 16 -s 1000 -o ref.msh
 ```
 
-
 List sketch parameters.
 
 ```
-$ sketchy info -p -i ref.msh
-> type=mash sketch_size=1000 kmer_size=16 seed=0
+$ sketchy info -i ref.msh -p 
 ```
 
 
@@ -136,17 +104,16 @@ ERR121347.fa    ST93    S   S   S
 List the order of genomes in the sketch, their length (bp) and an estimate of cardinality (bp)
 
 ```
-$ sketchy info -i ref.msh | head -2
-> ERR129347.fa 2832710 2648350
-> ERR121347.fa 2753543 2600709
+$ sketchy info -i ref.msh
 ```
 
 Check if the genotype file contains the correct number and order of genomes as the sketch.
 
 ```
 $ sketchy check -r ref.msh -g ref.tsv
-> ok
 ```
+
+This will outpout `ok` to `stdout` if the check is completed successfully and fail with an error message otherwise.
 
 ## Sketch validation
 
@@ -189,6 +156,7 @@ Compute shared hashes between the reference and query genomes.
 
 ```
 $ sketchy shared -r genome1.msh -q genome2.msh
+
 > genome1.fa genome2.fa 360
 ```
 
@@ -198,6 +166,7 @@ If multiple sketches are available compute pairwise shared hashes.
 ```
 $ sketchy sketch -i genome1.fa genome2.fa -o multi.msh
 $ sketchy shared -r multi.msh -q genome2.msh
+
 > genome1.fa genome2.fa 360
 > genome2.fa genome2.fa 1000
 ```

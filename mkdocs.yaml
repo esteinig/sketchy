@@ -9,9 +9,7 @@ repo_name: esteinig/sketchy
 repo_url: https://github.com/esteinig/sketchy
 nav:
 - Home: index.md
-- Species: species.md
 - Releases: releases.md
-- About: about.md
 markdown_extensions:
 - toc:
     permalink: true
@@ -26,10 +24,5 @@ markdown_extensions:
       class: mermaid
       format: !!python/name:pymdownx.superfences.fence_div_format ''
 - pymdownx.tabbed
-extra_css:
-- css/termynal.css
-- css/custom.css
 extra_javascript:
 - https://unpkg.com/mermaid@8.4.6/dist/mermaid.min.js
-- js/termynal.js
-- js/custom.js
