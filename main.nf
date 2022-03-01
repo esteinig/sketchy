@@ -36,7 +36,7 @@ if (params.help) {
 }
 
 sketch_sizes = params.sketch_sizes.tokenize(",")
-
+println!(sketch_sizes)
 System.exit(0)
 
 // Workflow entry points
