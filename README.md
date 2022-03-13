@@ -38,11 +38,11 @@ git clone https://github.com/esteinig/sketchy
 cd sketchy && cargo build --release
 ```
 
-Target: 7 March
+Target: 21 March
 
 * Bioconda recipe update
-* Nextflow pipelines for optimisation and validation
 * Upload of species reference sketches
+* Nextflow pipelines for optimisation and validation
 * Utility tools to build sketches with data from [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
 * Default k-mer sizes for the databases are currently very small (k = 16) - optimised databases will be available
 
