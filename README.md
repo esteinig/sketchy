@@ -29,7 +29,7 @@ However:
 
 Please see the preprint for detailed limitations of `Sketchy`. 
 
-## Data availability:
+## Data availability
 
 * Reference sketches and genotype files for *S. aureus*, *S. pneumoniae*, *K. pneumoniae* and *P. aeruginosa* can be found in the [data repository](). You can find the reference assemblies, cross-validation sketches and the *Neisseria spp.* sketches there as well.
 * Scripts for reference sketch validations, computing performance metrics and validation data, or to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) can be found in the [scripts directory]().
