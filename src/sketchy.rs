@@ -40,7 +40,7 @@ pub enum SketchyError {
 
 /// A `Struct` used for configuring some
 /// params of the predict methods
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PredictConfig {
     pub top: usize,
     pub limit: usize,
@@ -51,7 +51,7 @@ pub struct PredictConfig {
 
 /// A `Struct` used for building the formatted
 /// Sketchy reference sketch
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Sketchy {}
 
 impl Sketchy {
