@@ -1,8 +1,8 @@
 # sketchy <a href='https://github.com/esteinig'><img src='docs/images/logo.png' align="right" height="250" /></a>
 
 ![](https://img.shields.io/badge/lang-rust-black.svg)
-![](https://img.shields.io/badge/version-0.6.0-yellow.svg)
-![](https://img.shields.io/badge/biorxiv-0.11.2-green.svg)
+![](https://img.shields.io/badge/version-0.6.0-green.svg)
+![](https://img.shields.io/badge/preprint-0.12.0-green.svg)
 
 Genomic neighbor typing for lineage and genotype inference
 
@@ -16,35 +16,24 @@ See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and
 
 ## Strengths and limitations
 
-Please see the preprint for detailed limitations of `Sketchy`. 
 
-* `Sketchy` performs best on lineage predictions and lineage-wide genotypes from few reads (you can try with < 1000 reads)
-* reference sketches and genotype indices can be constructed easily from large genome collections (e.g. species sketches)
+* Reference sketches and genotype indices can be constructed easily from large genome and genotype collections
+* `Sketchy` requires very little resources when using small sketch sizes (`s = 1000`) 
+* `Sketchy` performs best on lineage predictions and lineage-wide genotypes from very few reads - we found that tens to hundreds of reads can often give a good idea of the close matches in the reference sketch (especially when inspecting the top matches using `--top`)
 
 However:
 
-* clade-specific genotype resolution is not as good as when using phylogenetic guide trees (e.g. with `RASE`) - for sublineage genotyping i.e. when the number of genomes in the reference sketch is smaller, sketch size (`s`) can be increased to compensate for some of the approximate matching (~ 10k - 100k)
+* Clade-specific genotype resolution is not as good as when using phylogenetic guide trees (`RASE`)
+* Sketch size can be increased to increase performance (`s = 10000`), but resources scale approximately linearly
+* `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination
 
-> ⚠️ We are currently working on resolving this with reference sketch k-mer size optimisation
+Please see the preprint for detailed limitations of `Sketchy`. 
 
-* `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination - it is advised to run simulations and validations for species we have not provided reference sketches for
+## Data availability:
 
-## Release v0.6.0 
-
-Version used in preprint available from `master` branch or release `0.5.9` (implements all functions of `0.6.0` necessary for preprint):
-
-```
-git clone https://github.com/esteinig/sketchy
-cd sketchy && cargo build --release
-```
-
-Target: 7 March
-
-* Bioconda recipe update
-* Nextflow pipelines for optimisation and validation
-* Upload of species reference sketches
-* Utility tools to build sketches with data from [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421)
-* Default k-mer sizes for the databases are currently very small (k = 16) - optimised databases will be available
+* Reference sketches and genotype files for *S. aureus*, *S. pneumoniae*, *K. pneumoniae* and *P. aeruginosa* can be found in the [data repository](). You can find the reference assemblies, cross-validation sketches and the *Neisseria spp.* sketches there as well.
+* Scripts for reference sketch validations, computing performance metrics and validation data, or to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) can be found in the [scripts directory]().
+* Nanopore reads (Guppy v4.6 HAC, Bonito 3.6) for the outbreak isolates and for genotype surveillance panels in Papua New Guinea (Flongle, Goroka, sequential protocol) are available in the [data repository](). Raw sequence data (Illumina / ONT) will be uploaded to NCBI (PRJNA657380).
 
 ## Preprint
 

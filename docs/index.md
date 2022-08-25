@@ -53,7 +53,6 @@ Output the best 5 matches against the reference sketch with header.
 $ sketchy predict -i seq.fq -r saureus.msh -g saureus.tsv -t 5 -H
 ```
 
-
 ### Streaming
 
 Output the updated best match against the reference sketch from a stream of reads.
@@ -66,7 +65,7 @@ $ cat seq.fq | sketchy predict -r saureus.msh -g saureus.tsv -s
 
 ### Species sketches
 
-TBD
+Species sketches are available in the [data repository]() and can be built from local reference assembly collections.
 
 ### Local sketches
 
@@ -89,7 +88,6 @@ List sketch parameters.
 ```
 $ sketchy info -i ref.msh -p 
 ```
-
 
 ### Genotype files
 
@@ -117,7 +115,7 @@ This will outpout `ok` to `stdout` if the check is completed successfully and fa
 
 ## Sketch validation
 
-We conducted simulations of the following species:
+We conducted simulations using `badread` of the following species:
 
 * *Neisseria spp.*
 * *Streptococcus pneumoniae*
@@ -125,21 +123,10 @@ We conducted simulations of the following species:
 * *Staphylococcus aureus*
 * *Pseudomonas aeruginosa*
 
-### _S. aureus_ validation dataset
-
-This section outlines the diversity of the independent _S. aureus_ validation dataset, consisting of two community-associated outbreaks in northern Australia and Papua New Guinea. Both are dominated by sequence type ST93 (n = 120) with multiple other sequence types present (n  = 40). In the manuscript, we use the whole dataset for validation of generalised genomic neighbor typing for _S. aureus_ (with a bias towards ST93) and for sublineage genotyping of the ST93 lineage:
-
-ST TABLE
-
+Cross-validation sketches (using subsampling of reference assemblies) and read data are available in the [data repository]().
 
 ## Other
 
-
-### ENA genomes
-
-Download the raw assembly data for *S. aureus* from the ENA EMBL server:
-
-TBD
 
 ### Shared hashes
 
