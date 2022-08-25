@@ -76,6 +76,7 @@ def compute_metrics(
 
     metrics.to_csv(output, sep='\t', index=False)
     print(metrics)
+    print(metrics.accuracy.mean())
 
 
 def process_data(reference: Path, prediction: Path, verbose: bool):
