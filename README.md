@@ -27,8 +27,6 @@ However:
 * Sketch size can be increased to increase performance (`s = 10000`), but resources scale approximately linearly
 * `Sketchy` genotype inference may be difficult for species with high rates of homologous recombination
 
-Please see the preprint for detailed limitations of `Sketchy`. 
-
 ## Data availability
 
 * Reference sketches and genotype files for [*S. aureus*]() (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae* and *P. aeruginosa* (MLST) can be found in the [data repository](). You can find the reference assemblies, cross-validation sketches and the *Neisseria spp.* sketches there as well. 
@@ -37,6 +35,6 @@ Please see the preprint for detailed limitations of `Sketchy`.
 
 ## Preprint
 
-If you use `Sketchy` for research and other applications, please cite:
+If you use `sketchy` for research and other applications, please cite:
 
 >  Steinig et al. (2022) - Genomic neighbor typing for bacterial outbreak surveillance - bioRxiv 2022.02.05.479210; doi: https://doi.org/10.1101/2022.02.05.479210 
