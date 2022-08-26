@@ -323,19 +323,6 @@
     Sketch validation
   </a>
   
-    <nav class="md-nav" aria-label="Sketch validation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#s-aureus-validation-dataset" class="md-nav__link">
-    S. aureus validation dataset
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -345,13 +332,6 @@
   
     <nav class="md-nav" aria-label="Other">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ena-genomes" class="md-nav__link">
-    ENA genomes
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#shared-hashes" class="md-nav__link">
@@ -498,19 +478,6 @@
     Sketch validation
   </a>
   
-    <nav class="md-nav" aria-label="Sketch validation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#s-aureus-validation-dataset" class="md-nav__link">
-    S. aureus validation dataset
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -520,13 +487,6 @@
   
     <nav class="md-nav" aria-label="Other">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ena-genomes" class="md-nav__link">
-    ENA genomes
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#shared-hashes" class="md-nav__link">
@@ -594,7 +554,7 @@
 </code></pre></div>
 <h2 id="sketches">Sketches<a class="headerlink" href="#sketches" title="Permanent link">&para;</a></h2>
 <h3 id="species-sketches">Species sketches<a class="headerlink" href="#species-sketches" title="Permanent link">&para;</a></h3>
-<p>TBD</p>
+<p>Species sketches are available in the <a href="">data repository</a> and can be built from local reference assembly collections.</p>
 <h3 id="local-sketches">Local sketches<a class="headerlink" href="#local-sketches" title="Permanent link">&para;</a></h3>
 <p>Reference sketches can be built from any collection of assembled genomes for which associated genotype or phenotype data are available. </p>
 <p>Build a default-resolution (<code>s = 1000</code>) reference database from any collection of <code>fasta</code>.</p>
@@ -620,7 +580,7 @@ ERR121347.fa    ST93    S   S   S
 </code></pre></div>
 <p>This will outpout <code>ok</code> to <code>stdout</code> if the check is completed successfully and fail with an error message otherwise.</p>
 <h2 id="sketch-validation">Sketch validation<a class="headerlink" href="#sketch-validation" title="Permanent link">&para;</a></h2>
-<p>We conducted simulations of the following species:</p>
+<p>We conducted simulations using <code>badread</code> of the following species:</p>
 <ul>
 <li><em>Neisseria spp.</em></li>
 <li><em>Streptococcus pneumoniae</em></li>
@@ -628,13 +588,8 @@ ERR121347.fa    ST93    S   S   S
 <li><em>Staphylococcus aureus</em></li>
 <li><em>Pseudomonas aeruginosa</em></li>
 </ul>
-<h3 id="s-aureus-validation-dataset"><em>S. aureus</em> validation dataset<a class="headerlink" href="#s-aureus-validation-dataset" title="Permanent link">&para;</a></h3>
-<p>This section outlines the diversity of the independent <em>S. aureus</em> validation dataset, consisting of two community-associated outbreaks in northern Australia and Papua New Guinea. Both are dominated by sequence type ST93 (n = 120) with multiple other sequence types present (n  = 40). In the manuscript, we use the whole dataset for validation of generalised genomic neighbor typing for <em>S. aureus</em> (with a bias towards ST93) and for sublineage genotyping of the ST93 lineage:</p>
-<p>ST TABLE</p>
+<p>Cross-validation sketches (using subsampling of reference assemblies) and read data are available in the <a href="">data repository</a>.</p>
 <h2 id="other">Other<a class="headerlink" href="#other" title="Permanent link">&para;</a></h2>
-<h3 id="ena-genomes">ENA genomes<a class="headerlink" href="#ena-genomes" title="Permanent link">&para;</a></h3>
-<p>Download the raw assembly data for <em>S. aureus</em> from the ENA EMBL server:</p>
-<p>TBD</p>
 <h3 id="shared-hashes">Shared hashes<a class="headerlink" href="#shared-hashes" title="Permanent link">&para;</a></h3>
 <p>Given two assembled genome sequences, create a sketch at default k-mer size of <code>k = 16</code> and sketch size of <code>s = 1000</code>. <code>Mash</code> configuration can be replicated by setting <code>--seed 42</code>.</p>
 <p>Sketch two genome assemblies with identical settings.</p>
