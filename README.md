@@ -29,10 +29,10 @@ However:
 
 ## Data availability
 
-* Reference sketches and genotype files (`s = 1000`, `s = 10000`, `k = 16`) for [*S. aureus*]() (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae*, *P. aeruginosa* and *Neisseria spp.* (MLST) can be found in the [data repository]().
-* Reference sketches for larger k-mer values and reference sketch validation files from the simulations can be found in this [data repository]()
+* Reference sketches and genotype files (`s = 1000`, `s = 10000`, `k = 16`) for [*S. aureus*](https://cloudstor.aarnet.edu.au/plus/s/3EBgvXi6sVHW8Ne) (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae*, *P. aeruginosa* and *Neisseria spp.* (MLST) can be found in the [data repository](https://cloudstor.aarnet.edu.au/plus/s/rL0RHYunqhRK3i1).
+* Reference sketches for cross-validation on the simulated species data can be found in this [data repository](https://cloudstor.aarnet.edu.au/plus/s/7ICPoSru6s6EHNY); genome assemblies for all species extracted from the ENA reference collection are available in this [data repository]()
 * Scripts to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) and compute reference metrics can be found in the [scripts directory](scripts/).
-* Nanopore reads for the outbreak isolates and genotype surveillance panels in Papua New Guinea (Flongle, Goroka, sequential protocol) are available for download in the [data repository](). Raw sequence data (Illumina / ONT) is being uploaded to NCBI (PRJNA657380).
+* Nanopore reads for the outbreak isolates and genotype surveillance panels in Papua New Guinea (Flongle, Goroka, sequential protocol) are available for download in the [data repository](https://cloudstor.aarnet.edu.au/plus/s/MFkirfq1N6uIosc). Raw sequence data (Illumina / ONT) is being uploaded to NCBI (PRJNA657380).
 
 ## Preprint
 
