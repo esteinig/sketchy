@@ -18,7 +18,7 @@ See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and
 
 
 * Reference sketches and genotype indices can be constructed easily from large genome and genotype collections
-* `Sketchy` requires very little resources when using small sketch sizes (`s = 1000`) 
+* `Sketchy` requires few resources when using small sketch sizes (`s = 1000`) 
 * `Sketchy` performs best on lineage predictions and lineage-wide genotypes from very few reads - we found that tens to hundreds of reads can often give a good idea of the close matches in the reference sketch (especially when inspecting the top matches using `--top`)
 
 However:
@@ -29,7 +29,7 @@ However:
 
 ## Data availability
 
-* Reference sketches and genotype files (`s = 1000`, `s=10000`, `k = 16`) for [*S. aureus*]() (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae*, *P. aeruginosa* and *Neisseria spp.* (MLST) can be found in the [data repository]().
+* Reference sketches and genotype files (`s = 1000`, `s = 10000`, `k = 16`) for [*S. aureus*]() (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae*, *P. aeruginosa* and *Neisseria spp.* (MLST) can be found in the [data repository]().
 * Reference sketches for larger k-mer values and reference sketch validation files from the simulations can be found in this [data repository]()
 * Scripts to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) and compute reference metrics can be found in the [scripts directory](scripts/).
 * Nanopore reads for the outbreak isolates and genotype surveillance panels in Papua New Guinea (Flongle, Goroka, sequential protocol) are available for download in the [data repository](). Raw sequence data (Illumina / ONT) is being uploaded to NCBI (PRJNA657380).
