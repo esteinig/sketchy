@@ -31,8 +31,8 @@ However:
 
 * Reference sketches and genotype files (`s = 1000`, `s=10000`, `k = 16`) for [*S. aureus*]() (full genotypes including susceptibility predictions and other genotypes), *S. pneumoniae*, *K. pneumoniae*, *P. aeruginosa* and *Neisseria spp.* (MLST) can be found in the [data repository]().
 * Reference sketches for larger k-mer values and reference sketch validation files from the simulations can be found in this [data repository]()
-* Scripts for reference sketch validations, computing performance metrics and validations, or to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) can be found in the [scripts directory](scripts/).
-* Nanopore reads (Guppy v4.6 HAC, Bonito 3.6) for the outbreak isolates and genotype surveillance panels in Papua New Guinea (Flongle, Goroka, sequential protocol) are available for downlaod in this [data repository](). Raw sequence data (Illumina / ONT) is being uploaded to NCBI (PRJNA657380).
+* Scripts to extract data from the ENA collections [Grace Blackwell et al.](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.3001421) and compute reference metrics can be found in the [scripts directory](scripts/).
+* Nanopore reads (Bonito 3.6) for the outbreak isolates and genotype surveillance panels (Guppy v4.6 HAC)in Papua New Guinea (Flongle, Goroka, sequential protocol) are available for downlaod in this [data repository](). Raw sequence data (Illumina / ONT) is being uploaded to NCBI (PRJNA657380).
 
 ## Preprint
 
