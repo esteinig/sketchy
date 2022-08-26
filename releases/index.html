@@ -276,33 +276,21 @@
                 
                 <h1 id="release-binaries">Release binaries<a class="headerlink" href="#release-binaries" title="Permanent link">&para;</a></h1>
 <p>Binary executables for releases of the Rust client are available for Linux and MacOS.</p>
-<div class="termy">
-
-Configure environmental variables.
-
-<div class="highlight"><pre><span></span><code><span class="go">VERSION=0.5.9</span>
-<span class="go">GITHUB=https://github.com/esteinig/sketchy/releases/download</span>
+<p>Configure environmental variables.</p>
+<div class="highlight"><pre><span></span><code>VERSION=0.6.0
+GITHUB=https://github.com/esteinig/sketchy/releases/download
 </code></pre></div>
-
-Download release binaries (Linux).
-
-<div class="highlight"><pre><span></span><code><span class="gp">$ </span><span class="nv">TAR</span><span class="o">=</span>sketchy-<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>-x86_64-unknown-linux-musl.tar.gz
-<span class="gp">$ </span>wget <span class="si">${</span><span class="nv">GITHUB</span><span class="si">}</span>/<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>/<span class="si">${</span><span class="nv">TAR</span><span class="si">}</span>
-<span class="go">---&gt; 100%</span>
-<span class="gp">$ </span>tar xf <span class="nv">$TAR</span>
-<span class="go">---&gt; 100%</span>
+<p>Download release binaries (Linux).</p>
+<div class="highlight"><pre><span></span><code>TAR=sketchy-${VERSION}-x86_64-unknown-linux-musl.tar.gz
+wget ${GITHUB}/${VERSION}/${TAR}
+100%
+tar xf $TAR
 </code></pre></div>
-
-Download release binaries (MacOS).
-
-<div class="highlight"><pre><span></span><code><span class="gp">$ </span><span class="nv">TAR</span><span class="o">=</span>sketchy-<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>-x86_64-apple-darwin.tar.gz
-<span class="gp">$ </span>wget <span class="si">${</span><span class="nv">GITHUB</span><span class="si">}</span>/<span class="si">${</span><span class="nv">VERSION</span><span class="si">}</span>/<span class="si">${</span><span class="nv">TAR</span><span class="si">}</span>
-<span class="go">---&gt; 100%</span>
-<span class="gp">$ </span>tar xf <span class="nv">$TAR</span>
-<span class="go">---&gt; 100%</span>
+<p>Download release binaries (MacOS).</p>
+<div class="highlight"><pre><span></span><code>TAR=sketchy-${VERSION}-x86_64-apple-darwin.tar.gz
+wget ${GITHUB}/${VERSION}/${TAR}
+tar xf $TAR
 </code></pre></div>
-
-</div>
                 
               
               
