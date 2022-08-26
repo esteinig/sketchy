@@ -10,9 +10,6 @@ Rust client.
 $ cargo install sketchy
 ```
 
-Rust client and Python utility client.
-
-
 ```
 $ conda install -c bioconda sketchy
 ```
@@ -26,12 +23,6 @@ Show subcommands available in the Rust client.
 
 ```
 $ sketchy --help
-```
-
-Show subcommands available in the Python client.
-
-```
-$ sketchy-utils --help
 ```
 
 ## Predictions
