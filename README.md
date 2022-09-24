@@ -33,7 +33,7 @@ conda install -c bioconda sketchy
 ## Strengths and limitations
 
 
-* Reference sketches and genotype indices can be constructed easily from large genome and genotype collections
+* Reference sketches and genotype indices can be constructed easily from large genotype collections
 * `Sketchy` requires few resources when using small sketch sizes (`s = 1000`) 
 * `Sketchy` performs best on lineage predictions and lineage-wide genotypes from very few reads - we found that tens to hundreds of reads can often give a good idea of the close matches in the reference sketch (especially when inspecting the top matches using `--top`)
 
