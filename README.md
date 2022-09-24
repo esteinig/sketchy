@@ -14,6 +14,22 @@ Genomic neighbor typing for lineage and genotype inference
 
 See the [latest docs](https://esteinig.github.io/sketchy) for install, usage and database building.
 
+## Install
+
+Cargo:
+
+```
+cargo install sketchy
+```
+
+BioConda:
+
+```
+conda install -c bioconda sketchy
+```
+
+[Release binaries](https://github.com/esteinig/sketchy/releases) available for download. Reference sketches can be constructed from local [assembly and genotype collections](https://esteinig.github.io/sketchy/#local-sketches). *S. aureus* reference sketches are available in the data availability section below.
+
 ## Strengths and limitations
 
 
